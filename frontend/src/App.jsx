@@ -6,11 +6,11 @@ import OnboardingPage from './pages/OnboardingPage';
 import RoomPage from './pages/RoomPage';
 
 export default function App() {
-  const { initTheme, updateOnlineCount } = useStore();
+  const { updateOnlineCount } = useStore();
 
   useEffect(() => {
-    initTheme();
-  }, [initTheme]);
+    document.documentElement.classList.add('dark');
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -21,7 +21,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 h-screen w-screen overflow-hidden flex flex-col antialiased selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-300">
+      <div className="bg-[#0a0a0a] text-gray-100 h-screen w-screen overflow-hidden flex flex-col antialiased selection:bg-white selection:text-black">
         <Header />
         <main className="flex-1 flex w-full p-2 sm:p-4 gap-4 overflow-hidden relative">
           <Routes>

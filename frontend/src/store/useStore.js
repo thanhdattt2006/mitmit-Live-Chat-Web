@@ -4,35 +4,19 @@ import { persist } from 'zustand/middleware';
 const useStore = create(
   persist(
     (set, get) => ({
-      // Theme
-      theme: 'dark', // default
-      toggleTheme: () => {
-        const newTheme = get().theme === 'dark' ? 'light' : 'dark';
-        set({ theme: newTheme });
-        const root = document.documentElement;
-        if (newTheme === 'dark') {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-      },
-      
-      initTheme: () => {
-        const root = document.documentElement;
-        if (get().theme === 'dark') {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-      },
-
       // Language
       lang: 'en',
       setLang: (lang) => set({ lang }),
       
       // User Info
-      userInfo: null, 
-      setUserInfo: (info) => set({ userInfo: info }),
+      userInfo: {
+        name: 'Guest',
+        age: '18-21',
+        gender: 'male',
+        city: 'Hanoi',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'
+      }, 
+      setUserInfo: (info) => set((state) => ({ userInfo: { ...state.userInfo, ...info } })),
 
       // Global stats
       onlineCount: 1204,
@@ -58,7 +42,7 @@ const useStore = create(
     }),
     {
       name: 'mitmit-storage',
-      partialize: (state) => ({ theme: state.theme, lang: state.lang, userInfo: state.userInfo, callMode: state.callMode }),
+      partialize: (state) => ({ lang: state.lang, userInfo: state.userInfo, callMode: state.callMode }),
     }
   )
 );
