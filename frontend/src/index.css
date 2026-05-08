@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
 
 @layer base {
   *, *::before, *::after {
@@ -20,7 +20,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme(colors.zinc.600) transparent;
+    scrollbar-color: theme(--color-zinc-600) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 4px;
@@ -29,7 +29,7 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: theme(colors.zinc.600);
+    background-color: rgb(82 82 91);
     border-radius: 9999px;
   }
 }
