@@ -6,25 +6,44 @@ const useStore = create(
     (set, get) => ({
       // Theme
       theme: 'dark', // default
-      toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+      toggleTheme: () => {
+        const newTheme = get().theme === 'dark' ? 'light' : 'dark';
+        set({ theme: newTheme });
+        const root = document.documentElement;
+        if (newTheme === 'dark') {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      },
       
+      initTheme: () => {
+        const root = document.documentElement;
+        if (get().theme === 'dark') {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      },
+
       // Language
       lang: 'en',
       setLang: (lang) => set({ lang }),
       
-      // User Info (Onboarding)
-      userInfo: null, // { gender: 'male', age: '18-21' }
+      // User Info
+      userInfo: null, 
       setUserInfo: (info) => set({ userInfo: info }),
 
       // Global stats
       onlineCount: 1204,
       updateOnlineCount: () => set((state) => {
-        const change = Math.floor(Math.random() * 11) - 5; // -5 to +5
+        const change = Math.floor(Math.random() * 11) - 5;
         return { onlineCount: Math.max(1000, state.onlineCount + change) };
       }),
-      chatQuota: 10,
-      decreaseQuota: () => set((state) => ({ chatQuota: Math.max(0, state.chatQuota - 1) })),
-      addQuota: (amount) => set((state) => ({ chatQuota: state.chatQuota + amount })),
+
+      // Call Mode: 'video' | 'voice' | 'text'
+      callMode: 'video',
+      setCallMode: (mode) => set({ callMode: mode }),
 
       // Call State
       isMatching: false,
@@ -39,7 +58,7 @@ const useStore = create(
     }),
     {
       name: 'mitmit-storage',
-      partialize: (state) => ({ theme: state.theme, lang: state.lang, userInfo: state.userInfo }),
+      partialize: (state) => ({ theme: state.theme, lang: state.lang, userInfo: state.userInfo, callMode: state.callMode }),
     }
   )
 );

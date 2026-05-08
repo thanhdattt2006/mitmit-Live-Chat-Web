@@ -6,16 +6,11 @@ import OnboardingPage from './pages/OnboardingPage';
 import RoomPage from './pages/RoomPage';
 
 export default function App() {
-  const { theme, updateOnlineCount } = useStore();
+  const { initTheme, updateOnlineCount } = useStore();
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [theme]);
+    initTheme();
+  }, [initTheme]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,7 +23,7 @@ export default function App() {
     <BrowserRouter>
       <div className="bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 h-screen w-screen overflow-hidden flex flex-col antialiased selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-300">
         <Header />
-        <main className="flex-1 flex w-full p-4 gap-4 overflow-hidden relative">
+        <main className="flex-1 flex w-full p-2 sm:p-4 gap-4 overflow-hidden relative">
           <Routes>
             <Route path="/" element={<Navigate to="/onboarding" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />

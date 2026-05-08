@@ -9,7 +9,7 @@ import { MoreHorizontal } from 'lucide-react';
 
 export default function RoomPage() {
   const navigate = useNavigate();
-  const { userInfo, lang } = useStore();
+  const { userInfo, lang, callMode } = useStore();
   const t = translations[lang];
 
   useEffect(() => {
@@ -21,10 +21,15 @@ export default function RoomPage() {
   if (!userInfo) return null;
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row w-full gap-4 overflow-hidden">
-      <VideoBox />
+    <div className="flex-1 flex flex-col lg:flex-row w-full gap-4 overflow-hidden relative">
+      
+      {/* LEFT: Video/Voice Area */}
+      {callMode !== 'text' && (
+        <VideoBox />
+      )}
 
-      <section className="w-full lg:max-w-[350px] xl:max-w-[400px] flex flex-col bg-white dark:bg-[#141414] rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden h-full flex-shrink-0">
+      {/* RIGHT: Chat Area */}
+      <section className={`w-full flex flex-col bg-white dark:bg-[#141414] rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden h-full flex-shrink-0 transition-all duration-500 ${callMode === 'text' ? 'lg:w-[60%] mx-auto' : 'lg:w-[30%] lg:min-w-[350px] lg:max-w-[400px]'}`}>
         <div className="px-5 py-4 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50/50 dark:bg-neutral-900/50 backdrop-blur-sm z-10 relative">
           <div className="flex items-center gap-3">
             <div className="relative">
