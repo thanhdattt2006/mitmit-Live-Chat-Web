@@ -15,6 +15,11 @@ export default function ProfileModal({ isOpen, onClose }) {
     gender: userInfo?.gender || 'male',
   });
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [userInfo?.avatar, previewUrl]);
 
   useEffect(() => {
     return () => {
@@ -25,6 +30,13 @@ export default function ProfileModal({ isOpen, onClose }) {
   }, [previewUrl]);
 
   if (!isOpen) return null;
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.split(' ').filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
 
   const handleChange = (e) => {
     try {
@@ -78,7 +90,18 @@ export default function ProfileModal({ isOpen, onClose }) {
         <div className="p-6">
           <div className="flex flex-col items-center mb-6">
             <div className="relative">
-              <img src={userInfo?.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-neutral-800" />
+              {avatarError ? (
+                <div className="w-24 h-24 rounded-full border-4 border-neutral-800 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-bold">
+                  {getInitials(userInfo?.name)}
+                </div>
+              ) : (
+                <img 
+                  src={userInfo?.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
+                  alt="Avatar" 
+                  className="w-24 h-24 rounded-full object-cover border-4 border-neutral-800 bg-neutral-800"
+                  onError={() => setAvatarError(true)} 
+                />
+              )}
               
               <label className="absolute bottom-0 right-0 p-2 bg-neutral-800 border-2 border-[#141414] rounded-full hover:bg-neutral-700 transition-colors cursor-pointer">
                 <Camera className="w-4 h-4 text-white" />

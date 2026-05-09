@@ -31,6 +31,18 @@ export default function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
   const [activePrivateChat, setActivePrivateChat] = useState(null);
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [userInfo?.avatar]);
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.split(' ').filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
 
   const profileRef = useRef(null);
   const notiRef = useRef(null);
@@ -172,9 +184,20 @@ export default function Header() {
               <div className="relative shrink-0" ref={profileRef}>
                 <button 
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="w-8 h-8 rounded-full overflow-hidden border border-neutral-700 hover:ring-2 hover:ring-neutral-600 transition-all ml-1 shrink-0"
+                  className="w-8 h-8 rounded-full overflow-hidden border border-neutral-700 hover:ring-2 hover:ring-neutral-600 transition-all ml-1 shrink-0 bg-neutral-800"
                 >
-                  <img src={userInfo?.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"} alt="Avatar" className="w-full h-full object-cover" />
+                  {avatarError ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-bold">
+                      {getInitials(userInfo?.name)}
+                    </div>
+                  ) : (
+                    <img 
+                      src={userInfo?.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                      onError={() => setAvatarError(true)}
+                    />
+                  )}
                 </button>
 
                 {showProfileDropdown && (

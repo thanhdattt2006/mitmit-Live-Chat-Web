@@ -113,10 +113,12 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               </button>
               
               {showEmoji && (
-                <div className="absolute bottom-full right-0 mb-2 z-50">
+                <div className="absolute bottom-full right-0 mb-2 z-50 scale-90 origin-bottom-right">
                   <EmojiPicker 
                     onEmojiClick={handleEmojiClick}
                     theme="dark"
+                    width={300}
+                    height={350}
                   />
                 </div>
               )}

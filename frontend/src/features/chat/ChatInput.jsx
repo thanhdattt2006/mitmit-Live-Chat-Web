@@ -80,11 +80,13 @@ export default function ChatInput() {
     <div className="p-4 border-t border-gray-100 dark:border-neutral-800 bg-white dark:bg-[#141414] relative">
       {/* Emoji Picker Popover */}
       {showEmojiPicker && (
-        <div ref={pickerRef} className="absolute bottom-[80px] right-4 z-[60] shadow-2xl rounded-2xl overflow-hidden animate-slide-up border border-neutral-800">
+        <div ref={pickerRef} className="absolute bottom-[80px] right-4 z-[60] shadow-2xl rounded-2xl overflow-hidden animate-slide-up border border-neutral-800 scale-90 origin-bottom-right">
           <EmojiPicker 
             onEmojiClick={onEmojiClick} 
             theme="dark" 
             autoFocusSearch={false}
+            width={300}
+            height={350}
           />
         </div>
       )}
