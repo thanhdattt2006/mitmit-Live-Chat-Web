@@ -7,12 +7,15 @@ import {
 import useStore from '../store/useStore';
 import { translations } from '../utils/translation';
 import ProfileModal from '../components/profile/ProfileModal';
+import SettingsModal from '../components/profile/SettingsModal';
+import LoginModal from '../components/auth/LoginModal';
+import PrivateChatModal from '../components/chat/PrivateChatModal';
 
 export default function Header() {
   const { 
     lang, setLang, onlineCount, callMode, setCallMode, userInfo, 
     isLoggedIn, login, logout,
-    isMatching, isConnected 
+    isMatching, isConnected, friends
   } = useStore();
   
   const t = translations[lang];
@@ -21,7 +24,12 @@ export default function Header() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotiDropdown, setShowNotiDropdown] = useState(false);
   const [isInboxOpen, setIsInboxOpen] = useState(false);
+  
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+  const [activePrivateChat, setActivePrivateChat] = useState(null);
 
   const profileRef = useRef(null);
   const notiRef = useRef(null);
@@ -37,13 +45,19 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const mockFriends = [
-    { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?' },
-  ];
-
   const handleOpenProfile = () => {
     setShowProfileDropdown(false);
     setIsProfileModalOpen(true);
+  };
+
+  const handleOpenSettings = () => {
+    setShowProfileDropdown(false);
+    setIsSettingsModalOpen(true);
+  };
+  
+  const handleOpenPrivateChat = (friend) => {
+    setIsInboxOpen(false);
+    setActivePrivateChat(friend);
   };
 
   const showCallTabs = !isMatching && !isConnected;
@@ -62,7 +76,7 @@ export default function Header() {
           </h1>
           <div className="hidden xl:flex ml-2 items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-900/20 border border-emerald-800/30 text-emerald-400 text-xs font-medium">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            {onlineCount.toLocaleString()}
+            {onlineCount.toLocaleString()} {t.ONLINE_COUNT}
           </div>
         </div>
 
@@ -118,11 +132,11 @@ export default function Header() {
 
           {!isLoggedIn ? (
             <button 
-              onClick={login}
+              onClick={() => setIsLoginModalOpen(true)}
               className="ml-2 flex items-center gap-2 bg-white text-neutral-900 px-5 py-1.5 rounded-full font-bold hover:bg-gray-200 transition-all active:scale-95 shadow-md"
             >
               <LogIn className="w-4 h-4" />
-              <span>Login</span>
+              <span>{t.LOGIN}</span>
             </button>
           ) : (
             <>
@@ -138,8 +152,8 @@ export default function Header() {
 
                 {showNotiDropdown && (
                   <div className="absolute right-0 mt-2 py-2 w-64 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50 text-sm animate-fade-in">
-                    <div className="px-4 py-2 border-b border-neutral-800 font-semibold text-white">Notifications</div>
-                    <div className="p-4 text-gray-400 text-center">No new notifications</div>
+                    <div className="px-4 py-2 border-b border-neutral-800 font-semibold text-white">{t.NOTIFICATIONS}</div>
+                    <div className="p-4 text-gray-400 text-center">{t.NO_NOTIFICATIONS}</div>
                   </div>
                 )}
               </div>
@@ -168,14 +182,14 @@ export default function Header() {
                       <p className="text-xs text-gray-500 truncate">{userInfo?.city}</p>
                     </div>
                     <button onClick={handleOpenProfile} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
-                      <User className="w-4 h-4" /> Profile
+                      <User className="w-4 h-4" /> {t.PROFILE}
                     </button>
-                    <button onClick={handleOpenProfile} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
-                      <Settings className="w-4 h-4" /> Settings
+                    <button onClick={handleOpenSettings} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
+                      <Settings className="w-4 h-4" /> {t.SETTINGS}
                     </button>
                     <div className="h-px bg-neutral-800 my-1"></div>
                     <button onClick={() => { logout(); setShowProfileDropdown(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10 transition-colors">
-                      <LogOut className="w-4 h-4" /> Logout
+                      <LogOut className="w-4 h-4" /> {t.LOGOUT}
                     </button>
                   </div>
                 )}
@@ -191,14 +205,18 @@ export default function Header() {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsInboxOpen(false)}></div>
         <div className={`absolute top-0 right-0 h-full w-full sm:w-80 bg-[#141414] shadow-2xl border-l border-neutral-800 transform transition-transform duration-300 ease-out flex flex-col ${isInboxOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="px-5 py-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 backdrop-blur-sm">
-            <h2 className="font-bold text-lg">Inbox</h2>
+            <h2 className="font-bold text-lg">{t.INBOX}</h2>
             <button onClick={() => setIsInboxOpen(false)} className="p-1.5 rounded-full hover:bg-neutral-800 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
-            {mockFriends.map(friend => (
-              <div key={friend.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-neutral-800/50 cursor-pointer transition-colors mb-1">
+            {friends.map(friend => (
+              <div 
+                key={friend.id} 
+                onClick={() => handleOpenPrivateChat(friend)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-neutral-800/50 cursor-pointer transition-colors mb-1"
+              >
                 <img src={friend.avatar} alt={friend.name} className="w-12 h-12 rounded-full object-cover border border-neutral-700" />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold text-sm truncate text-white">{friend.name}</h4>
@@ -211,7 +229,10 @@ export default function Header() {
         </div>
       </div>
 
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
+      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+      <PrivateChatModal isOpen={!!activePrivateChat} onClose={() => setActivePrivateChat(null)} friend={activePrivateChat} />
     </>
   );
 }

@@ -10,25 +10,32 @@ const STRANGER_IMAGES = [
 ];
 
 export default function VideoBox() {
-  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode } = useStore();
+  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend } = useStore();
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
-  const [isFriend, setIsFriend] = useState(false);
+  
   const [strangerImg, setStrangerImg] = useState(STRANGER_IMAGES[0]);
   const [timeLeft, setTimeLeft] = useState(180);
   
   const [hearts, setHearts] = useState([]);
   const [heartCount, setHeartCount] = useState(0);
 
+  // Match state
+  const [isLikedByMe, setIsLikedByMe] = useState(false);
+  const [isLikedByStranger, setIsLikedByStranger] = useState(false);
+  const [isMatchToastVisible, setIsMatchToastVisible] = useState(false);
+
+  const isMatch = isLikedByMe && isLikedByStranger;
+
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isConnected || isMatch) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(interval);
-  }, [isConnected]);
+  }, [isConnected, isMatch]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -39,7 +46,9 @@ export default function VideoBox() {
   const handleStartNext = () => {
     startMatching();
     clearMessages();
-    setIsFriend(false);
+    setIsLikedByMe(false);
+    setIsLikedByStranger(false);
+    setIsMatchToastVisible(false);
     
     setTimeout(() => {
       setStrangerImg(STRANGER_IMAGES[Math.floor(Math.random() * STRANGER_IMAGES.length)]);
@@ -52,6 +61,9 @@ export default function VideoBox() {
   const handleStop = () => {
     stopCall();
     clearMessages();
+    setIsLikedByMe(false);
+    setIsLikedByStranger(false);
+    setIsMatchToastVisible(false);
   };
 
   useEffect(() => {
@@ -61,13 +73,30 @@ export default function VideoBox() {
   }, [callMode]);
 
   const handleHeartClick = () => {
-    setIsFriend(true);
+    if (isLikedByMe) return; // Prevent multiple triggers
+    
+    setIsLikedByMe(true);
+    
+    // Float hearts animation
     const newHeart = { id: heartCount, left: 30 + Math.random() * 40 }; 
     setHearts(prev => [...prev, newHeart]);
     setHeartCount(prev => prev + 1);
 
     setTimeout(() => {
       setHearts(prev => prev.filter(h => h.id !== newHeart.id));
+    }, 2000);
+
+    // Mock stranger like
+    setTimeout(() => {
+      setIsLikedByStranger(true);
+      setIsMatchToastVisible(true);
+      addFriend({
+        id: Date.now(),
+        name: `${t.STRANGER} #8429`,
+        avatar: strangerImg,
+        lastMsg: t.ITS_A_MATCH
+      });
+      setTimeout(() => setIsMatchToastVisible(false), 5000);
     }, 2000);
   };
 
@@ -83,8 +112,8 @@ export default function VideoBox() {
              <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-neutral-700">
                {callMode === 'video' ? <VideoIcon className="w-8 h-8 text-gray-500" /> : <Mic className="w-8 h-8 text-gray-500" />}
              </div>
-             <p className="text-gray-400 font-medium">Ready to connect?</p>
-             <p className="text-neutral-600 text-sm mt-1">Press Start to find a stranger</p>
+             <p className="text-gray-400 font-medium">{t.READY_TO_CONNECT}</p>
+             <p className="text-neutral-600 text-sm mt-1">{t.PRESS_START}</p>
           </div>
         </div>
       ) : callMode === 'video' ? (
@@ -127,6 +156,16 @@ export default function VideoBox() {
         <p className="font-medium tracking-wide animate-pulse">{t.FINDING_SOMEONE}</p>
       </div>
 
+      {/* Match Toast */}
+      {isMatchToastVisible && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-slide-up flex flex-col items-center pointer-events-none">
+          <div className="text-6xl mb-4 animate-bounce">🎉</div>
+          <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-6 py-3 rounded-2xl shadow-2xl font-bold text-center border border-white/20">
+            {t.ITS_A_MATCH}
+          </div>
+        </div>
+      )}
+
       {/* Your Camera PiP */}
       {callMode === 'video' && !isIdle && (
         <div className="absolute bottom-6 right-6 w-32 h-44 sm:w-40 sm:h-56 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
@@ -136,7 +175,7 @@ export default function VideoBox() {
       )}
 
       {/* Timer Overlay */}
-      {isConnected && (
+      {isConnected && !isMatch && (
         <div className={`absolute top-6 left-1/2 -translate-x-1/2 glass-panel text-white px-5 py-1.5 rounded-full shadow-lg border ${timeLeft <= 10 ? 'border-red-500/50 text-red-500' : 'border-white/10'} flex items-center gap-2 z-10 transition-colors`}>
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
           <span className="font-mono text-base font-semibold tracking-wider">{formatTime(timeLeft)}</span>
@@ -169,13 +208,13 @@ export default function VideoBox() {
               onClick={handleHeartClick} 
               className="relative w-12 h-12 rounded-full bg-black/40 hover:bg-pink-500/20 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-75 group"
             >
-              <Heart className={`w-6 h-6 transition-all ${isFriend ? 'fill-pink-500 text-pink-500 scale-110' : 'group-hover:text-pink-400'}`} />
+              <Heart className={`w-6 h-6 transition-all ${isLikedByMe ? 'fill-pink-500 text-pink-500 scale-110' : 'group-hover:text-pink-400'}`} />
             </button>
 
             <button 
               onClick={handleStop} 
               className="h-12 w-12 rounded-full bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center transition-all active:scale-95 shadow-lg mx-1"
-              title="Stop Call"
+              title={t.STOP_BUTTON}
             >
               <Square className="w-4 h-4 fill-current" />
             </button>
@@ -190,7 +229,7 @@ export default function VideoBox() {
           {isIdle ? (
             <>
               <Play className="w-5 h-5 fill-current" />
-              <span>START</span>
+              <span>{t.START_BUTTON}</span>
             </>
           ) : (
             <>

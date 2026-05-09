@@ -23,6 +23,12 @@ const useStore = create(
       }, 
       setUserInfo: (info) => set((state) => ({ userInfo: { ...state.userInfo, ...info } })),
 
+      // Friends (Inbox)
+      friends: [
+        { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?' },
+      ],
+      addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
+
       // Global stats
       onlineCount: 1204,
       updateOnlineCount: () => set((state) => {
@@ -52,7 +58,8 @@ const useStore = create(
         lang: state.lang, 
         userInfo: state.userInfo, 
         callMode: state.callMode,
-        isLoggedIn: state.isLoggedIn 
+        isLoggedIn: state.isLoggedIn,
+        friends: state.friends
       }),
     }
   )
