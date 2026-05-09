@@ -9,7 +9,7 @@ const STRANGER_IMAGES = [
   "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1200&q=80"
 ];
 
-export default function VideoBox() {
+export default function VideoChat() {
   const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend } = useStore();
   const t = translations[lang];
 
@@ -44,26 +44,34 @@ export default function VideoBox() {
   };
 
   const handleStartNext = () => {
-    startMatching();
-    clearMessages();
-    setIsLikedByMe(false);
-    setIsLikedByStranger(false);
-    setIsMatchToastVisible(false);
-    
-    setTimeout(() => {
-      setStrangerImg(STRANGER_IMAGES[Math.floor(Math.random() * STRANGER_IMAGES.length)]);
-      setConnected(true);
-      setTimeLeft(180);
-      addMessage({ id: Date.now().toString(), type: 'system', text: t.SYSTEM_MSG_HELLO });
-    }, 1500);
+    try {
+      startMatching();
+      clearMessages();
+      setIsLikedByMe(false);
+      setIsLikedByStranger(false);
+      setIsMatchToastVisible(false);
+      
+      setTimeout(() => {
+        setStrangerImg(STRANGER_IMAGES[Math.floor(Math.random() * STRANGER_IMAGES.length)]);
+        setConnected(true);
+        setTimeLeft(180);
+        addMessage({ id: Date.now().toString(), type: 'system', text: t.SYSTEM_MSG_HELLO });
+      }, 1500);
+    } catch (error) {
+      console.error('Error starting next match:', error);
+    }
   };
 
   const handleStop = () => {
-    stopCall();
-    clearMessages();
-    setIsLikedByMe(false);
-    setIsLikedByStranger(false);
-    setIsMatchToastVisible(false);
+    try {
+      stopCall();
+      clearMessages();
+      setIsLikedByMe(false);
+      setIsLikedByStranger(false);
+      setIsMatchToastVisible(false);
+    } catch (error) {
+      console.error('Error stopping call:', error);
+    }
   };
 
   useEffect(() => {
@@ -73,31 +81,35 @@ export default function VideoBox() {
   }, [callMode]);
 
   const handleHeartClick = () => {
-    if (isLikedByMe) return; // Prevent multiple triggers
-    
-    setIsLikedByMe(true);
-    
-    // Float hearts animation
-    const newHeart = { id: heartCount, left: 30 + Math.random() * 40 }; 
-    setHearts(prev => [...prev, newHeart]);
-    setHeartCount(prev => prev + 1);
+    try {
+      if (isLikedByMe) return; // Prevent multiple triggers
+      
+      setIsLikedByMe(true);
+      
+      // Float hearts animation
+      const newHeart = { id: heartCount, left: 30 + Math.random() * 40 }; 
+      setHearts(prev => [...prev, newHeart]);
+      setHeartCount(prev => prev + 1);
 
-    setTimeout(() => {
-      setHearts(prev => prev.filter(h => h.id !== newHeart.id));
-    }, 2000);
+      setTimeout(() => {
+        setHearts(prev => prev.filter(h => h.id !== newHeart.id));
+      }, 2000);
 
-    // Mock stranger like
-    setTimeout(() => {
-      setIsLikedByStranger(true);
-      setIsMatchToastVisible(true);
-      addFriend({
-        id: Date.now(),
-        name: `${t.STRANGER} #8429`,
-        avatar: strangerImg,
-        lastMsg: t.ITS_A_MATCH
-      });
-      setTimeout(() => setIsMatchToastVisible(false), 5000);
-    }, 2000);
+      // Mock stranger like
+      setTimeout(() => {
+        setIsLikedByStranger(true);
+        setIsMatchToastVisible(true);
+        addFriend({
+          id: Date.now(),
+          name: `${t.STRANGER} #8429`,
+          avatar: strangerImg,
+          lastMsg: t.ITS_A_MATCH
+        });
+        setTimeout(() => setIsMatchToastVisible(false), 5000);
+      }, 2000);
+    } catch (error) {
+      console.error('Error processing heart click:', error);
+    }
   };
 
   const isIdle = !isMatching && !isConnected;
@@ -145,7 +157,7 @@ export default function VideoBox() {
 
       {/* Floating Hearts Layer */}
       <div className="absolute bottom-24 left-0 right-0 h-64 pointer-events-none overflow-hidden z-20">
-        {hearts.map(heart => (
+        {hearts?.map(heart => (
           <div 
             key={heart.id} 
             className="absolute bottom-0 text-pink-500 animate-float-up"

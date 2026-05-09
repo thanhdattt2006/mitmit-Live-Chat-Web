@@ -10,8 +10,12 @@ export default function LoginModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const handleLogin = () => {
-    login();
-    onClose();
+    try {
+      login();
+      onClose();
+    } catch (error) {
+      console.error('Error during login:', error);
+    }
   };
 
   return (

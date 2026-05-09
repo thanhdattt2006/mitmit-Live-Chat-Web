@@ -40,29 +40,33 @@ export default function ChatInput() {
     e.preventDefault();
     if (!text.trim() || isMatching) return;
     
-    addMessage({ id: Date.now().toString(), type: 'user', text: text.trim(), isMine: true });
-    setText('');
-    setShowEmojiPicker(false);
-    
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.focus();
-    }
+    try {
+      addMessage({ id: Date.now().toString(), type: 'user', text: text.trim(), isMine: true });
+      setText('');
+      setShowEmojiPicker(false);
+      
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.focus();
+      }
 
-    setTimeout(() => {
-      const mockReplies = [
-        "Haha that's funny.",
-        "Wow really? Tell me more.",
-        "Nice to meet you! I'm enjoying this app.",
-        "I'm listening..."
-      ];
-      addMessage({
-        id: Date.now().toString(),
-        type: 'user',
-        text: mockReplies[Math.floor(Math.random() * mockReplies.length)],
-        isMine: false
-      });
-    }, 1500 + Math.random() * 1500);
+      setTimeout(() => {
+        const mockReplies = [
+          "Haha that's funny.",
+          "Wow really? Tell me more.",
+          "Nice to meet you! I'm enjoying this app.",
+          "I'm listening..."
+        ];
+        addMessage({
+          id: Date.now().toString(),
+          type: 'user',
+          text: mockReplies[Math.floor(Math.random() * mockReplies.length)],
+          isMine: false
+        });
+      }, 1500 + Math.random() * 1500);
+    } catch (error) {
+      console.error('Error handling chat submission:', error);
+    }
   };
 
   const handleKeyDown = (e) => {

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import useStore from '../../store/useStore';
 
-export default function ChatList() {
+export default function MessageList() {
   const { messages } = useStore();
   const bottomRef = useRef(null);
 
@@ -11,7 +11,7 @@ export default function ChatList() {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4 scroll-smooth bg-[#fafafa] dark:bg-transparent">
-      {messages.map((msg) => {
+      {messages?.map((msg) => {
         if (msg.type === 'system') {
           return (
             <div key={msg.id} className="flex justify-center w-full my-2 animate-fade-in">

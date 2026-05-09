@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import useStore from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
-import VideoBox from '../components/chat/VideoBox';
-import ChatList from '../components/chat/ChatList';
-import ChatInput from '../components/chat/ChatInput';
+import VideoChat from '../features/chat/VideoChat';
+import MessageList from '../features/chat/MessageList';
+import ChatInput from '../features/chat/ChatInput';
 import { translations } from '../utils/translation';
 import { MoreHorizontal, MessageCircle, Play, ArrowRight, Square, Loader2 } from 'lucide-react';
 
@@ -30,25 +30,33 @@ export default function RoomPage() {
   if (!userInfo) return null;
 
   const handleStartNextText = () => {
-    startMatching();
-    clearMessages();
-    
-    setTimeout(() => {
-      setConnected(true);
-      addMessage({ id: Date.now().toString(), type: 'system', text: t.SYSTEM_MSG_HELLO });
-    }, 1500);
+    try {
+      startMatching();
+      clearMessages();
+      
+      setTimeout(() => {
+        setConnected(true);
+        addMessage({ id: Date.now().toString(), type: 'system', text: t.SYSTEM_MSG_HELLO });
+      }, 1500);
+    } catch (error) {
+      console.error('Error starting next text chat:', error);
+    }
   };
 
   const handleStopText = () => {
-    stopCall();
-    clearMessages();
+    try {
+      stopCall();
+      clearMessages();
+    } catch (error) {
+      console.error('Error stopping text chat:', error);
+    }
   };
 
   return (
     <div className={`flex-1 flex flex-col ${callMode === 'text' ? 'items-center p-4' : 'lg:flex-row'} w-full gap-4 overflow-hidden relative`}>
       
       {/* LEFT: Video/Voice Area */}
-      {callMode !== 'text' && <VideoBox />}
+      {callMode !== 'text' && <VideoChat />}
 
       {/* RIGHT/CENTER: Chat Area */}
       <section className={`w-full flex flex-col bg-[#141414] rounded-3xl border border-neutral-800 shadow-sm overflow-hidden h-full flex-shrink-0 transition-all duration-500 relative ${callMode === 'text' ? 'max-w-3xl mx-auto border-2 border-neutral-800' : 'lg:w-[30%] lg:min-w-[350px] lg:max-w-[400px]'}`}>
@@ -93,7 +101,7 @@ export default function RoomPage() {
                 )}
               </div>
             </div>
-            <ChatList />
+            <MessageList />
             <ChatInput />
           </>
         ) : (

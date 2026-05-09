@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Smile } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
+import EmojiPicker from 'emoji-picker-react';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const { lang } = useStore();
@@ -9,7 +10,19 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
+  const [showEmoji, setShowEmoji] = useState(false);
   const bottomRef = useRef(null);
+  const emojiRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+        setShowEmoji(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -29,12 +42,20 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
     e.preventDefault();
     if (!text.trim()) return;
     
-    setMessages([...messages, { id: Date.now().toString(), text, isMine: true }]);
-    setText('');
-    
-    setTimeout(() => {
-      setMessages(prev => [...prev, { id: Date.now().toString(), text: 'Haha, okay!', isMine: false }]);
-    }, 1500);
+    try {
+      setMessages(prev => [...prev, { id: Date.now().toString(), text, isMine: true }]);
+      setText('');
+      
+      setTimeout(() => {
+        setMessages(prev => [...prev, { id: Date.now().toString(), text: 'Haha, okay!', isMine: false }]);
+      }, 1500);
+    } catch (error) {
+      console.error('Error sending private message:', error);
+    }
+  };
+
+  const handleEmojiClick = (emojiData) => {
+    setText(prev => prev + emojiData.emoji);
   };
 
   return (
@@ -58,7 +79,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scroll-smooth">
-        {messages.map((msg) => (
+        {messages?.map((msg) => (
           <div key={msg.id} className={`flex w-full animate-slide-up ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] px-3.5 py-2 text-sm leading-relaxed shadow-sm break-words ${
               msg.isMine 
@@ -82,9 +103,24 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               className="w-full bg-neutral-800 border border-transparent focus:border-neutral-700 rounded-full py-2.5 pl-4 pr-10 text-sm outline-none transition-colors text-white placeholder-gray-500" 
               placeholder={t.CHAT_PLACEHOLDER}
             />
-            <button type="button" className="absolute right-3 text-gray-400 hover:text-gray-200 transition-colors">
-              <Smile className="w-4 h-4" />
-            </button>
+            <div ref={emojiRef}>
+              <button 
+                type="button" 
+                onClick={() => setShowEmoji(!showEmoji)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+              >
+                <Smile className="w-4 h-4" />
+              </button>
+              
+              {showEmoji && (
+                <div className="absolute bottom-full right-0 mb-2 z-50">
+                  <EmojiPicker 
+                    onEmojiClick={handleEmojiClick}
+                    theme="dark"
+                  />
+                </div>
+              )}
+            </div>
           </div>
           <button 
             type="submit" 

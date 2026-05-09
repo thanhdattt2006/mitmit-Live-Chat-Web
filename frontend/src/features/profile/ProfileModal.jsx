@@ -14,25 +14,49 @@ export default function ProfileModal({ isOpen, onClose }) {
     city: userInfo?.city || '',
     gender: userInfo?.gender || 'male',
   });
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    try {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    } catch (error) {
+      console.error('Error updating form data:', error);
+    }
   };
 
   const handleSave = () => {
-    setUserInfo(formData);
-    onClose();
+    try {
+      setUserInfo(formData);
+      onClose();
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log('Selected file for avatar:', file.name);
-      // Mock UI update by creating a local object URL
-      const imageUrl = URL.createObjectURL(file);
-      setUserInfo({ avatar: imageUrl });
+    try {
+      const file = e.target.files?.[0];
+      if (file) {
+        console.log('Selected file for avatar:', file.name);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+        const imageUrl = URL.createObjectURL(file);
+        setPreviewUrl(imageUrl);
+        setUserInfo({ avatar: imageUrl });
+      }
+    } catch (error) {
+      console.error('Error changing image:', error);
     }
   };
 
