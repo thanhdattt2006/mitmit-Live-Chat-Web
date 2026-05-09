@@ -4,6 +4,11 @@ import { persist } from 'zustand/middleware';
 const useStore = create(
   persist(
     (set, get) => ({
+      // Auth
+      isLoggedIn: false,
+      login: () => set({ isLoggedIn: true }),
+      logout: () => set({ isLoggedIn: false }),
+
       // Language
       lang: 'en',
       setLang: (lang) => set({ lang }),
@@ -34,6 +39,7 @@ const useStore = create(
       isConnected: false,
       startMatching: () => set({ isMatching: true, isConnected: false }),
       setConnected: (connected) => set({ isConnected: connected, isMatching: false }),
+      stopCall: () => set({ isConnected: false, isMatching: false }),
 
       // Chat Messages
       messages: [],
@@ -42,7 +48,12 @@ const useStore = create(
     }),
     {
       name: 'mitmit-storage',
-      partialize: (state) => ({ lang: state.lang, userInfo: state.userInfo, callMode: state.callMode }),
+      partialize: (state) => ({ 
+        lang: state.lang, 
+        userInfo: state.userInfo, 
+        callMode: state.callMode,
+        isLoggedIn: state.isLoggedIn 
+      }),
     }
   )
 );

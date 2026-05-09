@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
@@ -10,7 +10,7 @@ const STRANGER_IMAGES = [
 ];
 
 export default function VideoBox() {
-  const { lang, isMatching, startMatching, setConnected, addMessage, clearMessages, callMode } = useStore();
+  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode } = useStore();
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -23,12 +23,12 @@ export default function VideoBox() {
   const [heartCount, setHeartCount] = useState(0);
 
   useEffect(() => {
-    if (isMatching) return;
+    if (!isConnected) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(interval);
-  }, [isMatching]);
+  }, [isConnected]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -36,7 +36,7 @@ export default function VideoBox() {
     return `${m}:${s}`;
   };
 
-  const handleNext = () => {
+  const handleStartNext = () => {
     startMatching();
     clearMessages();
     setIsFriend(false);
@@ -49,12 +49,10 @@ export default function VideoBox() {
     }, 1500);
   };
 
-  useEffect(() => {
-    if (!isMatching) {
-      handleNext();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleStop = () => {
+    stopCall();
+    clearMessages();
+  };
 
   useEffect(() => {
     if (callMode === 'voice') {
@@ -73,11 +71,23 @@ export default function VideoBox() {
     }, 2000);
   };
 
+  const isIdle = !isMatching && !isConnected;
+
   return (
     <section className="flex-1 relative rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-sm flex items-center justify-center h-full">
       
       {/* Main Screen */}
-      {callMode === 'video' ? (
+      {isIdle ? (
+        <div className="absolute inset-0 bg-[#0a0a0a] flex items-center justify-center">
+          <div className="text-center animate-fade-in">
+             <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-neutral-700">
+               {callMode === 'video' ? <VideoIcon className="w-8 h-8 text-gray-500" /> : <Mic className="w-8 h-8 text-gray-500" />}
+             </div>
+             <p className="text-gray-400 font-medium">Ready to connect?</p>
+             <p className="text-neutral-600 text-sm mt-1">Press Start to find a stranger</p>
+          </div>
+        </div>
+      ) : callMode === 'video' ? (
         <>
           <img 
             src={strangerImg} 
@@ -118,7 +128,7 @@ export default function VideoBox() {
       </div>
 
       {/* Your Camera PiP */}
-      {callMode === 'video' && (
+      {callMode === 'video' && !isIdle && (
         <div className="absolute bottom-6 right-6 w-32 h-44 sm:w-40 sm:h-56 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
           <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" alt="You" className="w-full h-full object-cover" />
           <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-white font-medium">{t.YOU}</div>
@@ -126,7 +136,7 @@ export default function VideoBox() {
       )}
 
       {/* Timer Overlay */}
-      {!isMatching && (
+      {isConnected && (
         <div className={`absolute top-6 left-1/2 -translate-x-1/2 glass-panel text-white px-5 py-1.5 rounded-full shadow-lg border ${timeLeft <= 10 ? 'border-red-500/50 text-red-500' : 'border-white/10'} flex items-center gap-2 z-10 transition-colors`}>
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
           <span className="font-mono text-base font-semibold tracking-wider">{formatTime(timeLeft)}</span>
@@ -135,37 +145,59 @@ export default function VideoBox() {
 
       {/* Controls */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass-panel p-2 rounded-full border border-white/10 shadow-2xl flex items-center gap-2 z-10">
-        <button 
-          onClick={() => setIsMicOn(!isMicOn)} 
-          className={`w-12 h-12 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all active:scale-90 ${isMicOn ? 'bg-black/40 hover:bg-black/60' : 'bg-red-500/80'}`}
-        >
-          {isMicOn ? <Mic className="w-5 h-5 fill-current" /> : <MicOff className="w-5 h-5 fill-current" />}
-        </button>
+        
+        {!isIdle && (
+          <>
+            <button 
+              onClick={() => setIsMicOn(!isMicOn)} 
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all active:scale-90 ${isMicOn ? 'bg-black/40 hover:bg-black/60' : 'bg-red-500/80'}`}
+            >
+              {isMicOn ? <Mic className="w-5 h-5 fill-current" /> : <MicOff className="w-5 h-5 fill-current" />}
+            </button>
+
+            <button 
+              onClick={() => setIsCamOn(!isCamOn)}
+              disabled={callMode === 'voice'} 
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed ${isCamOn && callMode === 'video' ? 'bg-black/40 hover:bg-black/60' : 'bg-red-500/80'}`}
+            >
+              {isCamOn && callMode === 'video' ? <VideoIcon className="w-5 h-5 fill-current" /> : <VideoOff className="w-5 h-5 fill-current" />}
+            </button>
+
+            <div className="w-px h-8 bg-white/20 mx-1"></div>
+
+            <button 
+              onClick={handleHeartClick} 
+              className="relative w-12 h-12 rounded-full bg-black/40 hover:bg-pink-500/20 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-75 group"
+            >
+              <Heart className={`w-6 h-6 transition-all ${isFriend ? 'fill-pink-500 text-pink-500 scale-110' : 'group-hover:text-pink-400'}`} />
+            </button>
+
+            <button 
+              onClick={handleStop} 
+              className="h-12 w-12 rounded-full bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center transition-all active:scale-95 shadow-lg mx-1"
+              title="Stop Call"
+            >
+              <Square className="w-4 h-4 fill-current" />
+            </button>
+          </>
+        )}
 
         <button 
-          onClick={() => setIsCamOn(!isCamOn)}
-          disabled={callMode === 'voice'} 
-          className={`w-12 h-12 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed ${isCamOn && callMode === 'video' ? 'bg-black/40 hover:bg-black/60' : 'bg-red-500/80'}`}
-        >
-          {isCamOn && callMode === 'video' ? <VideoIcon className="w-5 h-5 fill-current" /> : <VideoOff className="w-5 h-5 fill-current" />}
-        </button>
-
-        <div className="w-px h-8 bg-white/20 mx-1"></div>
-
-        <button 
-          onClick={handleHeartClick} 
-          className="relative w-12 h-12 rounded-full bg-black/40 hover:bg-pink-500/20 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-75 group"
-        >
-          <Heart className={`w-6 h-6 transition-all ${isFriend ? 'fill-pink-500 text-pink-500 scale-110' : 'group-hover:text-pink-400'}`} />
-        </button>
-
-        <button 
-          onClick={handleNext} 
+          onClick={handleStartNext} 
           disabled={isMatching}
-          className="h-12 px-6 rounded-full bg-white text-black font-semibold hover:bg-gray-200 flex items-center gap-2 transition-all active:scale-95 shadow-lg disabled:opacity-50"
+          className={`h-12 px-6 rounded-full font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg disabled:opacity-50 ${isIdle ? 'bg-white text-neutral-900 hover:bg-gray-200 text-lg px-10' : 'bg-white text-neutral-900 hover:bg-gray-200'}`}
         >
-          <span>{t.NEXT_BUTTON}</span>
-          <ArrowRight className="w-5 h-5 stroke-[3]" />
+          {isIdle ? (
+            <>
+              <Play className="w-5 h-5 fill-current" />
+              <span>START</span>
+            </>
+          ) : (
+            <>
+              <span>{t.NEXT_BUTTON}</span>
+              <ArrowRight className="w-5 h-5 stroke-[3]" />
+            </>
+          )}
         </button>
       </div>
     </section>

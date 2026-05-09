@@ -2,14 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Video, Globe, ChevronDown, 
   Bell, MessageSquare, User, LogOut, Settings,
-  Mic, MessageCircle, X
+  Mic, MessageCircle, X, LogIn
 } from 'lucide-react';
 import useStore from '../store/useStore';
 import { translations } from '../utils/translation';
 import ProfileModal from '../components/profile/ProfileModal';
 
 export default function Header() {
-  const { lang, setLang, onlineCount, callMode, setCallMode, userInfo } = useStore();
+  const { 
+    lang, setLang, onlineCount, callMode, setCallMode, userInfo, 
+    isLoggedIn, login, logout,
+    isMatching, isConnected 
+  } = useStore();
+  
   const t = translations[lang];
   
   const [showLangDropdown, setShowLangDropdown] = useState(false);
@@ -24,32 +29,24 @@ export default function Header() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setShowProfileDropdown(false);
-      }
-      if (notiRef.current && !notiRef.current.contains(event.target)) {
-        setShowNotiDropdown(false);
-      }
-      if (langRef.current && !langRef.current.contains(event.target)) {
-        setShowLangDropdown(false);
-      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) setShowProfileDropdown(false);
+      if (notiRef.current && !notiRef.current.contains(event.target)) setShowNotiDropdown(false);
+      if (langRef.current && !langRef.current.contains(event.target)) setShowLangDropdown(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const mockFriends = [
     { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?' },
-    { id: 2, name: 'David Kim', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80', lastMsg: 'Nice talking to you!' },
-    { id: 3, name: 'Sarah Wu', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80', lastMsg: 'Let\'s video call later.' },
   ];
 
   const handleOpenProfile = () => {
     setShowProfileDropdown(false);
     setIsProfileModalOpen(true);
   };
+
+  const showCallTabs = !isMatching && !isConnected;
 
   return (
     <>
@@ -70,28 +67,30 @@ export default function Header() {
         </div>
 
         {/* Center: Call Mode Tabs */}
-        <div className="flex items-center bg-neutral-900 p-1 rounded-full border border-neutral-800">
-          <button 
-            onClick={() => setCallMode('video')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${callMode === 'video' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
-          >
-            <Video className="w-4 h-4" />
-            <span className="hidden sm:inline">Video</span>
-          </button>
-          <button 
-            onClick={() => setCallMode('voice')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${callMode === 'voice' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
-          >
-            <Mic className="w-4 h-4" />
-            <span className="hidden sm:inline">Voice</span>
-          </button>
-          <button 
-            onClick={() => setCallMode('text')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${callMode === 'text' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Text</span>
-          </button>
+        <div className={`transition-all duration-300 ease-in-out ${showCallTabs ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'}`}>
+          <div className="flex items-center bg-neutral-900 p-1 rounded-full border border-neutral-800">
+            <button 
+              onClick={() => setCallMode('video')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${callMode === 'video' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
+            >
+              <Video className="w-4 h-4" />
+              <span className="hidden sm:inline">Video</span>
+            </button>
+            <button 
+              onClick={() => setCallMode('voice')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${callMode === 'voice' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
+            >
+              <Mic className="w-4 h-4" />
+              <span className="hidden sm:inline">Voice</span>
+            </button>
+            <button 
+              onClick={() => setCallMode('text')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${callMode === 'text' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Text</span>
+            </button>
+          </div>
         </div>
 
         {/* Right: Controls & Profile */}
@@ -108,7 +107,7 @@ export default function Header() {
             </button>
             
             {showLangDropdown && (
-              <div className="absolute right-0 mt-2 py-1 w-24 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50">
+              <div className="absolute right-0 mt-2 py-1 w-24 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50 animate-fade-in">
                 <button onClick={() => { setLang('en'); setShowLangDropdown(false); }} className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-800 transition-colors">EN</button>
                 <button onClick={() => { setLang('vi'); setShowLangDropdown(false); }} className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-800 transition-colors">VI</button>
               </div>
@@ -117,60 +116,73 @@ export default function Header() {
 
           <div className="w-px h-5 bg-neutral-700 hidden sm:block"></div>
 
-          {/* Notification */}
-          <div className="relative" ref={notiRef}>
+          {!isLoggedIn ? (
             <button 
-              onClick={() => setShowNotiDropdown(!showNotiDropdown)}
-              className="p-2 rounded-full hover:bg-neutral-800 transition-colors relative"
+              onClick={login}
+              className="ml-2 flex items-center gap-2 bg-white text-neutral-900 px-5 py-1.5 rounded-full font-bold hover:bg-gray-200 transition-all active:scale-95 shadow-md"
             >
-              <Bell className="w-5 h-5 text-gray-300" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0a0a0a]"></span>
+              <LogIn className="w-4 h-4" />
+              <span>Login</span>
             </button>
+          ) : (
+            <>
+              {/* Notification */}
+              <div className="relative" ref={notiRef}>
+                <button 
+                  onClick={() => setShowNotiDropdown(!showNotiDropdown)}
+                  className="p-2 rounded-full hover:bg-neutral-800 transition-colors relative"
+                >
+                  <Bell className="w-5 h-5 text-gray-300" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0a0a0a]"></span>
+                </button>
 
-            {showNotiDropdown && (
-              <div className="absolute right-0 mt-2 py-2 w-64 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50 text-sm">
-                <div className="px-4 py-2 border-b border-neutral-800 font-semibold text-white">Notifications</div>
-                <div className="p-4 text-gray-400 text-center">No new notifications</div>
+                {showNotiDropdown && (
+                  <div className="absolute right-0 mt-2 py-2 w-64 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50 text-sm animate-fade-in">
+                    <div className="px-4 py-2 border-b border-neutral-800 font-semibold text-white">Notifications</div>
+                    <div className="p-4 text-gray-400 text-center">No new notifications</div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Inbox */}
-          <button 
-            onClick={() => setIsInboxOpen(true)}
-            className="p-2 rounded-full hover:bg-neutral-800 transition-colors"
-          >
-            <MessageSquare className="w-5 h-5 text-gray-300" />
-          </button>
+              {/* Inbox */}
+              <button 
+                onClick={() => setIsInboxOpen(true)}
+                className="p-2 rounded-full hover:bg-neutral-800 transition-colors"
+              >
+                <MessageSquare className="w-5 h-5 text-gray-300" />
+              </button>
 
-          {/* Profile Avatar */}
-          <div className="relative" ref={profileRef}>
-            <button 
-              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              className="w-8 h-8 rounded-full overflow-hidden border border-neutral-700 hover:ring-2 hover:ring-neutral-600 transition-all ml-1"
-            >
-              <img src={userInfo?.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"} alt="Avatar" className="w-full h-full object-cover" />
-            </button>
+              {/* Profile Avatar */}
+              <div className="relative" ref={profileRef}>
+                <button 
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className="w-8 h-8 rounded-full overflow-hidden border border-neutral-700 hover:ring-2 hover:ring-neutral-600 transition-all ml-1"
+                >
+                  <img src={userInfo?.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"} alt="Avatar" className="w-full h-full object-cover" />
+                </button>
 
-            {showProfileDropdown && (
-              <div className="absolute right-0 mt-2 py-1 w-44 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50">
-                <div className="px-4 py-2 border-b border-neutral-800 mb-1">
-                  <p className="font-semibold text-sm truncate">{userInfo?.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{userInfo?.city}</p>
-                </div>
-                <button onClick={handleOpenProfile} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
-                  <User className="w-4 h-4" /> Profile
-                </button>
-                <button onClick={handleOpenProfile} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
-                  <Settings className="w-4 h-4" /> Settings
-                </button>
-                <div className="h-px bg-neutral-800 my-1"></div>
-                <button className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10 transition-colors">
-                  <LogOut className="w-4 h-4" /> Logout
-                </button>
+                {showProfileDropdown && (
+                  <div className="absolute right-0 mt-2 py-1 w-44 bg-neutral-900 rounded-xl shadow-lg border border-neutral-800 z-50 animate-fade-in">
+                    <div className="px-4 py-2 border-b border-neutral-800 mb-1">
+                      <p className="font-semibold text-sm truncate">{userInfo?.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{userInfo?.city}</p>
+                    </div>
+                    <button onClick={handleOpenProfile} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
+                      <User className="w-4 h-4" /> Profile
+                    </button>
+                    <button onClick={handleOpenProfile} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
+                      <Settings className="w-4 h-4" /> Settings
+                    </button>
+                    <div className="h-px bg-neutral-800 my-1"></div>
+                    <button onClick={() => { logout(); setShowProfileDropdown(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10 transition-colors">
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
+
         </div>
       </header>
 
