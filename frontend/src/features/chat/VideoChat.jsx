@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square, MessageCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
@@ -22,12 +22,16 @@ export default function VideoChat() {
   const [hearts, setHearts] = useState([]);
   const [heartCount, setHeartCount] = useState(0);
 
+  const localVideoRef = useRef(null);
+  const localStreamRef = useRef(null);
+
   // Match state
   const [isLikedByMe, setIsLikedByMe] = useState(false);
   const [isLikedByStranger, setIsLikedByStranger] = useState(false);
   const [isMatchToastVisible, setIsMatchToastVisible] = useState(false);
 
   const isMatch = isLikedByMe && isLikedByStranger;
+  const isIdle = !isMatching && !isConnected;
 
   useEffect(() => {
     if (!isConnected || isMatch) return;
@@ -43,8 +47,20 @@ export default function VideoChat() {
     return `${m}:${s}`;
   };
 
-  const handleStartNext = () => {
+  const handleStartNext = async () => {
     try {
+      if (!localStreamRef.current && callMode !== 'text') {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: callMode === 'video', 
+            audio: true 
+          });
+          localStreamRef.current = stream;
+        } catch (err) {
+          console.error("Camera/Mic access denied or error:", err);
+        }
+      }
+
       startMatching();
       clearMessages();
       setIsLikedByMe(false);
@@ -69,6 +85,11 @@ export default function VideoChat() {
       setIsLikedByMe(false);
       setIsLikedByStranger(false);
       setIsMatchToastVisible(false);
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+      }
     } catch (error) {
       console.error('Error stopping call:', error);
     }
@@ -79,6 +100,36 @@ export default function VideoChat() {
       setIsCamOn(false);
     }
   }, [callMode]);
+
+  useEffect(() => {
+    if (localVideoRef.current && localStreamRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+    }
+  }, [isIdle, callMode, isMatching]);
+
+  useEffect(() => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getAudioTracks().forEach(track => {
+        track.enabled = isMicOn;
+      });
+    }
+  }, [isMicOn]);
+
+  useEffect(() => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getVideoTracks().forEach(track => {
+        track.enabled = isCamOn;
+      });
+    }
+  }, [isCamOn]);
+
+  useEffect(() => {
+    return () => {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleHeartClick = () => {
     try {
@@ -111,8 +162,6 @@ export default function VideoChat() {
       console.error('Error processing heart click:', error);
     }
   };
-
-  const isIdle = !isMatching && !isConnected;
 
   const renderModeIcon = () => {
     if (callMode === 'video') return <VideoIcon className="w-8 h-8 text-gray-500" />;
@@ -187,7 +236,13 @@ export default function VideoChat() {
       {/* Your Camera PiP */}
       {callMode === 'video' && !isIdle && (
         <div className="absolute bottom-6 right-6 w-24 h-36 sm:w-32 sm:h-44 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
-          <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" alt="You" className="w-full h-full object-cover" />
+          <video 
+            ref={localVideoRef}
+            autoPlay 
+            playsInline 
+            muted 
+            className="w-full h-full object-cover transform scale-x-[-1]" 
+          />
           <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-white font-medium truncate max-w-[80%]">{t.YOU}</div>
         </div>
       )}

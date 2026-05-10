@@ -25,7 +25,7 @@ export default function MessageList() {
         const isMine = msg.isMine;
         return (
           <div key={msg.id} className={`flex w-full animate-slide-up ${isMine ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-4 py-2.5 text-[15px] leading-relaxed shadow-sm break-words ${
+            <div className={`max-w-full px-4 py-2.5 text-[15px] leading-relaxed shadow-sm break-words whitespace-pre-wrap [overflow-wrap:anywhere] ${
               isMine 
               ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-2xl rounded-br-sm' 
               : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-gray-100 border border-gray-100 dark:border-neutral-700 rounded-2xl rounded-bl-sm'

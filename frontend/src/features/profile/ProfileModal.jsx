@@ -17,17 +17,7 @@ export default function ProfileModal({ isOpen, onClose }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [avatarError, setAvatarError] = useState(false);
 
-  useEffect(() => {
-    setAvatarError(false);
-  }, [userInfo?.avatar, previewUrl]);
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
 
   if (!isOpen) return null;
 
@@ -59,13 +49,12 @@ export default function ProfileModal({ isOpen, onClose }) {
     try {
       const file = e.target.files?.[0];
       if (file) {
-        console.log('Selected file for avatar:', file.name);
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-        }
-        const imageUrl = URL.createObjectURL(file);
-        setPreviewUrl(imageUrl);
-        setUserInfo({ avatar: imageUrl });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result);
+          setUserInfo({ avatar: reader.result });
+        };
+        reader.readAsDataURL(file);
       }
     } catch (error) {
       console.error('Error changing image:', error);

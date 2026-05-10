@@ -13,6 +13,22 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const [showEmoji, setShowEmoji] = useState(false);
   const bottomRef = useRef(null);
   const emojiRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const handleInput = (e) => {
+    setText(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(e);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -39,12 +55,17 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   if (!isOpen || !friend) return null;
 
   const handleSend = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!text.trim()) return;
     
     try {
-      setMessages(prev => [...prev, { id: Date.now().toString(), text, isMine: true }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), text: text.trim(), isMine: true }]);
       setText('');
+      
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.focus();
+      }
       
       setTimeout(() => {
         setMessages(prev => [...prev, { id: Date.now().toString(), text: 'Haha, okay!', isMine: false }]);
@@ -81,7 +102,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scroll-smooth">
         {messages?.map((msg) => (
           <div key={msg.id} className={`flex w-full animate-slide-up ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] px-3.5 py-2 text-sm leading-relaxed shadow-sm break-words ${
+            <div className={`max-w-full px-3.5 py-2 text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap [overflow-wrap:anywhere] ${
               msg.isMine 
               ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm' 
               : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'
@@ -96,18 +117,22 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       {/* Input */}
       <div className="p-3 border-t border-neutral-800 bg-neutral-900/50">
         <form onSubmit={handleSend} className="flex items-end gap-2 relative">
-          <div className="flex-1 relative flex items-center">
-            <input 
+          <div className="flex-1 relative flex items-center bg-neutral-800 border border-transparent focus-within:border-neutral-700 rounded-2xl transition-colors">
+            <textarea 
               value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="w-full bg-neutral-800 border border-transparent focus:border-neutral-700 rounded-full py-2.5 pl-4 pr-10 text-sm outline-none transition-colors text-white placeholder-gray-500" 
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              ref={textareaRef}
+              rows={1}
+              style={{ maxHeight: '80px', scrollbarWidth: 'none' }}
+              className="w-full bg-transparent py-2.5 pl-4 pr-10 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden" 
               placeholder={t.CHAT_PLACEHOLDER}
             />
             <div ref={emojiRef}>
               <button 
                 type="button" 
-                onClick={() => setShowEmoji(!showEmoji)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                onClick={() => setShowEmoji((prev) => !prev)}
+                className="absolute right-3 bottom-2.5 text-gray-400 hover:text-gray-200 transition-colors"
               >
                 <Smile className="w-4 h-4" />
               </button>

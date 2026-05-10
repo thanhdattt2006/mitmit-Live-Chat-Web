@@ -15,7 +15,8 @@ export default function ChatInput() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+      const isToggleBtn = event.target.closest('#chat-emoji-btn');
+      if (pickerRef.current && !pickerRef.current.contains(event.target) && !isToggleBtn) {
         setShowEmojiPicker(false);
       }
     }
@@ -25,8 +26,10 @@ export default function ChatInput() {
 
   const handleInput = (e) => {
     setText(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
   };
 
   const onEmojiClick = (emojiObject) => {
@@ -100,12 +103,14 @@ export default function ChatInput() {
             onKeyDown={handleKeyDown}
             disabled={isMatching}
             rows={1} 
-            className="w-full bg-transparent py-3 pl-4 pr-10 text-sm outline-none resize-none overflow-hidden disabled:opacity-50 text-neutral-900 dark:text-white placeholder:text-gray-400" 
+            style={{ maxHeight: '120px' }}
+            className="w-full bg-transparent py-3 pl-4 pr-10 text-sm outline-none resize-none overflow-y-auto disabled:opacity-50 text-neutral-900 dark:text-white placeholder:text-gray-400 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700" 
             placeholder={t.CHAT_PLACEHOLDER}
           />
           <button 
             type="button" 
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            id="chat-emoji-btn"
+            onClick={() => setShowEmojiPicker((prev) => !prev)}
             className="absolute right-3 bottom-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <Smile className="w-5 h-5" />

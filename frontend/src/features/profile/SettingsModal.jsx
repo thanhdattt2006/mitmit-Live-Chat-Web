@@ -67,6 +67,12 @@ export default function SettingsModal({ isOpen, onClose }) {
           </div>
 
         </div>
+
+        <div className="px-6 pb-6 pt-2">
+          <p className="text-center text-[10px] text-gray-500 font-medium tracking-wide opacity-50 hover:opacity-100 transition-opacity">
+            mitmit v1.0 • Made with ❤️ by Dave
+          </p>
+        </div>
       </div>
     </div>
   );
