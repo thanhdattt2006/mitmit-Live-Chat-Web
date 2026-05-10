@@ -78,21 +78,21 @@ export default function VoicePlayer({ audioUrl, isMine }) {
   };
 
   return (
-    <div className={`flex items-center gap-2 p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 w-64 shadow-inner ${isMine ? 'text-white' : 'text-gray-100'}`}>
+    <div className="flex items-center justify-between gap-3 px-4 py-2 w-full min-w-[220px]">
       <button 
         onClick={togglePlay}
-        className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm ${isMine ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-neutral-800 hover:bg-neutral-700 text-gray-200'} active:scale-95`}
+        className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center transition-all ${isMine ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-gray-200'} active:scale-95`}
       >
-        {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+        {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
       </button>
 
-      <div className="flex-1 relative h-8 flex items-center mx-1">
+      <div className="flex-1 relative h-6 flex items-center">
         {/* Waveform Bars */}
         <div className="absolute inset-0 flex items-center justify-between gap-[2px] pointer-events-none">
           {waveHeights.map((h, i) => (
             <div 
               key={i} 
-              className={`w-1 rounded-full transition-all duration-300 ${
+              className={`flex-1 rounded-full transition-all duration-300 ${
                 isPlaying 
                   ? (isMine ? 'bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]' : 'bg-blue-400 shadow-[0_0_5px_rgba(96,165,250,0.8)]') 
                   : (isMine ? 'bg-white/40' : 'bg-gray-500/60')
@@ -118,7 +118,7 @@ export default function VoicePlayer({ audioUrl, isMine }) {
         />
       </div>
 
-      <div className="text-[10px] font-medium opacity-80 whitespace-nowrap min-w-[48px] text-right tracking-wider">
+      <div className="text-[10px] font-medium opacity-80 whitespace-nowrap text-right tracking-wider shrink-0">
         {formatTime(currentTime)} / {formatTime(duration)}
       </div>
     </div>
