@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Smile } from 'lucide-react';
+import { X, Send, Smile, Mic, Play } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import EmojiPicker from 'emoji-picker-react';
@@ -14,6 +14,50 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const bottomRef = useRef(null);
   const emojiRef = useRef(null);
   const textareaRef = useRef(null);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log('Voice message blob:', audioBlob);
+        
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setMessages(prev => [...prev, { 
+          id: Date.now().toString(), 
+          type: 'voice', 
+          audioUrl: audioUrl,
+          isMine: true 
+        }]);
+
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
 
   const handleInput = (e) => {
     setText(e.target.value);
@@ -102,12 +146,27 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scroll-smooth">
         {messages?.map((msg) => (
           <div key={msg.id} className={`flex w-full animate-slide-up ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-full px-3.5 py-2 text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap [overflow-wrap:anywhere] ${
+            <div className={`max-w-[85%] px-3.5 py-2 text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap [overflow-wrap:anywhere] ${
               msg.isMine 
               ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm' 
               : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'
             }`}>
-              {msg.text}
+              {msg.type === 'voice' ? (
+                <div className="flex items-center gap-2 w-48">
+                  <button onClick={() => {
+                    const audio = new Audio(msg.audioUrl);
+                    audio.play();
+                  }} className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center transition-colors ${msg.isMine ? 'bg-white/20 hover:bg-white/30' : 'bg-neutral-700 hover:bg-neutral-600'}`}>
+                     <Play className="w-4 h-4 fill-current" />
+                  </button>
+                  <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${msg.isMine ? 'bg-white/30' : 'bg-neutral-700'}`}>
+                    <div className={`w-1/3 h-full rounded-full animate-pulse ${msg.isMine ? 'bg-white' : 'bg-blue-500'}`}></div>
+                  </div>
+                  <span className="text-[10px] opacity-70">0:00</span>
+                </div>
+              ) : (
+                msg.text
+              )}
             </div>
           </div>
         ))}
@@ -150,13 +209,26 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               )}
             </div>
           </div>
-          <button 
-            type="submit" 
-            disabled={!text.trim()}
-            className="w-[38px] h-[38px] flex-shrink-0 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all disabled:opacity-50"
-          >
-            <Send className="w-4 h-4 ml-0.5 fill-current" />
-          </button>
+          {text.trim() ? (
+            <button 
+              type="submit" 
+              className="w-[38px] h-[38px] flex-shrink-0 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm"
+            >
+              <Send className="w-4 h-4 ml-0.5 fill-current" />
+            </button>
+          ) : (
+            <button 
+              type="button" 
+              onMouseDown={startRecording}
+              onMouseUp={stopRecording}
+              onMouseLeave={stopRecording}
+              onTouchStart={startRecording}
+              onTouchEnd={stopRecording}
+              className={`w-[38px] h-[38px] flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
+            >
+              <Mic className="w-4 h-4 fill-current" />
+            </button>
+          )}
         </form>
       </div>
     </div>

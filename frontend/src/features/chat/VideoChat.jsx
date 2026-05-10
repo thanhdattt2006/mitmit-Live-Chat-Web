@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square, MessageCircle } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
@@ -33,11 +32,18 @@ export default function VideoChat() {
 
   useEffect(() => {
     if (!isConnected || isMatch) return;
-    const interval = setInterval(() => {
-      setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
+    
+    if (timeLeft <= 0) {
+      handleStartNext();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setTimeLeft(prev => prev - 1);
     }, 1000);
-    return () => clearInterval(interval);
-  }, [isConnected, isMatch]);
+    
+    return () => clearTimeout(timer);
+  }, [isConnected, isMatch, timeLeft]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -139,33 +145,6 @@ export default function VideoChat() {
       setTimeout(() => {
         setIsLikedByStranger(true);
         setShowPremiumMatch(true);
-        
-        const duration = 3000;
-        const end = Date.now() + duration;
-
-        const frame = () => {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#FFDF00', '#FF10F0', '#00FFFF'],
-            zIndex: 1000
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#FFDF00', '#FF10F0', '#00FFFF'],
-            zIndex: 1000
-          });
-
-          if (Date.now() < end) {
-            requestAnimationFrame(frame);
-          }
-        };
-        frame();
 
         addFriend({
           id: Date.now(),
@@ -174,7 +153,7 @@ export default function VideoChat() {
           lastMsg: t.ITS_A_MATCH
         });
         
-        setTimeout(() => setShowPremiumMatch(false), 3000);
+        setTimeout(() => setShowPremiumMatch(false), 1500);
       }, 2000);
     } catch (error) {
       console.error('Error processing heart click:', error);
@@ -230,11 +209,13 @@ export default function VideoChat() {
 
       {/* Premium Match Overlay */}
       {showPremiumMatch && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl animate-fade-in transition-opacity duration-500 pointer-events-none">
-          <div className="text-center animate-scale-up">
-            <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 drop-shadow-[0_0_20px_rgba(255,16,240,0.8)] uppercase tracking-widest">
-              {t.MATCH_SUCCESS}
-            </h1>
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in transition-opacity duration-500 pointer-events-none">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] tracking-widest mb-6 transition-all duration-700 ease-out translate-y-0 opacity-100">
+            MATCHED!
+          </h1>
+          <div className="flex items-center">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl relative z-10 translate-x-3 transition-transform duration-1000" />
+            <img src={strangerImg} alt="Stranger" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl relative z-0 -translate-x-3 transition-transform duration-1000" />
           </div>
         </div>
       )}
