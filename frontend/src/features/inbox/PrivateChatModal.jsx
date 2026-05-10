@@ -95,6 +95,12 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   }, []);
 
   useEffect(() => {
+    setShowMoreMenu(false);
+    setShowUnfriendConfirm(false);
+    setShowReportModal(false);
+  }, [friend]);
+
+  useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
         { id: '1', text: friend?.lastMsg || t.MOCK_REPLIES[0], isMine: false }

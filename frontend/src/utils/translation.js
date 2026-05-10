@@ -131,7 +131,7 @@ export const translations = {
     EMPTY_MESSAGES: 'Chưa có tin nhắn nào',
     SEARCH_PLACEHOLDER: 'Tìm kiếm...',
     MOCK_REPLIES: ["Haha thú vị đấy.", "Thật á? Kể thêm đi.", "Rất vui được gặp bạn! App này vui phết.", "Mình đang nghe đây...", "Haha, được thôi!"],
-    REPORT_USER: 'Báo cáo người dùng',
+    REPORT_USER: 'Báo cáo',
     REPORT_REASON_HARASSMENT: 'Quấy rối',
     REPORT_REASON_NUDITY: 'Nội dung khiêu dâm',
     REPORT_REASON_HATE_SPEECH: 'Ngôn từ thù ghét',

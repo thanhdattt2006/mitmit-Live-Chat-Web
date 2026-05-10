@@ -9,13 +9,29 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const t = translations[lang];
 
-  useEffect(() => {
-    if (userInfo?.role !== 'ADMIN') {
-      navigate('/');
-    }
-  }, [userInfo, navigate]);
-
-  if (userInfo?.role !== 'ADMIN') return null;
+  if (userInfo?.role !== 'ADMIN') {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-[#0a0a0a] w-full h-full p-4">
+        <div className="bg-[#141414] border border-neutral-800 p-8 rounded-3xl w-full max-w-md shadow-2xl animate-slide-up text-center">
+          <Shield className="w-16 h-16 text-rose-500 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-white mb-2">Admin Portal</h2>
+          <p className="text-gray-400 text-sm mb-8">Restricted area. Please login with administrator credentials to access the dashboard.</p>
+          <div className="space-y-3">
+            <input type="password" placeholder="Admin PIN Code" className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white text-center tracking-widest outline-none focus:border-rose-500/50" />
+            <button className="w-full py-3 rounded-xl font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-95">
+              Login as Admin
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className="w-full py-3 rounded-xl font-semibold bg-transparent hover:bg-neutral-800 text-gray-400 hover:text-white transition-all active:scale-95"
+            >
+              Return to App
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleIgnore = (id) => {
     removeReport(id);

@@ -294,7 +294,7 @@ export default function VideoChat() {
         <button 
           onClick={handleStartNext} 
           disabled={isMatching}
-          className={`h-10 sm:h-12 px-4 sm:px-6 rounded-full font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg disabled:opacity-50 shrink-0 whitespace-nowrap min-w-[80px] justify-center ${isIdle ? 'bg-white text-neutral-900 hover:bg-gray-200 text-base sm:text-lg px-8 sm:px-10' : 'bg-white text-neutral-900 hover:bg-gray-200'}`}
+          className={`h-10 sm:h-12 px-4 sm:px-6 rounded-full font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg disabled:opacity-50 shrink-0 whitespace-nowrap min-w-fit justify-center ${isIdle ? 'bg-white text-neutral-900 hover:bg-gray-200 text-base sm:text-lg px-8 sm:px-10' : 'bg-white text-neutral-900 hover:bg-gray-200'}`}
         >
           {isIdle ? (
             <>
