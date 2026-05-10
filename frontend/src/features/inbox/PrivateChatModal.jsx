@@ -24,6 +24,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [activeReactionId, setActiveReactionId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
 
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -123,8 +124,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
     if (!text.trim()) return;
     
     try {
-      setMessages(prev => [...prev, { id: Date.now().toString(), text: text.trim(), isMine: true }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), text: text.trim(), isMine: true, replyTo: replyingTo }]);
       setText('');
+      setReplyingTo(null);
       
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -234,7 +236,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 flex flex-col gap-3 scroll-smooth" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
         {messages?.map((msg) => (
-          <div key={msg.id} className={`flex items-center gap-2 w-full animate-slide-up relative group ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex items-center gap-2 w-full animate-slide-up relative hover:z-50 focus-within:z-50 group ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
             
             {/* Actions for Stranger Message (Left side) */}
             {!msg.isMine && (
@@ -256,7 +258,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                           <Copy className="w-3.5 h-3.5" /> Sao chép
                         </button>
                       )}
-                      <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
+                      <button onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
                         <Reply className="w-3.5 h-3.5" /> Trả lời
                       </button>
                     </div>
@@ -280,6 +282,15 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                   ))}
                 </div>
               )}
+
+              {/* Replied Message Block */}
+              {msg.replyTo && (
+                <div className={`mb-1.5 pl-2 border-l-2 text-xs opacity-80 ${msg.isMine ? 'border-white/50 text-white' : 'border-gray-500 text-gray-300'}`}>
+                  <p className="font-semibold text-[10px] mb-0.5">{msg.replyTo.isMine ? t.YOU || 'Bạn' : friend.name}</p>
+                  <p className="truncate">{msg.replyTo.type === 'voice' ? '🎤 Tin nhắn thoại' : msg.replyTo.text}</p>
+                </div>
+              )}
+
               {msg.type === 'voice' ? (
                 <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
               ) : (
@@ -308,7 +319,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                           <Copy className="w-3.5 h-3.5" /> Sao chép
                         </button>
                       )}
-                      <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
+                      <button onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
                         <Reply className="w-3.5 h-3.5" /> Trả lời
                       </button>
                       <button onClick={() => handleUnsend(msg.id)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-rose-500/10">
@@ -331,7 +342,18 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-neutral-800 bg-neutral-900/50 rounded-b-3xl">
+      <div className="p-3 border-t border-neutral-800 bg-neutral-900/50 rounded-b-3xl flex flex-col">
+        {replyingTo && (
+          <div className="flex items-center justify-between bg-neutral-800/80 backdrop-blur-sm border-l-2 border-blue-500 p-2 mb-2 rounded-r-lg shadow-sm animate-fade-in">
+            <div className="flex-1 min-w-0 pr-2">
+              <p className="text-[10px] font-semibold text-blue-400 mb-0.5">Đang trả lời {replyingTo.isMine ? t.YOU || 'Bạn' : friend.name}</p>
+              <p className="text-xs text-gray-300 truncate">{replyingTo.type === 'voice' ? '🎤 Tin nhắn thoại' : replyingTo.text}</p>
+            </div>
+            <button type="button" onClick={() => setReplyingTo(null)} className="p-1 text-gray-500 hover:text-white rounded-full transition-colors shrink-0">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSend} className="flex items-end gap-2 relative">
           <div className="flex-1 relative flex items-center bg-neutral-800 border border-transparent focus-within:border-neutral-700 rounded-2xl transition-colors">
             <textarea 
