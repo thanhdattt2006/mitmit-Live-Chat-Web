@@ -42,17 +42,17 @@
   }
 
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #4b5563;
+    background: #333333;
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    background: #555555;
   }
 }

@@ -13,7 +13,7 @@ export default function InboxDrawer({ isOpen, onClose, onOpenPrivateChat }) {
       <div className={`absolute top-0 right-0 h-full w-full sm:w-80 bg-[#141414] shadow-2xl border-l border-neutral-800 transform transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="px-5 py-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 backdrop-blur-sm">
           <h2 className="font-bold text-lg truncate pr-4">{t.INBOX}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-neutral-800 transition-colors shrink-0">
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-neutral-800 transition-all active:scale-95 shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>

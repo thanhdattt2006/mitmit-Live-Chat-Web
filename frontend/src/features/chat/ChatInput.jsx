@@ -54,12 +54,7 @@ export default function ChatInput() {
       }
 
       setTimeout(() => {
-        const mockReplies = [
-          "Haha that's funny.",
-          "Wow really? Tell me more.",
-          "Nice to meet you! I'm enjoying this app.",
-          "I'm listening..."
-        ];
+        const mockReplies = t.MOCK_REPLIES || ["Haha!"];
         addMessage({
           id: Date.now().toString(),
           type: 'user',
@@ -103,6 +98,7 @@ export default function ChatInput() {
             onKeyDown={handleKeyDown}
             disabled={isMatching}
             rows={1} 
+            maxLength={500}
             style={{ maxHeight: '120px' }}
             className="w-full bg-transparent py-3 pl-4 pr-10 text-sm outline-none resize-none overflow-y-auto disabled:opacity-50 text-neutral-900 dark:text-white placeholder:text-gray-400 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700" 
             placeholder={t.CHAT_PLACEHOLDER}

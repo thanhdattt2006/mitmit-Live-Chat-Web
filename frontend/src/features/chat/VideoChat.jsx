@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square, MessageCircle } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
@@ -18,9 +19,6 @@ export default function VideoChat() {
   
   const [strangerImg, setStrangerImg] = useState(STRANGER_IMAGES[0]);
   const [timeLeft, setTimeLeft] = useState(180);
-  
-  const [hearts, setHearts] = useState([]);
-  const [heartCount, setHeartCount] = useState(0);
 
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -28,7 +26,7 @@ export default function VideoChat() {
   // Match state
   const [isLikedByMe, setIsLikedByMe] = useState(false);
   const [isLikedByStranger, setIsLikedByStranger] = useState(false);
-  const [isMatchToastVisible, setIsMatchToastVisible] = useState(false);
+  const [showPremiumMatch, setShowPremiumMatch] = useState(false);
 
   const isMatch = isLikedByMe && isLikedByStranger;
   const isIdle = !isMatching && !isConnected;
@@ -65,7 +63,7 @@ export default function VideoChat() {
       clearMessages();
       setIsLikedByMe(false);
       setIsLikedByStranger(false);
-      setIsMatchToastVisible(false);
+      setShowPremiumMatch(false);
       
       setTimeout(() => {
         setStrangerImg(STRANGER_IMAGES[Math.floor(Math.random() * STRANGER_IMAGES.length)]);
@@ -84,7 +82,7 @@ export default function VideoChat() {
       clearMessages();
       setIsLikedByMe(false);
       setIsLikedByStranger(false);
-      setIsMatchToastVisible(false);
+      setShowPremiumMatch(false);
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -137,26 +135,46 @@ export default function VideoChat() {
       
       setIsLikedByMe(true);
       
-      // Float hearts animation
-      const newHeart = { id: heartCount, left: 30 + Math.random() * 40 }; 
-      setHearts(prev => [...prev, newHeart]);
-      setHeartCount(prev => prev + 1);
-
-      setTimeout(() => {
-        setHearts(prev => prev.filter(h => h.id !== newHeart.id));
-      }, 2000);
-
       // Mock stranger like
       setTimeout(() => {
         setIsLikedByStranger(true);
-        setIsMatchToastVisible(true);
+        setShowPremiumMatch(true);
+        
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        const frame = () => {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#FFDF00', '#FF10F0', '#00FFFF'],
+            zIndex: 1000
+          });
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#FFDF00', '#FF10F0', '#00FFFF'],
+            zIndex: 1000
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        };
+        frame();
+
         addFriend({
           id: Date.now(),
           name: `${t.STRANGER} #8429`,
           avatar: strangerImg,
           lastMsg: t.ITS_A_MATCH
         });
-        setTimeout(() => setIsMatchToastVisible(false), 5000);
+        
+        setTimeout(() => setShowPremiumMatch(false), 3000);
       }, 2000);
     } catch (error) {
       console.error('Error processing heart click:', error);
@@ -204,31 +222,19 @@ export default function VideoChat() {
         </div>
       )}
 
-      {/* Floating Hearts Layer */}
-      <div className="absolute bottom-24 left-0 right-0 h-64 pointer-events-none overflow-hidden z-20">
-        {hearts?.map(heart => (
-          <div 
-            key={heart.id} 
-            className="absolute bottom-0 text-pink-500 animate-float-up"
-            style={{ left: `${heart.left}%` }}
-          >
-            <Heart className="w-8 h-8 fill-pink-500 opacity-80" />
-          </div>
-        ))}
-      </div>
-
       {/* Loading Overlay */}
       <div className={`absolute inset-0 bg-neutral-900/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-300 text-white z-20 p-4 ${isMatching ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <Loader2 className="animate-spin w-10 h-10 mb-3 text-white shrink-0" />
         <p className="font-medium tracking-wide animate-pulse text-center">{t.FINDING_SOMEONE}</p>
       </div>
 
-      {/* Match Toast */}
-      {isMatchToastVisible && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-slide-up flex flex-col items-center pointer-events-none w-[90%] max-w-sm">
-          <div className="text-6xl mb-4 animate-bounce">🎉</div>
-          <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-6 py-3 rounded-2xl shadow-2xl font-bold text-center border border-white/20 w-full truncate">
-            {t.ITS_A_MATCH}
+      {/* Premium Match Overlay */}
+      {showPremiumMatch && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl animate-fade-in transition-opacity duration-500 pointer-events-none">
+          <div className="text-center animate-scale-up">
+            <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 drop-shadow-[0_0_20px_rgba(255,16,240,0.8)] uppercase tracking-widest">
+              {t.MATCH_SUCCESS}
+            </h1>
           </div>
         </div>
       )}

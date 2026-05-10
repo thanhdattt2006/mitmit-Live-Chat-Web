@@ -24,7 +24,7 @@ export default function SettingsModal({ isOpen, onClose }) {
             <Settings className="w-5 h-5 text-gray-400" />
             <h2 className="text-lg font-bold">{t.SETTINGS}</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-neutral-800">
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-all active:scale-95 p-1 rounded-full hover:bg-neutral-800">
             <X className="w-5 h-5" />
           </button>
         </div>

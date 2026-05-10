@@ -43,7 +43,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
-        { id: '1', text: friend?.lastMsg || 'Hello!', isMine: false }
+        { id: '1', text: friend?.lastMsg || t.MOCK_REPLIES[0], isMine: false }
       ]);
     }
   }, [isOpen, friend, messages]);
@@ -68,7 +68,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       }
       
       setTimeout(() => {
-        setMessages(prev => [...prev, { id: Date.now().toString(), text: 'Haha, okay!', isMine: false }]);
+        setMessages(prev => [...prev, { id: Date.now().toString(), text: t.MOCK_REPLIES[4] || t.MOCK_REPLIES[0], isMine: false }]);
       }, 1500);
     } catch (error) {
       console.error('Error sending private message:', error);
@@ -124,6 +124,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               onKeyDown={handleKeyDown}
               ref={textareaRef}
               rows={1}
+              maxLength={500}
               style={{ maxHeight: '80px', scrollbarWidth: 'none' }}
               className="w-full bg-transparent py-2.5 pl-4 pr-10 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden" 
               placeholder={t.CHAT_PLACEHOLDER}

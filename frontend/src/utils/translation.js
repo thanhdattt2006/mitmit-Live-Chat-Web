@@ -47,6 +47,12 @@ export const translations = {
     PRIVATE_CHAT: 'Private Chat',
     DEFAULT_CAM: 'Default Camera',
     DEFAULT_MIC: 'Default Microphone',
+    MATCH_SUCCESS: 'Match Success!',
+    WAITING_FOR_STRANGER: 'Waiting for stranger...',
+    CAMERA_PERMISSION_DENIED: 'Camera/Mic access denied',
+    EMPTY_MESSAGES: 'No messages yet',
+    SEARCH_PLACEHOLDER: 'Search...',
+    MOCK_REPLIES: ["Haha that's funny.", "Wow really? Tell me more.", "Nice to meet you! I'm enjoying this app.", "I'm listening...", "Haha, okay!"]
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -96,5 +102,11 @@ export const translations = {
     PRIVATE_CHAT: 'Trò chuyện riêng',
     DEFAULT_CAM: 'Camera mặc định',
     DEFAULT_MIC: 'Micro mặc định',
+    MATCH_SUCCESS: 'Ghép đôi thành công!',
+    WAITING_FOR_STRANGER: 'Đang chờ người lạ...',
+    CAMERA_PERMISSION_DENIED: 'Bị từ chối quyền Camera/Mic',
+    EMPTY_MESSAGES: 'Chưa có tin nhắn nào',
+    SEARCH_PLACEHOLDER: 'Tìm kiếm...',
+    MOCK_REPLIES: ["Haha thú vị đấy.", "Thật á? Kể thêm đi.", "Rất vui được gặp bạn! App này vui phết.", "Mình đang nghe đây...", "Haha, được thôi!"]
   }
 };
