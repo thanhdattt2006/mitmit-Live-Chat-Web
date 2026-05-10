@@ -68,6 +68,14 @@ export default function ReportModal({ isOpen, onClose, onReportSuccess }) {
                 key={reason.id} 
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${selectedReason === reason.id ? 'border-rose-500 bg-rose-500/10' : 'border-neutral-800 bg-neutral-900/50 hover:bg-neutral-800'}`}
               >
+                <input
+                  type="radio"
+                  name="reportReason"
+                  value={reason.id}
+                  checked={selectedReason === reason.id}
+                  onChange={(e) => setSelectedReason(e.target.value)}
+                  className="hidden"
+                />
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedReason === reason.id ? 'border-rose-500' : 'border-gray-500'}`}>
                   {selectedReason === reason.id && <div className="w-2.5 h-2.5 bg-rose-500 rounded-full" />}
                 </div>

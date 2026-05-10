@@ -166,9 +166,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                     </button>
                     <button 
                       onClick={() => setShowUnfriendConfirm(true)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors"
                     >
-                      <UserMinus className="w-4 h-4 text-gray-400" />
+                      <UserMinus className="w-4 h-4" />
                       {t.UNFRIEND}
                     </button>
                   </div>
