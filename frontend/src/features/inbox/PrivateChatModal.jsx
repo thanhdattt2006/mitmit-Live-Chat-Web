@@ -161,9 +161,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 sm:w-[350px] h-[450px] bg-[#141414] rounded-3xl shadow-2xl border border-neutral-800 flex flex-col overflow-hidden z-[100] animate-slide-up">
+    <div className="fixed bottom-6 right-6 w-80 sm:w-[350px] h-[450px] bg-[#141414] rounded-3xl shadow-2xl border border-neutral-800 flex flex-col z-[100] animate-slide-up">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md">
+      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md rounded-t-3xl">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img src={friend.avatar} alt={friend.name} className="w-9 h-9 rounded-full object-cover border border-neutral-700" />
@@ -181,7 +181,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
             </button>
             
             {showMoreMenu && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-slide-up origin-top-right">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-[999] animate-slide-up origin-top-right">
                 {!showUnfriendConfirm ? (
                   <div className="p-1">
                     <button 
@@ -232,24 +232,17 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scroll-smooth" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 flex flex-col gap-3 scroll-smooth" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
         {messages?.map((msg) => (
-          <div key={msg.id} className={`flex w-full animate-slide-up relative group ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex items-center gap-2 w-full animate-slide-up relative group ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
             
             {/* Actions for Stranger Message (Left side) */}
             {!msg.isMine && (
-              <div className="flex items-center gap-1 mr-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 order-last">
+              <div className="hidden group-hover:flex items-center gap-1 shrink-0 z-10 order-last">
                 <div className="relative">
                   <button onClick={(e) => { e.stopPropagation(); setActiveReactionId(activeReactionId === msg.id ? null : msg.id); setActiveMenuId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
                     <Smile className="w-4 h-4" />
                   </button>
-                  {activeReactionId === msg.id && (
-                    <div className="absolute top-full right-0 sm:left-0 mt-1 flex items-center gap-1 bg-neutral-800 p-1.5 rounded-full shadow-xl border border-neutral-700 z-50 animate-slide-up">
-                      {['👍', '❤️', '😂', '😮', '😢'].map(e => (
-                        <button key={e} onClick={() => handleReact(msg.id, e)} className="w-8 h-8 flex items-center justify-center hover:scale-125 transition-transform text-lg">{e}</button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 <div className="relative">
@@ -257,7 +250,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                     <MoreVertical className="w-4 h-4" />
                   </button>
                   {activeMenuId === msg.id && (
-                    <div className="absolute top-full right-0 sm:left-0 mt-1 w-36 bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-50 animate-slide-up">
+                    <div className="absolute top-full right-0 origin-top-right mt-1 w-36 bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-50 animate-slide-up">
                       {msg.type !== 'voice' && (
                         <button onClick={() => handleCopy(msg.text)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
                           <Copy className="w-3.5 h-3.5" /> Sao chép
@@ -273,11 +266,20 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
             )}
 
             {/* Bubble */}
-            <div className={`relative max-w-[75%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap [overflow-wrap:anywhere] ${
+            <div className={`relative max-w-[70%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap overflow-wrap-anywhere ${
               msg.isMine 
               ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm' 
               : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'
             } ${msg.type === 'voice' ? 'p-0 overflow-hidden' : 'px-3.5 py-2'}`}>
+              
+              {/* Premium Reaction Picker */}
+              {activeReactionId === msg.id && (
+                <div className={`absolute top-full mt-1 flex gap-2 bg-[#2d2d30]/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/10 z-[999] ${msg.isMine ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} animate-slide-up`}>
+                  {['👍', '❤️', '😂', '😮', '😢'].map(e => (
+                    <button key={e} onClick={(ev) => { ev.stopPropagation(); handleReact(msg.id, e); }} className="hover:scale-125 transition-transform origin-bottom text-lg">{e}</button>
+                  ))}
+                </div>
+              )}
               {msg.type === 'voice' ? (
                 <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
               ) : (
@@ -294,13 +296,13 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
             {/* Actions for My Message (Right side) */}
             {msg.isMine && (
-              <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 order-first">
+              <div className="hidden group-hover:flex items-center gap-1 shrink-0 z-10 order-first">
                 <div className="relative">
                   <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === msg.id ? null : msg.id); setActiveReactionId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
                     <MoreVertical className="w-4 h-4" />
                   </button>
                   {activeMenuId === msg.id && (
-                    <div className="absolute top-full left-0 sm:right-0 mt-1 w-36 bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-50 animate-slide-up">
+                    <div className="absolute top-full right-0 origin-top-right mt-1 w-36 bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-50 animate-slide-up">
                       {msg.type !== 'voice' && (
                         <button onClick={() => handleCopy(msg.text)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
                           <Copy className="w-3.5 h-3.5" /> Sao chép
@@ -320,13 +322,6 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                   <button onClick={(e) => { e.stopPropagation(); setActiveReactionId(activeReactionId === msg.id ? null : msg.id); setActiveMenuId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
                     <Smile className="w-4 h-4" />
                   </button>
-                  {activeReactionId === msg.id && (
-                    <div className="absolute top-full left-0 sm:right-0 mt-1 flex items-center gap-1 bg-neutral-800 p-1.5 rounded-full shadow-xl border border-neutral-700 z-50 animate-slide-up">
-                      {['👍', '❤️', '😂', '😮', '😢'].map(e => (
-                        <button key={e} onClick={() => handleReact(msg.id, e)} className="w-8 h-8 flex items-center justify-center hover:scale-125 transition-transform text-lg">{e}</button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -336,7 +331,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-neutral-800 bg-neutral-900/50">
+      <div className="p-3 border-t border-neutral-800 bg-neutral-900/50 rounded-b-3xl">
         <form onSubmit={handleSend} className="flex items-end gap-2 relative">
           <div className="flex-1 relative flex items-center bg-neutral-800 border border-transparent focus-within:border-neutral-700 rounded-2xl transition-colors">
             <textarea 
