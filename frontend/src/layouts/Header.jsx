@@ -16,7 +16,8 @@ export default function Header() {
   const { 
     lang, setLang, onlineCount, callMode, setCallMode, userInfo, 
     isLoggedIn, login, logout,
-    isMatching, isConnected, friends
+    isMatching, isConnected, friends,
+    isInboxOpen, setInboxOpen
   } = useStore();
   
   const t = translations[lang];
@@ -24,7 +25,6 @@ export default function Header() {
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotiDropdown, setShowNotiDropdown] = useState(false);
-  const [isInboxOpen, setIsInboxOpen] = useState(false);
   
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -69,7 +69,7 @@ export default function Header() {
   };
   
   const handleOpenPrivateChat = (friend) => {
-    setIsInboxOpen(false);
+    setInboxOpen(false);
     setActivePrivateChat(friend);
   };
 
@@ -174,7 +174,7 @@ export default function Header() {
 
               {/* Inbox */}
               <button 
-                onClick={() => setIsInboxOpen(true)}
+                onClick={() => setInboxOpen(true)}
                 className="p-2 rounded-full hover:bg-neutral-800 transition-colors shrink-0"
               >
                 <MessageSquare className="w-5 h-5 text-gray-300 shrink-0" />
@@ -225,7 +225,7 @@ export default function Header() {
         </div>
       </header>
 
-      <InboxDrawer isOpen={isInboxOpen} onClose={() => setIsInboxOpen(false)} onOpenPrivateChat={handleOpenPrivateChat} />
+      <InboxDrawer isOpen={isInboxOpen} onClose={() => setInboxOpen(false)} onOpenPrivateChat={handleOpenPrivateChat} />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />

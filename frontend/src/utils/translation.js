@@ -63,7 +63,19 @@ export const translations = {
     REPORT_SUBMIT: 'Submit Report',
     REPORT_SUCCESS: 'Thanks for reporting, we will process this shortly.',
     UNFRIEND: 'Unfriend',
-    UNFRIEND_CONFIRM: 'Are you sure you want to unfriend this user?'
+    UNFRIEND_CONFIRM: 'Are you sure you want to unfriend this user?',
+    ADMIN_DASHBOARD: 'Admin Dashboard',
+    TOTAL_USERS: 'Total Users',
+    ONLINE_USERS: 'Online Users',
+    PENDING_REPORTS: 'Pending Reports',
+    REPORT_LIST: 'Report List',
+    REPORTER: 'Reporter',
+    REPORTED_USER: 'Reported User',
+    REASON: 'Reason',
+    ACTION: 'Action',
+    IGNORE: 'Ignore',
+    BAN_USER: 'Ban',
+    BAN_SUCCESS: 'User has been permanently banned.'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -129,6 +141,18 @@ export const translations = {
     REPORT_SUBMIT: 'Gửi báo cáo',
     REPORT_SUCCESS: 'Cảm ơn bạn đã báo cáo, chúng tôi sẽ xử lý sớm.',
     UNFRIEND: 'Hủy kết bạn',
-    UNFRIEND_CONFIRM: 'Bạn có chắc chắn muốn hủy kết bạn với người này?'
+    UNFRIEND_CONFIRM: 'Bạn có chắc chắn muốn hủy kết bạn với người này?',
+    ADMIN_DASHBOARD: 'Trang Quản Trị',
+    TOTAL_USERS: 'Tổng Người Dùng',
+    ONLINE_USERS: 'Đang Online',
+    PENDING_REPORTS: 'Báo Cáo Chờ Xử Lý',
+    REPORT_LIST: 'Danh Sách Báo Cáo',
+    REPORTER: 'Người báo cáo',
+    REPORTED_USER: 'Người bị báo cáo',
+    REASON: 'Lý do',
+    ACTION: 'Hành động',
+    IGNORE: 'Bỏ qua',
+    BAN_USER: 'Cấm',
+    BAN_SUCCESS: 'Đã cấm người dùng vĩnh viễn.'
   }
 };

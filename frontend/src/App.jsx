@@ -4,6 +4,7 @@ import useStore from './store/useStore';
 import Header from './layouts/Header';
 import OnboardingPage from './pages/OnboardingPage';
 import RoomPage from './pages/RoomPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 export default function App() {
   const { updateOnlineCount } = useStore();
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/onboarding" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/room" element={<RoomPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </main>
       </div>

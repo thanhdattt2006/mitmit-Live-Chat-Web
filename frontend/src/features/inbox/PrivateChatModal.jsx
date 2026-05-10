@@ -6,7 +6,7 @@ import EmojiPicker from 'emoji-picker-react';
 import ReportModal from '../../components/common/ReportModal';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
-  const { lang, removeFriend } = useStore();
+  const { lang, removeFriend, setInboxOpen } = useStore();
   const t = translations[lang];
   
   const [messages, setMessages] = useState([]);
@@ -183,7 +183,11 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                         {t.CANCEL}
                       </button>
                       <button 
-                        onClick={() => { removeFriend(friend.id); onClose(); }}
+                        onClick={() => { 
+                          removeFriend(friend.id); 
+                          onClose(); 
+                          setInboxOpen(false);
+                        }}
                         className="flex-1 py-1.5 text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors"
                       >
                         OK
@@ -290,7 +294,15 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         </form>
       </div>
 
-      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
+      <ReportModal 
+        isOpen={showReportModal} 
+        onClose={() => setShowReportModal(false)} 
+        onReportSuccess={() => {
+          removeFriend(friend.id);
+          onClose();
+          setInboxOpen(false);
+        }}
+      />
     </div>
   );
 }

@@ -5,7 +5,8 @@ import VideoChat from '../features/chat/VideoChat';
 import MessageList from '../features/chat/MessageList';
 import ChatInput from '../features/chat/ChatInput';
 import { translations } from '../utils/translation';
-import { MoreHorizontal, MessageCircle, Play, ArrowRight, Square, Loader2 } from 'lucide-react';
+import { MoreHorizontal, MessageCircle, Play, ArrowRight, Square, Loader2, AlertTriangle } from 'lucide-react';
+import ReportModal from '../components/common/ReportModal';
 
 const STRANGER_IMAGES = [
   "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
@@ -20,6 +21,20 @@ export default function RoomPage() {
     isConnected, isMatching, startMatching, setConnected, stopCall, clearMessages, addMessage 
   } = useStore();
   const t = translations[lang];
+
+  const [showMoreMenu, setShowMoreMenu] = React.useState(false);
+  const [showReportModal, setShowReportModal] = React.useState(false);
+  const menuRef = React.useRef(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMoreMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!userInfo) {
@@ -94,11 +109,27 @@ export default function RoomPage() {
                     </button>
                   </>
                 )}
-                {callMode !== 'text' && (
-                  <button className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-full hover:bg-neutral-800 shrink-0 ml-1">
+                
+                <div className="relative" ref={menuRef}>
+                  <button 
+                    onClick={() => setShowMoreMenu(!showMoreMenu)} 
+                    className="text-gray-400 hover:text-white transition-all active:scale-95 p-1.5 rounded-full hover:bg-neutral-800 shrink-0 ml-1"
+                  >
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
-                )}
+                  
+                  {showMoreMenu && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-slide-up origin-top-right p-1">
+                      <button 
+                        onClick={() => { setShowReportModal(true); setShowMoreMenu(false); }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
+                      >
+                        <AlertTriangle className="w-4 h-4 text-rose-500" />
+                        {t.REPORT_USER}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <MessageList />
@@ -133,6 +164,12 @@ export default function RoomPage() {
           </div>
         )}
       </section>
+
+      <ReportModal 
+        isOpen={showReportModal} 
+        onClose={() => setShowReportModal(false)} 
+        onReportSuccess={callMode === 'text' ? handleStartNextText : undefined} 
+      />
     </div>
   );
 }
