@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Camera } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
+import ConfirmModal from '../../components/common/ConfirmModal';
 
 export default function ProfileModal({ isOpen, onClose }) {
   const { userInfo, setUserInfo, lang } = useStore();
@@ -16,8 +17,31 @@ export default function ProfileModal({ isOpen, onClose }) {
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [avatarError, setAvatarError] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
+  const hasChanges = () => {
+    return (
+      formData.name !== (userInfo?.name || '') ||
+      formData.age !== (userInfo?.age || '') ||
+      formData.city !== (userInfo?.city || '') ||
+      formData.gender !== (userInfo?.gender || 'male') ||
+      previewUrl !== null
+    );
+  };
 
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: userInfo?.name || '',
+        age: userInfo?.age || '',
+        city: userInfo?.city || '',
+        gender: userInfo?.gender || 'male',
+      });
+      setPreviewUrl(null);
+      setAvatarError(false);
+    }
+  }, [isOpen, userInfo]);
 
   if (!isOpen) return null;
 
@@ -36,10 +60,35 @@ export default function ProfileModal({ isOpen, onClose }) {
     }
   };
 
-  const handleSave = () => {
+  const handleClose = () => {
+    if (hasChanges()) {
+      setShowCloseConfirm(true);
+    } else {
+      executeClose();
+    }
+  };
+
+  const executeClose = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    onClose();
+  };
+
+  const handleSaveClick = () => {
+    if (!hasChanges()) return;
+    setShowSaveConfirm(true);
+  };
+
+  const executeSave = () => {
     try {
-      setUserInfo(formData);
-      onClose();
+      setUserInfo({
+        ...formData,
+        ...(previewUrl && { avatar: previewUrl }) // Update avatar only if a new one is selected
+      });
+      setPreviewUrl(null);
+      onClose(); // Intentionally not revoking URL here so it stays valid in the app session
     } catch (error) {
       console.error('Error saving profile:', error);
     }
@@ -49,12 +98,11 @@ export default function ProfileModal({ isOpen, onClose }) {
     try {
       const file = e.target.files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewUrl(reader.result);
-          setUserInfo({ avatar: reader.result });
-        };
-        reader.readAsDataURL(file);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl); // Cleanup old preview if choosing another
+        }
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
       }
     } catch (error) {
       console.error('Error changing image:', error);
@@ -65,13 +113,13 @@ export default function ProfileModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
         className="absolute inset-0 bg-black/70 backdrop-blur-md"
-        onClick={onClose}
+        onClick={handleClose}
       />
       
       <div className="relative w-full max-w-md bg-[#141414] rounded-3xl shadow-2xl border border-neutral-800 flex flex-col overflow-hidden animate-slide-up text-white">
         <div className="px-6 py-5 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 backdrop-blur-sm">
           <h2 className="text-lg font-bold truncate pr-4">{t.EDIT_PROFILE}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-neutral-800 shrink-0">
+          <button onClick={handleClose} className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-neutral-800 shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -85,7 +133,7 @@ export default function ProfileModal({ isOpen, onClose }) {
                 </div>
               ) : (
                 <img 
-                  src={userInfo?.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
+                  src={previewUrl || userInfo?.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
                   alt="Avatar" 
                   className="w-24 h-24 rounded-full object-cover border-4 border-neutral-800 bg-neutral-800"
                   onError={() => setAvatarError(true)} 
@@ -154,20 +202,44 @@ export default function ProfileModal({ isOpen, onClose }) {
 
           <div className="flex items-center gap-3 mt-8">
             <button 
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 py-3 rounded-xl font-bold bg-neutral-800 text-white hover:bg-neutral-700 transition-colors whitespace-nowrap truncate px-2"
             >
               {t.CANCEL}
             </button>
             <button 
-              onClick={handleSave}
-              className="flex-1 py-3 rounded-xl font-bold bg-gradient-to-r from-rose-500 to-orange-500 text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-rose-500/30 whitespace-nowrap truncate px-2"
+              onClick={handleSaveClick}
+              disabled={!hasChanges()}
+              className={`flex-1 py-3 rounded-xl font-bold transition-all whitespace-nowrap truncate px-2 ${!hasChanges() ? 'bg-neutral-800 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-rose-500 to-orange-500 text-white hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/30'}`}
             >
               {t.SAVE_CHANGES}
             </button>
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showCloseConfirm}
+        onClose={() => setShowCloseConfirm(false)}
+        onConfirm={() => {
+          setShowCloseConfirm(false);
+          executeClose();
+        }}
+        title={t.EDIT_PROFILE}
+        message={t.UNSAVED_CHANGES}
+        isDanger={true}
+      />
+
+      <ConfirmModal
+        isOpen={showSaveConfirm}
+        onClose={() => setShowSaveConfirm(false)}
+        onConfirm={() => {
+          setShowSaveConfirm(false);
+          executeSave();
+        }}
+        title={t.EDIT_PROFILE}
+        message={t.SAVE_CONFIRM}
+      />
     </div>
   );
 }

@@ -11,7 +11,7 @@ const STRANGER_IMAGES = [
 ];
 
 export default function VideoChat() {
-  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend } = useStore();
+  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream } = useStore();
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -21,7 +21,6 @@ export default function VideoChat() {
   const [timeLeft, setTimeLeft] = useState(180);
 
   const localVideoRef = useRef(null);
-  const localStreamRef = useRef(null);
 
   // Match state
   const [isLikedByMe, setIsLikedByMe] = useState(false);
@@ -55,13 +54,13 @@ export default function VideoChat() {
 
   const handleStartNext = async () => {
     try {
-      if (!localStreamRef.current && callMode !== 'text') {
+      if (!localStream && callMode !== 'text') {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: callMode === 'video', 
             audio: true 
           });
-          localStreamRef.current = stream;
+          setLocalStream(stream);
         } catch (err) {
           console.error("Camera/Mic access denied or error:", err);
         }
@@ -92,9 +91,9 @@ export default function VideoChat() {
       setIsLikedByStranger(false);
       setShowPremiumMatch(false);
 
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
-        localStreamRef.current = null;
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
       }
     } catch (error) {
       console.error('Error stopping call:', error);
@@ -108,34 +107,34 @@ export default function VideoChat() {
   }, [callMode]);
 
   useEffect(() => {
-    if (localVideoRef.current && localStreamRef.current) {
-      localVideoRef.current.srcObject = localStreamRef.current;
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
     }
-  }, [isIdle, callMode, isMatching]);
+  }, [isIdle, callMode, isMatching, localStream]);
 
   useEffect(() => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getAudioTracks().forEach(track => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach(track => {
         track.enabled = isMicOn;
       });
     }
-  }, [isMicOn]);
+  }, [isMicOn, localStream]);
 
   useEffect(() => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getVideoTracks().forEach(track => {
+    if (localStream) {
+      localStream.getVideoTracks().forEach(track => {
         track.enabled = isCamOn;
       });
     }
-  }, [isCamOn]);
+  }, [isCamOn, localStream]);
 
   useEffect(() => {
     return () => {
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [localStream]);
 
   const handleHeartClick = () => {
     try {

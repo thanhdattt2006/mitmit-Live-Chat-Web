@@ -75,7 +75,11 @@ export const translations = {
     ACTION: 'Action',
     IGNORE: 'Ignore',
     BAN_USER: 'Ban',
-    BAN_SUCCESS: 'User has been permanently banned.'
+    BAN_SUCCESS: 'User has been permanently banned.',
+    LOGOUT_CONFIRM_MSG: 'Are you sure you want to log out? Your current chat will be disconnected.',
+    CONFIRM: 'Confirm',
+    UNSAVED_CHANGES: 'You have unsaved changes. Are you sure you want to close?',
+    SAVE_CONFIRM: 'Are you sure you want to save these changes?'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -153,6 +157,10 @@ export const translations = {
     ACTION: 'Hành động',
     IGNORE: 'Bỏ qua',
     BAN_USER: 'Cấm',
-    BAN_SUCCESS: 'Đã cấm người dùng vĩnh viễn.'
+    BAN_SUCCESS: 'Đã cấm người dùng vĩnh viễn.',
+    LOGOUT_CONFIRM_MSG: 'Bạn có chắc chắn muốn đăng xuất? Mọi kết nối sẽ bị ngắt.',
+    CONFIRM: 'Xác nhận',
+    UNSAVED_CHANGES: 'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn đóng không?',
+    SAVE_CONFIRM: 'Bạn có chắc chắn muốn lưu các thay đổi này không?'
   }
 };

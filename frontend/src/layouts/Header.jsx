@@ -11,6 +11,8 @@ import SettingsModal from '../features/profile/SettingsModal';
 import LoginModal from '../features/auth/LoginModal';
 import PrivateChatModal from '../features/inbox/PrivateChatModal';
 import InboxDrawer from '../features/inbox/InboxDrawer';
+import ConfirmModal from '../components/common/ConfirmModal';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
   const { 
@@ -21,6 +23,7 @@ export default function Header() {
   } = useStore();
   
   const t = translations[lang];
+  const navigate = useNavigate();
   
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -29,6 +32,7 @@ export default function Header() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   
   const [activePrivateChat, setActivePrivateChat] = useState(null);
   const [avatarError, setAvatarError] = useState(false);
@@ -73,6 +77,13 @@ export default function Header() {
     setActivePrivateChat(friend);
   };
 
+  const handleLogoutConfirm = () => {
+    logout();
+    setShowProfileDropdown(false);
+    setIsLogoutConfirmOpen(false);
+    navigate('/onboarding');
+  };
+
   const showCallTabs = !isMatching && !isConnected;
 
   return (
@@ -99,21 +110,24 @@ export default function Header() {
           <div className="flex items-center bg-neutral-900 p-1 rounded-full border border-neutral-800">
             <button 
               onClick={() => setCallMode('video')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all shrink-0 ${callMode === 'video' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
+              disabled={isMatching || isConnected}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${callMode === 'video' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
             >
               <Video className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline whitespace-nowrap">Video</span>
             </button>
             <button 
               onClick={() => setCallMode('voice')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all shrink-0 ${callMode === 'voice' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
+              disabled={isMatching || isConnected}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${callMode === 'voice' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
             >
               <Mic className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline whitespace-nowrap">Voice</span>
             </button>
             <button 
               onClick={() => setCallMode('text')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all shrink-0 ${callMode === 'text' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
+              disabled={isMatching || isConnected}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${callMode === 'text' ? 'bg-[#1a1a1a] shadow-sm text-white' : 'text-gray-500 hover:text-white'}`}
             >
               <MessageCircle className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline whitespace-nowrap">Text</span>
@@ -213,7 +227,7 @@ export default function Header() {
                       <Settings className="w-4 h-4 shrink-0" /> <span className="truncate">{t.SETTINGS}</span>
                     </button>
                     <div className="h-px bg-neutral-800 my-1"></div>
-                    <button onClick={() => { logout(); setShowProfileDropdown(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10 transition-colors">
+                    <button onClick={() => { setIsLogoutConfirmOpen(true); setShowProfileDropdown(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10 transition-colors">
                       <LogOut className="w-4 h-4 shrink-0" /> <span className="truncate">{t.LOGOUT}</span>
                     </button>
                   </div>
@@ -230,6 +244,16 @@ export default function Header() {
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
       <PrivateChatModal isOpen={!!activePrivateChat} onClose={() => setActivePrivateChat(null)} friend={activePrivateChat} />
+      
+      <ConfirmModal 
+        isOpen={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        onConfirm={handleLogoutConfirm}
+        title={t.LOGOUT}
+        message={t.LOGOUT_CONFIRM_MSG}
+        confirmText={t.LOGOUT}
+        isDanger={true}
+      />
     </>
   );
 }

@@ -7,7 +7,20 @@ const useStore = create(
       // Auth
       isLoggedIn: false,
       login: () => set({ isLoggedIn: true }),
-      logout: () => set({ isLoggedIn: false }),
+      logout: () => set((state) => {
+        if (state.localStream) {
+          state.localStream.getTracks().forEach(track => track.stop());
+        }
+        return { 
+          isLoggedIn: false, 
+          isMatching: false, 
+          isConnected: false, 
+          localStream: null 
+        };
+      }),
+
+      localStream: null,
+      setLocalStream: (stream) => set({ localStream: stream }),
 
       // Language
       lang: 'en',
