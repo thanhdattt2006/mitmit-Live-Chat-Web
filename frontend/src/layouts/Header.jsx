@@ -91,7 +91,7 @@ export default function Header() {
       <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-neutral-800 glass-panel z-30 shrink-0">
         
         {/* Left: Logo */}
-        <div className="flex items-center gap-2 cursor-pointer w-auto lg:w-[250px] shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 cursor-pointer w-auto min-w-fit shrink-0">
           <div className="w-8 h-8 bg-white text-neutral-900 rounded-lg flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
             <Video className="w-5 h-5" />
           </div>
@@ -136,7 +136,7 @@ export default function Header() {
         </div>
 
         {/* Right: Controls & Profile */}
-        <div className="flex items-center gap-1 sm:gap-3 w-auto lg:w-[250px] justify-end shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 w-auto min-w-fit justify-end shrink-0">
           
           <div className="relative shrink-0" ref={langRef}>
             <button 

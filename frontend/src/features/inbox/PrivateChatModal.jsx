@@ -4,6 +4,7 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import EmojiPicker from 'emoji-picker-react';
 import ReportModal from '../../components/common/ReportModal';
+import VoicePlayer from '../../components/common/VoicePlayer';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const { lang, removeFriend, setInboxOpen } = useStore();
@@ -220,18 +221,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'
             }`}>
               {msg.type === 'voice' ? (
-                <div className="flex items-center gap-2 w-48">
-                  <button onClick={() => {
-                    const audio = new Audio(msg.audioUrl);
-                    audio.play();
-                  }} className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center transition-colors ${msg.isMine ? 'bg-white/20 hover:bg-white/30' : 'bg-neutral-700 hover:bg-neutral-600'}`}>
-                     <Play className="w-4 h-4 fill-current" />
-                  </button>
-                  <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${msg.isMine ? 'bg-white/30' : 'bg-neutral-700'}`}>
-                    <div className={`w-1/3 h-full rounded-full animate-pulse ${msg.isMine ? 'bg-white' : 'bg-blue-500'}`}></div>
-                  </div>
-                  <span className="text-[10px] opacity-70">0:00</span>
-                </div>
+                <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
               ) : (
                 msg.text
               )}

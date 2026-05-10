@@ -186,7 +186,7 @@ function Header({ isDark, onToggleDark }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-2.5 select-none">
+          <div className="flex items-center gap-2.5 select-none w-auto min-w-fit shrink-0">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 blur-lg opacity-50 rounded-full" />
               <div className="relative w-9 h-9 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -199,11 +199,11 @@ function Header({ isDark, onToggleDark }) {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-4 w-auto min-w-fit shrink-0">
             {/* Online badge */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/40 text-emerald-700 dark:text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.9)] animate-pulse" />
-              <span className="text-xs font-semibold">1,204 Online</span>
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/40 text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.9)] animate-pulse shrink-0" />
+              <span className="text-xs font-semibold shrink-0">1,204 Online</span>
             </div>
 
             {/* Dark Mode Toggle */}

@@ -86,7 +86,7 @@ export default function RoomPage() {
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-sm truncate">{t.STRANGER} <span className="text-xs text-gray-500 font-normal">#8429</span></h3>
-                  <p className="text-xs text-green-400 font-medium truncate">Online</p>
+                  <p className="text-xs text-green-400 font-medium truncate">{t.ONLINE_COUNT}</p>
                 </div>
               </div>
               

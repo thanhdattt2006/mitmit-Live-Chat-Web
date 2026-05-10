@@ -26,6 +26,11 @@
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
+    user-select: none;
+  }
+  
+  input, textarea, [contenteditable] {
+    user-select: auto;
   }
 
   html {
