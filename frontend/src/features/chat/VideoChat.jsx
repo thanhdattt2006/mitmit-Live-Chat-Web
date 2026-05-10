@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square, MessageCircle } from 'lucide-react';
+import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square, MessageCircle, AlertTriangle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
+import ReportModal from '../../components/common/ReportModal';
 
 const STRANGER_IMAGES = [
   "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
@@ -26,6 +27,7 @@ export default function VideoChat() {
   const [isLikedByMe, setIsLikedByMe] = useState(false);
   const [isLikedByStranger, setIsLikedByStranger] = useState(false);
   const [showPremiumMatch, setShowPremiumMatch] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const isMatch = isLikedByMe && isLikedByStranger;
   const isIdle = !isMatching && !isConnected;
@@ -265,6 +267,14 @@ export default function VideoChat() {
             <div className="w-px h-8 bg-white/20 mx-1 shrink-0"></div>
 
             <button 
+              onClick={() => setShowReportModal(true)} 
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-rose-500/20 text-gray-300 hover:text-rose-500 flex items-center justify-center backdrop-blur-md transition-all active:scale-95 group shrink-0"
+              title={t.REPORT_USER}
+            >
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 transition-all shrink-0" />
+            </button>
+
+            <button 
               onClick={handleHeartClick} 
               className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-pink-500/20 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-75 group shrink-0"
             >
@@ -299,6 +309,12 @@ export default function VideoChat() {
           )}
         </button>
       </div>
+
+      <ReportModal 
+        isOpen={showReportModal} 
+        onClose={() => setShowReportModal(false)} 
+        onReportSuccess={handleStartNext} 
+      />
     </section>
   );
 }

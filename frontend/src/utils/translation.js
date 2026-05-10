@@ -52,7 +52,18 @@ export const translations = {
     CAMERA_PERMISSION_DENIED: 'Camera/Mic access denied',
     EMPTY_MESSAGES: 'No messages yet',
     SEARCH_PLACEHOLDER: 'Search...',
-    MOCK_REPLIES: ["Haha that's funny.", "Wow really? Tell me more.", "Nice to meet you! I'm enjoying this app.", "I'm listening...", "Haha, okay!"]
+    MOCK_REPLIES: ["Haha that's funny.", "Wow really? Tell me more.", "Nice to meet you! I'm enjoying this app.", "I'm listening...", "Haha, okay!"],
+    REPORT_USER: 'Report User',
+    REPORT_REASON_HARASSMENT: 'Harassment',
+    REPORT_REASON_NUDITY: 'Nudity',
+    REPORT_REASON_HATE_SPEECH: 'Hate Speech',
+    REPORT_REASON_SPAM: 'Spam',
+    REPORT_REASON_OTHER: 'Other',
+    REPORT_DETAILS_PLACEHOLDER: 'Additional details...',
+    REPORT_SUBMIT: 'Submit Report',
+    REPORT_SUCCESS: 'Thanks for reporting, we will process this shortly.',
+    UNFRIEND: 'Unfriend',
+    UNFRIEND_CONFIRM: 'Are you sure you want to unfriend this user?'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -107,6 +118,17 @@ export const translations = {
     CAMERA_PERMISSION_DENIED: 'Bị từ chối quyền Camera/Mic',
     EMPTY_MESSAGES: 'Chưa có tin nhắn nào',
     SEARCH_PLACEHOLDER: 'Tìm kiếm...',
-    MOCK_REPLIES: ["Haha thú vị đấy.", "Thật á? Kể thêm đi.", "Rất vui được gặp bạn! App này vui phết.", "Mình đang nghe đây...", "Haha, được thôi!"]
+    MOCK_REPLIES: ["Haha thú vị đấy.", "Thật á? Kể thêm đi.", "Rất vui được gặp bạn! App này vui phết.", "Mình đang nghe đây...", "Haha, được thôi!"],
+    REPORT_USER: 'Báo cáo người dùng',
+    REPORT_REASON_HARASSMENT: 'Quấy rối',
+    REPORT_REASON_NUDITY: 'Nội dung khiêu dâm',
+    REPORT_REASON_HATE_SPEECH: 'Ngôn từ thù ghét',
+    REPORT_REASON_SPAM: 'Spam',
+    REPORT_REASON_OTHER: 'Khác',
+    REPORT_DETAILS_PLACEHOLDER: 'Nhập thêm chi tiết...',
+    REPORT_SUBMIT: 'Gửi báo cáo',
+    REPORT_SUCCESS: 'Cảm ơn bạn đã báo cáo, chúng tôi sẽ xử lý sớm.',
+    UNFRIEND: 'Hủy kết bạn',
+    UNFRIEND_CONFIRM: 'Bạn có chắc chắn muốn hủy kết bạn với người này?'
   }
 };

@@ -28,6 +28,7 @@ const useStore = create(
         { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?' },
       ],
       addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
+      removeFriend: (id) => set((state) => ({ friends: state.friends.filter(f => f.id !== id) })),
 
       // Global stats
       onlineCount: 1204,

@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Smile, Mic, Play } from 'lucide-react';
+import { X, Send, Smile, Mic, Play, MoreHorizontal, AlertTriangle, UserMinus } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import EmojiPicker from 'emoji-picker-react';
+import ReportModal from '../../components/common/ReportModal';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
-  const { lang } = useStore();
+  const { lang, removeFriend } = useStore();
   const t = translations[lang];
   
   const [messages, setMessages] = useState([]);
@@ -14,6 +15,11 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const bottomRef = useRef(null);
   const emojiRef = useRef(null);
   const textareaRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showUnfriendConfirm, setShowUnfriendConfirm] = useState(false);
 
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -79,6 +85,10 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       if (emojiRef.current && !emojiRef.current.contains(event.target)) {
         setShowEmoji(false);
       }
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMoreMenu(false);
+        setShowUnfriendConfirm(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -137,9 +147,57 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
             <p className="text-[10px] text-green-400">{t.PRIVATE_CHAT}</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-full hover:bg-neutral-800 text-gray-400 hover:text-white transition-colors">
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <div className="relative" ref={menuRef}>
+            <button onClick={() => setShowMoreMenu(!showMoreMenu)} className="p-1.5 rounded-full hover:bg-neutral-800 text-gray-400 hover:text-white transition-all active:scale-95">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            
+            {showMoreMenu && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-slide-up origin-top-right">
+                {!showUnfriendConfirm ? (
+                  <div className="p-1">
+                    <button 
+                      onClick={() => { setShowReportModal(true); setShowMoreMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
+                    >
+                      <AlertTriangle className="w-4 h-4 text-rose-500" />
+                      {t.REPORT_USER}
+                    </button>
+                    <button 
+                      onClick={() => setShowUnfriendConfirm(true)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
+                    >
+                      <UserMinus className="w-4 h-4 text-gray-400" />
+                      {t.UNFRIEND}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-3 text-center">
+                    <p className="text-xs text-gray-300 mb-3 leading-relaxed">{t.UNFRIEND_CONFIRM}</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setShowUnfriendConfirm(false)}
+                        className="flex-1 py-1.5 text-xs font-medium bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                      >
+                        {t.CANCEL}
+                      </button>
+                      <button 
+                        onClick={() => { removeFriend(friend.id); onClose(); }}
+                        className="flex-1 py-1.5 text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors"
+                      >
+                        OK
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-neutral-800 text-gray-400 hover:text-white transition-all active:scale-95">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -231,6 +289,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
           )}
         </form>
       </div>
+
+      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
     </div>
   );
 }
