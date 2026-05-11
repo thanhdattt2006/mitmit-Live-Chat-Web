@@ -88,13 +88,13 @@ export default function RoomPage() {
   };
 
   return (
-    <div className={`flex-1 flex flex-col ${callMode === 'text' ? 'items-center p-4' : 'lg:flex-row'} w-full gap-4 overflow-hidden relative`}>
+    <div className={`flex-1 flex flex-col ${callMode === 'text' ? 'items-center p-4' : 'lg:flex-row'} w-full gap-4 overflow-clip relative`}>
       
       {/* LEFT: Video/Voice Area */}
       {callMode !== 'text' && <VideoChat />}
 
       {/* RIGHT/CENTER: Chat Area */}
-      <section className={`w-full flex-col bg-[#141414] rounded-3xl border border-neutral-800 shadow-sm overflow-hidden h-full flex-shrink-0 transition-all duration-500 relative ${callMode === 'text' ? 'flex max-w-3xl mx-auto border-2 border-neutral-800' : 'hidden lg:flex lg:w-[30%] lg:min-w-[350px] lg:max-w-[400px]'}`}>
+      <section className={`w-full flex-col bg-[#141414] rounded-3xl border border-neutral-800 shadow-sm h-full flex-shrink-0 transition-all duration-500 relative ${callMode === 'text' ? 'flex max-w-3xl mx-auto border-2 border-neutral-800' : 'hidden lg:flex lg:w-[30%] lg:min-w-[350px] lg:max-w-[400px]'}`}>
         
         {isConnected ? (
           <>
@@ -144,7 +144,7 @@ export default function RoomPage() {
                   </button>
                   
                   {showMoreMenu && (
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-slide-up origin-top-right p-1">
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl z-[9999] animate-slide-up origin-top-right p-1">
                       <button 
                         onClick={() => handleGuestAction(() => { setShowReportModal(true); setShowMoreMenu(false); })}
                         className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"

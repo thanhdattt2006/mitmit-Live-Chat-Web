@@ -191,9 +191,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   };
 
   return (
-    <div className="fixed bottom-0 sm:bottom-6 right-0 sm:right-6 w-full sm:w-[450px] h-[100dvh] sm:h-[500px] bg-[#141414] sm:rounded-3xl shadow-2xl border-t sm:border border-neutral-800 flex flex-col z-[100] animate-slide-up overflow-visible">
+    <div className="fixed bottom-0 sm:bottom-6 right-0 sm:right-6 w-full sm:w-[450px] h-[100dvh] sm:h-[500px] bg-[#141414] sm:rounded-3xl shadow-2xl border-t sm:border border-neutral-800 flex flex-col z-[200] animate-slide-up">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md sm:rounded-t-3xl relative z-10">
+      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md sm:rounded-t-3xl relative z-20">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img src={friend.avatar} alt={friend.name} className="w-9 h-9 rounded-full object-cover border border-neutral-700" />
@@ -218,7 +218,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
             </button>
             
             {showMoreMenu && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-[999] animate-slide-up origin-top-right">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl z-[9999] animate-slide-up origin-top-right">
                 {!showUnfriendConfirm ? (
                   <div className="p-1">
                     <button 
@@ -308,87 +308,89 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
             </button>
           </div>
         )}
-        <form onSubmit={handleSend} className="flex items-end gap-1.5 relative">
-          {/* Left: Image Action */}
-          <div className="shrink-0 mb-0.5">
-            <button 
-              type="button" 
-              onClick={handleImageClick}
-              className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90"
-              title="Send Image"
-            >
-              <ImageIcon className="w-5 h-5" />
-            </button>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              accept="image/png, image/jpeg, image/gif, image/webp" 
-              className="hidden" 
-            />
-          </div>
+        <form onSubmit={handleSend} className="flex items-center gap-2 relative">
+  {/* Left: Image Action - Đã căn center chuẩn trục dọc */}
+  <div className="shrink-0 w-9 h-9 flex items-center justify-center">
+    <button 
+      type="button" 
+      onClick={handleImageClick}
+      className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90"
+      title="Send Image"
+    >
+      <ImageIcon className="w-5 h-5" />
+    </button>
+    <input 
+      type="file" 
+      ref={fileInputRef} 
+      onChange={handleFileChange} 
+      accept="image/png, image/jpeg, image/gif, image/webp" 
+      className="hidden" 
+    />
+  </div>
 
-          {/* Center: Input Area */}
-          <div className="flex-1 relative bg-neutral-800/60 border border-neutral-700/30 focus-within:border-blue-500/40 rounded-2xl transition-all duration-200">
-            <textarea 
-              value={text}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              ref={textareaRef}
-              rows={1}
-              maxLength={500}
-              style={{ maxHeight: '100px', scrollbarWidth: 'none' }}
-              className="w-full bg-transparent py-2 pl-3 pr-9 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden leading-relaxed" 
-              placeholder={t.CHAT_PLACEHOLDER}
-            />
-            
-            <div ref={emojiRef} className="absolute right-1.5 bottom-1.5 z-10">
-              <button 
-                type="button" 
-                onClick={() => setShowEmoji((prev) => !prev)}
-                className={`p-1 rounded-full transition-all active:scale-90 ${showEmoji ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'}`}
-              >
-                <Smile className="w-5 h-5" />
-              </button>
-              
-              {showEmoji && (
-                <div className="absolute bottom-full right-0 mb-3 z-50 scale-90 origin-bottom-right">
-                  <EmojiPicker 
-                    onEmojiClick={handleEmojiClick}
-                    theme="dark"
-                    width={280}
-                    height={320}
-                    lazyLoadEmojis={true}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Right: Send/Voice Action */}
-          <div className="shrink-0">
-            {text.trim() ? (
-              <button 
-                type="submit" 
-                className="w-9 h-9 flex-shrink-0 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm"
-              >
-                <Send className="w-4 h-4 ml-0.5 fill-current" />
-              </button>
-            ) : (
-              <button 
-                type="button" 
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onMouseLeave={stopRecording}
-                onTouchStart={startRecording}
-                onTouchEnd={stopRecording}
-                className={`w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
-              >
-                <Mic className="w-4.5 h-4.5 fill-current" />
-              </button>
-            )}
-          </div>
-        </form>
+  {/* Center: Input Area - Dùng flex để chứa textarea và emoji song song */}
+  <div className="flex-1 flex items-center bg-neutral-800/60 border border-neutral-700/30 focus-within:border-blue-500/40 rounded-2xl transition-all duration-200 min-h-[40px] px-1">
+    <textarea 
+      value={text}
+      onChange={handleInput}
+      onKeyDown={handleKeyDown}
+      ref={textareaRef}
+      rows={1}
+      maxLength={500}
+      style={{ maxHeight: '100px', scrollbarWidth: 'none' }}
+      
+      className="flex-1 bg-transparent py-2 pl-2 pr-2 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden leading-relaxed block" 
+      placeholder={t.CHAT_PLACEHOLDER}
+    />
+    
+    {/* Emoji Button - Bây giờ nằm trong luồng flex, không còn absolute đè chữ */}
+    <div ref={emojiRef} className="relative shrink-0 mr-1">
+      <button 
+        type="button" 
+        onClick={() => setShowEmoji((prev) => !prev)}
+        className={`p-1.5 rounded-full transition-all active:scale-90 ${showEmoji ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'}`}
+      >
+        <Smile className="w-5 h-5" />
+      </button>
+      
+      {showEmoji && (
+        <div className="absolute bottom-full right-0 mb-3 z-50 scale-90 origin-bottom-right">
+          <EmojiPicker 
+            onEmojiClick={handleEmojiClick}
+            theme="dark"
+            width={280}
+            height={320}
+            lazyLoadEmojis={true}
+          />
+        </div>
+      )}
+    </div>
+  </div>
+  
+  {/* Right: Send/Voice Action - Căn center theo form */}
+  <div className="shrink-0 w-9 h-9 flex items-center justify-center">
+    {text.trim() ? (
+      <button 
+        type="submit" 
+        className="w-full h-full bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm"
+      >
+        <Send className="w-4 h-4 ml-0.5 fill-current" />
+      </button>
+    ) : (
+      <button 
+        type="button" 
+        onMouseDown={startRecording}
+        onMouseUp={stopRecording}
+        onMouseLeave={stopRecording}
+        onTouchStart={startRecording}
+        onTouchEnd={stopRecording}
+        className={`w-full h-full rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
+      >
+        <Mic className="w-4.5 h-4.5 fill-current" />
+      </button>
+    )}
+  </div>
+</form>
       </div>
 
       <ReportModal 
