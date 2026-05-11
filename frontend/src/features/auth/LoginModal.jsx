@@ -35,7 +35,7 @@ export default function LoginModal({ isOpen, onClose }) {
             <Video className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-bold">{t.ONBOARDING_GREETING}</h2>
-          <p className="text-gray-400 text-sm mt-2 text-center">Login to connect with strangers around the world</p>
+          <p className="text-gray-400 text-sm mt-2 text-center">{t.LOGIN_PROMPT}</p>
         </div>
 
         <div className="space-y-4">

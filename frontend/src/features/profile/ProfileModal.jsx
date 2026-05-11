@@ -153,7 +153,7 @@ export default function ProfileModal({ isOpen, onClose }) {
             </div>
             
             <div className="mt-4 flex items-center gap-2">
-              <h3 className="font-semibold text-lg">{userInfo?.name || 'Guest'}</h3>
+              <h3 className="font-semibold text-lg">{userInfo?.name || t.GUEST}</h3>
               <span className="px-2 py-0.5 bg-neutral-800 rounded-full text-xs text-gray-300 border border-neutral-700 flex items-center gap-1 shrink-0">
                 {userInfo?.age || 21} <span className={`font-bold ${userInfo?.gender === 'female' ? 'text-pink-400' : userInfo?.gender === 'male' ? 'text-blue-400' : 'text-purple-400'}`}>
                   {userInfo?.gender === 'female' ? '♀' : userInfo?.gender === 'male' ? '♂' : '⚥'}
@@ -193,7 +193,7 @@ export default function ProfileModal({ isOpen, onClose }) {
                 >
                   <option value="male">{t.GENDER_MALE}</option>
                   <option value="female">{t.GENDER_FEMALE}</option>
-                  <option value="other">Other</option>
+                  <option value="other">{t.GENDER_OTHER}</option>
                 </select>
               </div>
             </div>

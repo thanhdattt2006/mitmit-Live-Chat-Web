@@ -35,7 +35,7 @@ export default function VideoChat() {
     if (!isLoggedIn) {
       const toast = document.createElement('div');
       toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
-      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>Vui lòng đăng nhập để sử dụng tính năng này</span>`;
+      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>${t.LOGIN_REQUIRED}</span>`;
       document.body.appendChild(toast);
       
       setTimeout(() => {
@@ -238,7 +238,7 @@ export default function VideoChat() {
       {showPremiumMatch && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in transition-opacity duration-500 pointer-events-none">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] tracking-widest mb-6 transition-all duration-700 ease-out translate-y-0 opacity-100">
-            MATCHED!
+            {t.MATCH_SUCCESS.toUpperCase()}
           </h1>
           <div className="flex items-center">
             <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl relative z-10 translate-x-3 transition-transform duration-1000" />
@@ -270,7 +270,7 @@ export default function VideoChat() {
       )}
 
       {/* Controls */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass-panel p-2 rounded-full border border-white/10 shadow-2xl flex items-center gap-2 z-10 max-w-[95%] overflow-x-auto no-scrollbar">
+      <div className="fixed bottom-4 sm:absolute sm:bottom-6 left-1/2 -translate-x-1/2 glass-panel p-2 rounded-full border border-white/10 shadow-2xl flex items-center gap-2 z-10 max-w-[95%] overflow-x-auto no-scrollbar">
         
         {!isIdle && (
           <>

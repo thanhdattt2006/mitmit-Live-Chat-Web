@@ -153,7 +153,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setActiveMenuId(null);
-    setToastMsg('Đã sao chép tin nhắn');
+    setToastMsg(t.COPY_SUCCESS);
     setTimeout(() => setToastMsg(''), 2000);
   };
   
@@ -243,11 +243,11 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 flex flex-col gap-3 scroll-smooth relative" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
         {messages?.map((msg) => (
-          <div key={msg.id} className={`flex items-center gap-2 w-full animate-slide-up relative hover:z-50 focus-within:z-50 group ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex items-end gap-2 w-full animate-slide-up relative hover:z-50 focus-within:z-50 group mt-7 ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
             
-            {/* Actions for My Message (Left side of bubble) */}
+            {/* Actions for My Message (Above bubble) */}
             {msg.isMine && (
-              <div className={`items-center gap-1 shrink-0 z-50 ${(activeMenuId === msg.id || activeReactionId === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
+              <div className={`absolute -top-7 right-0 items-center gap-1 shrink-0 z-50 ${(activeMenuId === msg.id || activeReactionId === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
                 <div className="relative">
                   <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === msg.id ? null : msg.id); setActiveReactionId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
                     <MoreVertical className="w-4 h-4" />
@@ -256,14 +256,14 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                     <div className="absolute top-full right-0 origin-top-right mt-1 w-max bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-[9999] animate-slide-up">
                       {msg.type !== 'voice' && (
                         <button onClick={() => handleCopy(msg.text)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                          <Copy className="w-3.5 h-3.5" /> Sao chép
+                          <Copy className="w-3.5 h-3.5" /> {t.COPY}
                         </button>
                       )}
                       <button onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                        <Reply className="w-3.5 h-3.5" /> Trả lời
+                        <Reply className="w-3.5 h-3.5" /> {t.REPLY}
                       </button>
                       <button onClick={() => handleUnsend(msg.id)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-rose-500/10">
-                        <Trash2 className="w-3.5 h-3.5" /> Gỡ tin nhắn
+                        <Trash2 className="w-3.5 h-3.5" /> {t.UNSEND}
                       </button>
                     </div>
                   )}
@@ -295,8 +295,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               {/* Replied Message Block */}
               {msg.replyTo && (
                 <div className={`mb-1.5 pl-2 border-l-2 text-xs opacity-80 ${msg.isMine ? 'border-white/50 text-white' : 'border-gray-500 text-gray-300'}`}>
-                  <p className="font-semibold text-[10px] mb-0.5">{msg.replyTo.isMine ? t.YOU || 'Bạn' : friend.name}</p>
-                  <p className="truncate">{msg.replyTo.type === 'voice' ? '🎤 Tin nhắn thoại' : msg.replyTo.text}</p>
+                  <p className="font-semibold text-[10px] mb-0.5">{msg.replyTo.isMine ? t.YOU : friend.name}</p>
+                  <p className="truncate">{msg.replyTo.type === 'voice' ? t.VOICE_MESSAGE : msg.replyTo.text}</p>
                 </div>
               )}
 
@@ -314,9 +314,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               )}
             </div>
 
-            {/* Actions for Stranger Message (Right side of bubble) */}
+            {/* Actions for Stranger Message (Above bubble) */}
             {!msg.isMine && (
-              <div className={`items-center gap-1 shrink-0 z-50 ${(activeMenuId === msg.id || activeReactionId === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
+              <div className={`absolute -top-7 left-0 items-center gap-1 shrink-0 z-50 ${(activeMenuId === msg.id || activeReactionId === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
                 <div className="relative">
                   <button onClick={(e) => { e.stopPropagation(); setActiveReactionId(activeReactionId === msg.id ? null : msg.id); setActiveMenuId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
                     <Smile className="w-4 h-4" />
@@ -331,11 +331,11 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                     <div className="absolute top-full left-0 origin-top-left mt-1 w-max bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-[9999] animate-slide-up">
                       {msg.type !== 'voice' && (
                         <button onClick={() => handleCopy(msg.text)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                          <Copy className="w-3.5 h-3.5" /> Sao chép
+                          <Copy className="w-3.5 h-3.5" /> {t.COPY}
                         </button>
                       )}
                       <button onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                        <Reply className="w-3.5 h-3.5" /> Trả lời
+                        <Reply className="w-3.5 h-3.5" /> {t.REPLY}
                       </button>
                     </div>
                   )}
@@ -352,8 +352,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         {replyingTo && (
           <div className="flex items-center justify-between bg-neutral-800/80 backdrop-blur-sm border-l-2 border-blue-500 p-2 mb-2 rounded-r-lg shadow-sm animate-fade-in">
             <div className="flex-1 min-w-0 pr-2">
-              <p className="text-[10px] font-semibold text-blue-400 mb-0.5">Đang trả lời {replyingTo.isMine ? t.YOU || 'Bạn' : friend.name}</p>
-              <p className="text-xs text-gray-300 truncate">{replyingTo.type === 'voice' ? '🎤 Tin nhắn thoại' : replyingTo.text}</p>
+              <p className="text-[10px] font-semibold text-blue-400 mb-0.5">{t.REPLYING_TO} {replyingTo.isMine ? t.YOU : friend.name}</p>
+              <p className="text-xs text-gray-300 truncate">{replyingTo.type === 'voice' ? t.VOICE_MESSAGE : replyingTo.text}</p>
             </div>
             <button type="button" onClick={() => setReplyingTo(null)} className="p-1 text-gray-500 hover:text-white rounded-full transition-colors shrink-0">
               <X className="w-3.5 h-3.5" />

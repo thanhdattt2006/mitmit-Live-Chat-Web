@@ -79,7 +79,17 @@ export const translations = {
     LOGOUT_CONFIRM_MSG: 'Are you sure you want to log out? Your current chat will be disconnected.',
     CONFIRM: 'Confirm',
     UNSAVED_CHANGES: 'You have unsaved changes. Are you sure you want to close?',
-    SAVE_CONFIRM: 'Are you sure you want to save these changes?'
+    SAVE_CONFIRM: 'Are you sure you want to save these changes?',
+    COPY: 'Copy',
+    REPLY: 'Reply',
+    UNSEND: 'Unsend',
+    REPLYING_TO: 'Replying to',
+    VOICE_MESSAGE: '🎤 Voice message',
+    COPY_SUCCESS: 'Message copied',
+    LOGIN_PROMPT: 'Login to connect with strangers around the world',
+    GUEST: 'Guest',
+    GENDER_OTHER: 'Other',
+    LOGIN_REQUIRED: 'Please login to use this feature'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -161,6 +171,16 @@ export const translations = {
     LOGOUT_CONFIRM_MSG: 'Bạn có chắc chắn muốn đăng xuất? Mọi kết nối sẽ bị ngắt.',
     CONFIRM: 'Xác nhận',
     UNSAVED_CHANGES: 'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn đóng không?',
-    SAVE_CONFIRM: 'Bạn có chắc chắn muốn lưu các thay đổi này không?'
+    SAVE_CONFIRM: 'Bạn có chắc chắn muốn lưu các thay đổi này không?',
+    COPY: 'Sao chép',
+    REPLY: 'Trả lời',
+    UNSEND: 'Gỡ tin nhắn',
+    REPLYING_TO: 'Đang trả lời',
+    VOICE_MESSAGE: '🎤 Tin nhắn thoại',
+    COPY_SUCCESS: 'Đã sao chép tin nhắn',
+    LOGIN_PROMPT: 'Đăng nhập để kết nối với người lạ trên toàn cầu',
+    GUEST: 'Khách',
+    GENDER_OTHER: 'Khác',
+    LOGIN_REQUIRED: 'Vui lòng đăng nhập để sử dụng tính năng này'
   }
 };
