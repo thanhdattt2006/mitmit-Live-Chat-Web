@@ -166,9 +166,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   };
 
   return (
-    <div className="fixed bottom-0 sm:bottom-6 right-0 sm:right-6 w-full sm:w-[450px] h-[100dvh] sm:h-[500px] bg-[#141414] sm:rounded-3xl shadow-2xl border-t sm:border border-neutral-800 flex flex-col z-[100] animate-slide-up">
+    <div className="fixed bottom-0 sm:bottom-6 right-0 sm:right-6 w-full sm:w-[450px] h-[100dvh] sm:h-[500px] bg-[#141414] sm:rounded-3xl shadow-2xl border-t sm:border border-neutral-800 flex flex-col z-[100] animate-slide-up overflow-visible">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md sm:rounded-t-3xl relative z-[9999]">
+      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md sm:rounded-t-3xl relative z-10">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img src={friend.avatar} alt={friend.name} className="w-9 h-9 rounded-full object-cover border border-neutral-700" />
@@ -243,8 +243,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 flex flex-col gap-3 scroll-smooth relative" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
+      {/* Messages — overflow-y-auto only; NO overflow:hidden to avoid clipping popups */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 flex flex-col gap-3 scroll-smooth" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
         {messages?.map((msg) => {
           if (msg.type === 'system') {
             return <SystemMessage key={msg.id} text={msg.text} />;
