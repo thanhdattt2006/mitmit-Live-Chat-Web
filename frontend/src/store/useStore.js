@@ -6,6 +6,8 @@ const useStore = create(
     (set, get) => ({
       // Auth
       isLoggedIn: false,
+      isLoginModalOpen: false,
+      setLoginModalOpen: (open) => set({ isLoginModalOpen: open }),
       login: () => set({ isLoggedIn: true }),
       logout: () => set((state) => {
         if (state.localStream) {
@@ -41,7 +43,7 @@ const useStore = create(
       isInboxOpen: false,
       setInboxOpen: (open) => set({ isInboxOpen: open }),
       friends: [
-        { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?' },
+        { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?', age: 21, gender: 'female' },
       ],
       addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
       removeFriend: (id) => set((state) => ({ friends: state.friends.filter(f => f.id !== id) })),

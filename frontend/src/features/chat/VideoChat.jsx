@@ -11,7 +11,7 @@ const STRANGER_IMAGES = [
 ];
 
 export default function VideoChat() {
-  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream } = useStore();
+  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn } = useStore();
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -30,6 +30,23 @@ export default function VideoChat() {
 
   const isMatch = isLikedByMe && isLikedByStranger;
   const isIdle = !isMatching && !isConnected;
+
+  const handleGuestAction = (actionCallback) => {
+    if (!isLoggedIn) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
+      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>Vui lòng đăng nhập để sử dụng tính năng này</span>`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+      return;
+    }
+    actionCallback();
+  };
 
   useEffect(() => {
     if (!isConnected || isMatch) return;
@@ -137,8 +154,9 @@ export default function VideoChat() {
   }, [localStream]);
 
   const handleHeartClick = () => {
-    try {
-      if (isLikedByMe) return; // Prevent multiple triggers
+    handleGuestAction(() => {
+      try {
+        if (isLikedByMe) return; // Prevent multiple triggers
       
       setIsLikedByMe(true);
       
@@ -151,14 +169,17 @@ export default function VideoChat() {
           id: Date.now(),
           name: `${t.STRANGER} #8429`,
           avatar: strangerImg,
-          lastMsg: t.ITS_A_MATCH
+          lastMsg: t.ITS_A_MATCH,
+          age: 21,
+          gender: 'male'
         });
         
         setTimeout(() => setShowPremiumMatch(false), 1500);
       }, 2000);
-    } catch (error) {
-      console.error('Error processing heart click:', error);
-    }
+      } catch (error) {
+        console.error('Error processing heart click:', error);
+      }
+    });
   };
 
   const renderModeIcon = () => {
@@ -197,7 +218,12 @@ export default function VideoChat() {
              <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-ping scale-[2] delay-150"></div>
              
              <img src={strangerImg} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
-             <p className="relative z-10 mt-6 font-semibold text-lg text-white truncate">{t.STRANGER} #8429</p>
+             <div className="relative z-10 mt-6 flex items-center gap-2">
+               <p className="font-semibold text-lg text-white truncate">{t.STRANGER} #8429</p>
+               <span className="px-2 py-0.5 bg-neutral-800 rounded-full text-xs text-gray-300 border border-neutral-700 flex items-center gap-1">
+                 21 <span className="text-blue-400 font-bold">♂</span>
+               </span>
+             </div>
            </div>
         </div>
       )}
@@ -223,7 +249,7 @@ export default function VideoChat() {
 
       {/* Your Camera PiP */}
       {callMode === 'video' && !isIdle && (
-        <div className="absolute bottom-6 right-6 w-24 h-36 sm:w-32 sm:h-44 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
+        <div className="absolute bottom-6 right-6 w-32 h-48 sm:w-40 sm:h-56 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
           <video 
             ref={localVideoRef}
             autoPlay 
@@ -266,7 +292,7 @@ export default function VideoChat() {
             <div className="w-px h-8 bg-white/20 mx-1 shrink-0"></div>
 
             <button 
-              onClick={() => setShowReportModal(true)} 
+              onClick={() => handleGuestAction(() => setShowReportModal(true))} 
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-rose-500/20 text-gray-300 hover:text-rose-500 flex items-center justify-center backdrop-blur-md transition-all active:scale-95 group shrink-0"
               title={t.REPORT_USER}
             >

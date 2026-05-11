@@ -18,7 +18,8 @@ export default function RoomPage() {
   const navigate = useNavigate();
   const { 
     userInfo, lang, callMode, 
-    isConnected, isMatching, startMatching, setConnected, stopCall, clearMessages, addMessage 
+    isConnected, isMatching, startMatching, setConnected, stopCall, clearMessages, addMessage,
+    isLoggedIn, setLoginModalOpen
   } = useStore();
   const t = translations[lang];
 
@@ -37,12 +38,31 @@ export default function RoomPage() {
   }, []);
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate('/onboarding');
+    // Auto popup login modal on first load if not logged in
+    const hasPrompted = sessionStorage.getItem('hasPromptedLogin');
+    if (!isLoggedIn && !hasPrompted) {
+      setLoginModalOpen(true);
+      sessionStorage.setItem('hasPromptedLogin', 'true');
     }
-  }, [userInfo, navigate]);
+  }, [isLoggedIn, setLoginModalOpen]);
 
-  if (!userInfo) return null;
+  // Guest action handler
+  const handleGuestAction = (actionCallback) => {
+    if (!isLoggedIn) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
+      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>Vui lòng đăng nhập để sử dụng tính năng này</span>`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+      return;
+    }
+    actionCallback();
+  };
 
   const handleStartNextText = () => {
     try {
@@ -85,7 +105,12 @@ export default function RoomPage() {
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#141414] rounded-full"></div>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-sm truncate">{t.STRANGER} <span className="text-xs text-gray-500 font-normal">#8429</span></h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-sm truncate">{t.STRANGER} <span className="text-xs text-gray-500 font-normal">#8429</span></h3>
+                    <span className="px-1.5 py-0.5 bg-neutral-800 rounded-full text-[10px] text-gray-300 border border-neutral-700 flex items-center gap-1 shrink-0">
+                      21 <span className="text-blue-400 font-bold">♂</span>
+                    </span>
+                  </div>
                   <p className="text-xs text-green-400 font-medium truncate">{t.ONLINE_COUNT}</p>
                 </div>
               </div>
@@ -121,7 +146,7 @@ export default function RoomPage() {
                   {showMoreMenu && (
                     <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-slide-up origin-top-right p-1">
                       <button 
-                        onClick={() => { setShowReportModal(true); setShowMoreMenu(false); }}
+                        onClick={() => handleGuestAction(() => { setShowReportModal(true); setShowMoreMenu(false); })}
                         className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
                       >
                         <AlertTriangle className="w-4 h-4 text-rose-500" />

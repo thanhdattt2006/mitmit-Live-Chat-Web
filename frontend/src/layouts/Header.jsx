@@ -19,7 +19,8 @@ export default function Header() {
     lang, setLang, onlineCount, callMode, setCallMode, userInfo, 
     isLoggedIn, login, logout,
     isMatching, isConnected, friends,
-    isInboxOpen, setInboxOpen
+    isInboxOpen, setInboxOpen,
+    isLoginModalOpen, setLoginModalOpen
   } = useStore();
   
   const t = translations[lang];
@@ -31,7 +32,6 @@ export default function Header() {
   
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   
   const [activePrivateChat, setActivePrivateChat] = useState(null);
@@ -81,7 +81,7 @@ export default function Header() {
     logout();
     setShowProfileDropdown(false);
     setIsLogoutConfirmOpen(false);
-    navigate('/onboarding');
+    navigate('/');
   };
 
   const showCallTabs = !isMatching && !isConnected;
@@ -160,7 +160,7 @@ export default function Header() {
 
           {!isLoggedIn ? (
             <button 
-              onClick={() => setIsLoginModalOpen(true)}
+              onClick={() => setLoginModalOpen(true)}
               className="ml-2 flex items-center gap-2 bg-white text-neutral-900 px-5 py-1.5 rounded-full font-bold hover:bg-gray-200 transition-all active:scale-95 shadow-md shrink-0"
             >
               <LogIn className="w-4 h-4 shrink-0" />
@@ -240,7 +240,7 @@ export default function Header() {
       </header>
 
       <InboxDrawer isOpen={isInboxOpen} onClose={() => setInboxOpen(false)} onOpenPrivateChat={handleOpenPrivateChat} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setLoginModalOpen(false)} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
       <PrivateChatModal isOpen={!!activePrivateChat} onClose={() => setActivePrivateChat(null)} friend={activePrivateChat} />

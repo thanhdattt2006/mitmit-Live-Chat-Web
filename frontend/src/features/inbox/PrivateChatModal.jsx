@@ -163,16 +163,23 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 sm:w-[350px] h-[450px] bg-[#141414] rounded-3xl shadow-2xl border border-neutral-800 flex flex-col z-[100] animate-slide-up">
+    <div className="fixed bottom-0 sm:bottom-6 right-0 sm:right-6 w-full sm:w-[450px] h-[100dvh] sm:h-[500px] bg-[#141414] sm:rounded-3xl shadow-2xl border-t sm:border border-neutral-800 flex flex-col z-[100] animate-slide-up">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md rounded-t-3xl relative z-[9999]">
+      <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md sm:rounded-t-3xl relative z-[9999]">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img src={friend.avatar} alt={friend.name} className="w-9 h-9 rounded-full object-cover border border-neutral-700" />
             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-[#141414]"></div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">{friend.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-white">{friend.name}</h3>
+              <span className="px-1.5 py-0.5 bg-neutral-800 rounded-full text-[10px] text-gray-300 border border-neutral-700 flex items-center gap-1 shrink-0">
+                {friend.age || 21} <span className={`font-bold ${friend.gender === 'female' ? 'text-pink-400' : friend.gender === 'male' ? 'text-blue-400' : 'text-purple-400'}`}>
+                  {friend.gender === 'female' ? '♀' : friend.gender === 'male' ? '♂' : '⚥'}
+                </span>
+              </span>
+            </div>
             <p className="text-[10px] text-green-400">{t.PRIVATE_CHAT}</p>
           </div>
         </div>
@@ -270,7 +277,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               </div>
             )}
             {/* Bubble */}
-            <div className={`relative max-w-[70%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap overflow-wrap-anywhere ${
+            <div className={`relative max-w-[65%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap overflow-wrap-anywhere ${
               msg.isMine 
               ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm' 
               : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'
