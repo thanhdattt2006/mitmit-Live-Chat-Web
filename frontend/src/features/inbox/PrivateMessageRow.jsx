@@ -145,10 +145,13 @@ export default function PrivateMessageRow({
       {/* ── Chat Bubble ── */}
       <div
         className={`relative max-w-[75%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap
-          ${msg.isMine
-            ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm'
-            : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'}
-          ${msg.type === 'voice' ? 'p-0 overflow-hidden' : 'px-3.5 py-2'}`}
+          ${msg.type === 'image' 
+            ? '' 
+            : msg.isMine
+              ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2'
+              : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700 px-3.5 py-2'
+          }
+          ${msg.type === 'voice' ? 'p-0 overflow-hidden' : ''}`}
       >
         {/* Replied-to quote */}
         {msg.replyTo && (
@@ -168,6 +171,12 @@ export default function PrivateMessageRow({
         {/* Message content */}
         {msg.type === 'voice' ? (
           <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
+        ) : msg.type === 'image' ? (
+          <img 
+            src={msg.imageUrl} 
+            alt="Sent image" 
+            className="max-w-[200px] sm:max-w-[250px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity shadow-md" 
+          />
         ) : (
           msg.text
         )}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Smile, Mic, Play, MoreHorizontal, AlertTriangle, UserMinus, Copy, Reply, Trash2, MoreVertical } from 'lucide-react';
+import { X, Send, Smile, Mic, Play, MoreHorizontal, AlertTriangle, UserMinus, Copy, Reply, Trash2, MoreVertical, Image as ImageIcon } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import EmojiPicker from 'emoji-picker-react';
@@ -18,6 +18,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const emojiRef = useRef(null);
   const textareaRef = useRef(null);
   const menuRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -148,6 +149,30 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
     setText(prev => prev + emojiData.emoji);
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      const imageUrl = URL.createObjectURL(file);
+      setMessages(prev => [...prev, { 
+        id: Date.now().toString(), 
+        type: 'image', 
+        imageUrl: imageUrl, 
+        isMine: true,
+        replyTo: replyingTo 
+      }]);
+      setReplyingTo(null);
+      e.target.value = ''; // Reset input
+    }
+  };
+
   const handleUnsend = (id) => {
     setMessages(prev => prev.filter(m => m.id !== id));
     setActiveMenuId(null);
@@ -271,7 +296,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-neutral-800 bg-neutral-900/50 rounded-b-3xl flex flex-col">
+      <div className="px-3 py-2.5 border-t border-neutral-800 bg-neutral-900/50 rounded-b-3xl flex flex-col">
         {replyingTo && (
           <div className="flex items-center justify-between bg-neutral-800/80 backdrop-blur-sm border-l-2 border-blue-500 p-2 mb-2 rounded-r-lg shadow-sm animate-fade-in">
             <div className="flex-1 min-w-0 pr-2">
@@ -283,8 +308,28 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
             </button>
           </div>
         )}
-        <form onSubmit={handleSend} className="flex items-end gap-2 relative">
-          <div className="flex-1 relative flex items-center bg-neutral-800 border border-transparent focus-within:border-neutral-700 rounded-2xl transition-colors">
+        <form onSubmit={handleSend} className="flex items-end gap-1.5 relative">
+          {/* Left: Image Action */}
+          <div className="shrink-0 mb-0.5">
+            <button 
+              type="button" 
+              onClick={handleImageClick}
+              className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90"
+              title="Send Image"
+            >
+              <ImageIcon className="w-5 h-5" />
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              accept="image/png, image/jpeg, image/gif, image/webp" 
+              className="hidden" 
+            />
+          </div>
+
+          {/* Center: Input Area */}
+          <div className="flex-1 relative bg-neutral-800/60 border border-neutral-700/30 focus-within:border-blue-500/40 rounded-2xl transition-all duration-200">
             <textarea 
               value={text}
               onChange={handleInput}
@@ -292,51 +337,57 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               ref={textareaRef}
               rows={1}
               maxLength={500}
-              style={{ maxHeight: '80px', scrollbarWidth: 'none' }}
-              className="w-full bg-transparent py-2.5 pl-4 pr-10 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden" 
+              style={{ maxHeight: '100px', scrollbarWidth: 'none' }}
+              className="w-full bg-transparent py-2 pl-3 pr-9 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden leading-relaxed" 
               placeholder={t.CHAT_PLACEHOLDER}
             />
-            <div ref={emojiRef}>
+            
+            <div ref={emojiRef} className="absolute right-1.5 bottom-1.5 z-10">
               <button 
                 type="button" 
                 onClick={() => setShowEmoji((prev) => !prev)}
-                className="absolute right-3 bottom-2.5 text-gray-400 hover:text-gray-200 transition-colors"
+                className={`p-1 rounded-full transition-all active:scale-90 ${showEmoji ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'}`}
               >
-                <Smile className="w-4 h-4" />
+                <Smile className="w-5 h-5" />
               </button>
               
               {showEmoji && (
-                <div className="absolute bottom-full right-0 mb-2 z-50 scale-90 origin-bottom-right">
+                <div className="absolute bottom-full right-0 mb-3 z-50 scale-90 origin-bottom-right">
                   <EmojiPicker 
                     onEmojiClick={handleEmojiClick}
                     theme="dark"
-                    width={300}
-                    height={350}
+                    width={280}
+                    height={320}
+                    lazyLoadEmojis={true}
                   />
                 </div>
               )}
             </div>
           </div>
-          {text.trim() ? (
-            <button 
-              type="submit" 
-              className="w-[38px] h-[38px] flex-shrink-0 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm"
-            >
-              <Send className="w-4 h-4 ml-0.5 fill-current" />
-            </button>
-          ) : (
-            <button 
-              type="button" 
-              onMouseDown={startRecording}
-              onMouseUp={stopRecording}
-              onMouseLeave={stopRecording}
-              onTouchStart={startRecording}
-              onTouchEnd={stopRecording}
-              className={`w-[38px] h-[38px] flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
-            >
-              <Mic className="w-4 h-4 fill-current" />
-            </button>
-          )}
+          
+          {/* Right: Send/Voice Action */}
+          <div className="shrink-0">
+            {text.trim() ? (
+              <button 
+                type="submit" 
+                className="w-9 h-9 flex-shrink-0 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm"
+              >
+                <Send className="w-4 h-4 ml-0.5 fill-current" />
+              </button>
+            ) : (
+              <button 
+                type="button" 
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onMouseLeave={stopRecording}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
+                className={`w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
+              >
+                <Mic className="w-4.5 h-4.5 fill-current" />
+              </button>
+            )}
+          </div>
         </form>
       </div>
 

@@ -236,13 +236,17 @@ export default function VideoChat() {
 
       {/* Premium Match Overlay */}
       {showPremiumMatch && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in transition-opacity duration-500 pointer-events-none">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] tracking-widest mb-6 transition-all duration-700 ease-out translate-y-0 opacity-100">
+        <div className="fixed inset-0 flex items-center justify-center flex-col p-6 z-[9999] bg-black/80 backdrop-blur-sm animate-fade-in">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-center px-4 leading-tight tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8">
             {t.MATCH_SUCCESS.toUpperCase()}
           </h1>
-          <div className="flex items-center">
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl relative z-10 translate-x-3 transition-transform duration-1000" />
-            <img src={strangerImg} alt="Stranger" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl relative z-0 -translate-x-3 transition-transform duration-1000" />
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
+            </div>
+            <div className="relative">
+              <img src={strangerImg} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
+            </div>
           </div>
         </div>
       )}
