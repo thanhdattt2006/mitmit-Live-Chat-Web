@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mitmit-backend
+
+  # 1. Bộ não: MySQL (Nhớ đổi lại username và password cho đúng với máy mày)
+  datasource:
+    url: jdbc:mysql://localhost:3306/mitmit?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: password_cua_may
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # Tự động tạo/cập nhật bảng dựa trên class Entity của mày
+    show-sql: true # Bật cái này lên để nhìn console nó tự gen SQL, bao ngầu
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # 2. Kho chứa lịch sử: MongoDB
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/mitmit
+    # 3. Trái tim Real-time: Redis
+    redis:
+      host: localhost
+      port: 6379
