@@ -89,7 +89,8 @@ export const translations = {
     LOGIN_PROMPT: 'Login to connect with strangers around the world',
     GUEST: 'Guest',
     GENDER_OTHER: 'Other',
-    LOGIN_REQUIRED: 'Please login to use this feature'
+    LOGIN_REQUIRED: 'Please login to use this feature',
+    OK: 'OK'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -181,6 +182,7 @@ export const translations = {
     LOGIN_PROMPT: 'Đăng nhập để kết nối với người lạ trên toàn cầu',
     GUEST: 'Khách',
     GENDER_OTHER: 'Khác',
-    LOGIN_REQUIRED: 'Vui lòng đăng nhập để sử dụng tính năng này'
+    LOGIN_REQUIRED: 'Vui lòng đăng nhập để sử dụng tính năng này',
+    OK: 'OK'
   }
 };

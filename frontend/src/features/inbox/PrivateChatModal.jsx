@@ -4,7 +4,8 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import EmojiPicker from 'emoji-picker-react';
 import ReportModal from '../../components/common/ReportModal';
-import VoicePlayer from '../../components/common/VoicePlayer';
+import SystemMessage from './SystemMessage';
+import PrivateMessageRow from './PrivateMessageRow';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const { lang, removeFriend, setInboxOpen } = useStore();
@@ -50,8 +51,10 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
           id: Date.now().toString(), 
           type: 'voice', 
           audioUrl: audioUrl,
-          isMine: true 
+          isMine: true,
+          replyTo: replyingTo
         }]);
+        setReplyingTo(null);
 
         stream.getTracks().forEach(track => track.stop());
       };
@@ -108,7 +111,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
-        { id: '1', text: friend?.lastMsg || t.MOCK_REPLIES[0], isMine: false }
+        { id: '1', type: 'system', text: friend?.lastMsg || t.MOCK_REPLIES[0], isMine: false }
       ]);
     }
   }, [isOpen, friend, messages]);
@@ -226,7 +229,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                         }}
                         className="flex-1 py-1.5 text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors"
                       >
-                        OK
+                        {t.OK}
                       </button>
                     </div>
                   </div>
@@ -242,108 +245,28 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 flex flex-col gap-3 scroll-smooth relative" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
-        {messages?.map((msg) => (
-          <div key={msg.id} className={`flex items-end gap-2 w-full animate-slide-up relative hover:z-50 focus-within:z-50 group mt-7 ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
-            
-            {/* Actions for My Message (Above bubble) */}
-            {msg.isMine && (
-              <div className={`absolute -top-7 right-0 items-center gap-1 shrink-0 z-50 ${(activeMenuId === msg.id || activeReactionId === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
-                <div className="relative">
-                  <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === msg.id ? null : msg.id); setActiveReactionId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                  {activeMenuId === msg.id && (
-                    <div className="absolute top-full right-0 origin-top-right mt-1 w-max bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-[9999] animate-slide-up">
-                      {msg.type !== 'voice' && (
-                        <button onClick={() => handleCopy(msg.text)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                          <Copy className="w-3.5 h-3.5" /> {t.COPY}
-                        </button>
-                      )}
-                      <button onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                        <Reply className="w-3.5 h-3.5" /> {t.REPLY}
-                      </button>
-                      <button onClick={() => handleUnsend(msg.id)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-rose-500/10">
-                        <Trash2 className="w-3.5 h-3.5" /> {t.UNSEND}
-                      </button>
-                    </div>
-                  )}
-                </div>
+        {messages?.map((msg) => {
+          if (msg.type === 'system') {
+            return <SystemMessage key={msg.id} text={msg.text} />;
+          }
 
-                <div className="relative">
-                  <button onClick={(e) => { e.stopPropagation(); setActiveReactionId(activeReactionId === msg.id ? null : msg.id); setActiveMenuId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
-                    <Smile className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-            {/* Bubble */}
-            <div className={`relative max-w-[65%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap overflow-wrap-anywhere ${
-              msg.isMine 
-              ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm' 
-              : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700'
-            } ${msg.type === 'voice' ? 'p-0 overflow-hidden' : 'px-3.5 py-2'}`}>
-              
-              {/* Premium Reaction Picker */}
-              {activeReactionId === msg.id && (
-                <div className={`absolute top-full mt-1 flex gap-2 bg-[#2d2d30]/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/10 z-[999] ${msg.isMine ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} animate-slide-up`}>
-                  {['👍', '❤️', '😂', '😮', '😢'].map(e => (
-                    <button key={e} onClick={(ev) => { ev.stopPropagation(); handleReact(msg.id, e); }} className="hover:scale-125 transition-transform origin-bottom text-lg">{e}</button>
-                  ))}
-                </div>
-              )}
-
-              {/* Replied Message Block */}
-              {msg.replyTo && (
-                <div className={`mb-1.5 pl-2 border-l-2 text-xs opacity-80 ${msg.isMine ? 'border-white/50 text-white' : 'border-gray-500 text-gray-300'}`}>
-                  <p className="font-semibold text-[10px] mb-0.5">{msg.replyTo.isMine ? t.YOU : friend.name}</p>
-                  <p className="truncate">{msg.replyTo.type === 'voice' ? t.VOICE_MESSAGE : msg.replyTo.text}</p>
-                </div>
-              )}
-
-              {msg.type === 'voice' ? (
-                <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
-              ) : (
-                msg.text
-              )}
-
-              {/* Reaction Badge */}
-              {msg.reaction && (
-                <div className="absolute -bottom-2 -right-2 bg-neutral-800 border border-neutral-700 rounded-full px-1.5 py-0.5 text-[10px] shadow-md z-10 animate-slide-up cursor-pointer hover:scale-110 transition-transform">
-                  {msg.reaction}
-                </div>
-              )}
-            </div>
-
-            {/* Actions for Stranger Message (Above bubble) */}
-            {!msg.isMine && (
-              <div className={`absolute -top-7 left-0 items-center gap-1 shrink-0 z-50 ${(activeMenuId === msg.id || activeReactionId === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
-                <div className="relative">
-                  <button onClick={(e) => { e.stopPropagation(); setActiveReactionId(activeReactionId === msg.id ? null : msg.id); setActiveMenuId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
-                    <Smile className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="relative">
-                  <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === msg.id ? null : msg.id); setActiveReactionId(null); }} className="p-1.5 text-gray-500 hover:text-gray-300 rounded-full hover:bg-neutral-800 transition-colors">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                  {activeMenuId === msg.id && (
-                    <div className="absolute top-full left-0 origin-top-left mt-1 w-max bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden z-[9999] animate-slide-up">
-                      {msg.type !== 'voice' && (
-                        <button onClick={() => handleCopy(msg.text)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                          <Copy className="w-3.5 h-3.5" /> {t.COPY}
-                        </button>
-                      )}
-                      <button onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700">
-                        <Reply className="w-3.5 h-3.5" /> {t.REPLY}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+          return (
+            <PrivateMessageRow 
+              key={msg.id}
+              msg={msg}
+              friend={friend}
+              t={t}
+              activeMenuId={activeMenuId}
+              setActiveMenuId={setActiveMenuId}
+              activeReactionId={activeReactionId}
+              setActiveReactionId={setActiveReactionId}
+              handleCopy={handleCopy}
+              handleReact={handleReact}
+              handleUnsend={handleUnsend}
+              setReplyingTo={setReplyingTo}
+            />
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
