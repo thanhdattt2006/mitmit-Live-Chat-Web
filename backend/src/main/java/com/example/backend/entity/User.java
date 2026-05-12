@@ -1,0 +1,46 @@
+package com.example.backend.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
+public class User {
+    @Id
+    @Column(length = 36)
+    private String id; // UUID tự tăng
+
+    @Column(unique = true)
+    private String googleId;
+
+    @Column(unique = true)
+    private String githubId;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String anonymousName;
+
+    private String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    private Role role; // Tạo thêm 1 Enum Role {USER, ADMIN}
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus status; // Tạo thêm 1 Enum UserStatus {ACTIVE, BANNED}
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+}
