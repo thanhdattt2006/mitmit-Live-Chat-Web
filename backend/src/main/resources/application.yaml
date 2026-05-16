@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/mitmit?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
     username: root
-    password:
+    password: root123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -21,11 +21,12 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
-  # 2. Kho chứa lịch sử: MongoDB
+
   data:
-    mongodb:
-      uri: mongodb://localhost:27017/mitmit
-    # 3. Trái tim Real-time: Redis
+    # 2. Trái tim Real-time: Redis
     redis:
       host: localhost
       port: 6379
+  # 3. Kho chứa lịch sử: MongoDB
+  mongodb:
+    uri: mongodb://localhost:27017/mitmit
