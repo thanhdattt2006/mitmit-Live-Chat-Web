@@ -1,4 +1,4 @@
-package com.example.mitmit;
+package com.mitmit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

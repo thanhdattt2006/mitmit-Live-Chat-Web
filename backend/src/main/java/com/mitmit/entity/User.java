@@ -1,4 +1,4 @@
-package com.example.mitmit.entity;
+package com.mitmit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

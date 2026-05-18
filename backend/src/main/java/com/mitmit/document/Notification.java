@@ -1,4 +1,4 @@
-package com.example.mitmit.document;
+package com.mitmit.document;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

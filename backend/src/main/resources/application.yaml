@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: mitmit-backend
+    name: mitmit
 
   # 1. Bộ não: MySQL (Nhớ đổi lại username và password cho đúng với máy mày)
   datasource:

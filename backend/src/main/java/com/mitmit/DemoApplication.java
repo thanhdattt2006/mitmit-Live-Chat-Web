@@ -1,4 +1,4 @@
-package com.example.mitmit;
+package com.mitmit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

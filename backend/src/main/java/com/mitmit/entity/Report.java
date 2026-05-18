@@ -1,4 +1,4 @@
-package com.example.mitmit.entity;
+package com.mitmit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,25 +10,30 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "friendships", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id_1", "user_id_2"})
-})
-public class Friendship {
+@Table(name = "reports")
+public class Report {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id_1")
-    private User user1;
+    @JoinColumn(name = "reporter_id")
+    private User reporter;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id_2")
-    private User user2;
+    @JoinColumn(name = "reported_id")
+    private User reported;
+
+    @Column(nullable = false)
+    private String reason;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Enumerated(EnumType.STRING)
-    private FriendshipStatus status;
+    @Builder.Default
+    private ReportStatus status = ReportStatus.PENDING;
 
     private LocalDateTime createdAt;
 

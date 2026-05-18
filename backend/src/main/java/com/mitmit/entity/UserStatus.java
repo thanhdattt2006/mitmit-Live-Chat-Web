@@ -1,3 +1,3 @@
-package com.example.mitmit.entity;
+package com.mitmit.entity;
 
 public enum UserStatus { ACTIVE, BANNED }
