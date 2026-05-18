@@ -1,27 +1,28 @@
-package com.example.backend.entity;
+package com.example.mitmit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "reports")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "reports")
 public class Report {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter_id", nullable = false)
+    @JoinColumn(name = "reporter_id")
     private User reporter;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reported_id", nullable = false)
+    @JoinColumn(name = "reported_id")
     private User reported;
 
     @Column(nullable = false)
@@ -31,20 +32,13 @@ public class Report {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportStatus status;
+    @Builder.Default
+    private ReportStatus status = ReportStatus.PENDING;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

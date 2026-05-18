@@ -1,4 +1,4 @@
-package com.example.backend.document;
+package com.example.mitmit.document;
 
 import lombok.*;
 import jakarta.persistence.Id;

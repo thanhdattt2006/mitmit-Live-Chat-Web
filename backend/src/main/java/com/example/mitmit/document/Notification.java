@@ -1,19 +1,20 @@
-package com.example.backend.document;
+package com.example.mitmit.document;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
-@Document(collection = "notifications")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Document(collection = "notifications")
 public class Notification {
+
     @Id
     private String id;
 
@@ -21,12 +22,14 @@ public class Notification {
     private String userId;
 
     private String type;
+
     private String title;
+
     private String content;
+
     private String actionUrl;
 
-    @Builder.Default
-    private boolean isRead = false;
+    private boolean isRead;
 
-    private Date createdAt;
+    private LocalDateTime createdAt;
 }

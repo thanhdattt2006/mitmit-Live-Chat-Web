@@ -1,4 +1,4 @@
-package com.example.backend.entity;
+package com.example.mitmit.entity;
 
 public enum ReportStatus {
     PENDING,
