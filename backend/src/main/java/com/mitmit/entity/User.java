@@ -6,8 +6,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class User {
     @Id
@@ -26,7 +28,7 @@ public class User {
     @Column(nullable = false)
     private String anonymousName;
 
-    private String imageUrl;
+    private String avatarUrl;
 
     @Enumerated(EnumType.STRING)
     private Role role; // Tạo thêm 1 Enum Role {USER, ADMIN}

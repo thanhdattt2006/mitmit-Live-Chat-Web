@@ -27,8 +27,8 @@ public class UserService {
             if (banRepository.existsByUser_Id(user.getId())) {
                 throw new RuntimeException("Tài khoản đã bị cấm!");
             }
-            if (avatarUrl != null && !avatarUrl.equals(user.getImageUrl())) {
-                user.setImageUrl(avatarUrl);
+            if (avatarUrl != null && !avatarUrl.equals(user.getAvatarUrl())) {
+                user.setAvatarUrl(avatarUrl);
                 userRepository.save(user);
             }
             return user;
@@ -39,7 +39,7 @@ public class UserService {
                     .email(email)
                     .googleId(googleId)
                     .githubId(githubId)
-                    .imageUrl(avatarUrl)
+                    .avatarUrl(avatarUrl)
                     .anonymousName(anonymousName)
                     .role(Role.USER)
                     .status(UserStatus.ACTIVE)
