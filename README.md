@@ -9,7 +9,6 @@ This document lists the main libraries, frameworks, and tools utilized in this p
 * **Spring Boot**: 4.0.6
 
 **Dependencies:**
-* **Spring Boot Starter cốt lõi thôi, không rườm rà dài dòng. Mày cứ copy cục dưới đây bỏ vào file là đẹp:
 ```md
 # Project Libraries & Dependencies
 
