@@ -5,7 +5,7 @@ import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
 
 export default function VideoChat() {
-  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn } = useStore();
+  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId } = useStore();
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -67,13 +67,60 @@ export default function VideoChat() {
     try {
       if (!localStream && callMode !== 'text') {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: callMode === 'video', 
-            audio: true 
-          });
+          const constraints = {
+            video: callMode === 'video' 
+              ? (selectedCameraId ? { deviceId: { exact: selectedCameraId } } : true) 
+              : false,
+            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+          };
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
           setLocalStream(stream);
         } catch (err) {
-          console.error("Camera/Mic access denied or error:", err);
+          console.warn("Camera/Mic access error, creating fallback fake stream:", err);
+          
+          const tracks = [];
+
+          if (callMode === 'video') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw background
+            ctx.fillStyle = '#262626'; // dark gray
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw text
+            ctx.fillStyle = '#a3a3a3';
+            ctx.font = '24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Camera in use / unavailable', canvas.width / 2, canvas.height / 2);
+            
+            const canvasStream = canvas.captureStream(15);
+            if (canvasStream.getVideoTracks().length > 0) {
+              tracks.push(canvasStream.getVideoTracks()[0]);
+            }
+          }
+
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            const audioCtx = new AudioContext();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0; // silence
+            const dst = audioCtx.createMediaStreamDestination();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(dst);
+            oscillator.start();
+            
+            if (dst.stream.getAudioTracks().length > 0) {
+              tracks.push(dst.stream.getAudioTracks()[0]);
+            }
+          }
+
+          const fakeStream = new MediaStream(tracks);
+          setLocalStream(fakeStream);
         }
       }
       await startMatching();

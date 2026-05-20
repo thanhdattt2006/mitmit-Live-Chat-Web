@@ -41,6 +41,35 @@ const useStore = create(
       lang: 'en',
       setLang: (lang) => set({ lang }),
       
+      // Media Devices
+      cameras: [],
+      microphones: [],
+      selectedCameraId: null,
+      selectedMicId: null,
+      setSelectedCameraId: (id) => set({ selectedCameraId: id }),
+      setSelectedMicId: (id) => set({ selectedMicId: id }),
+      fetchDevices: async () => {
+        try {
+          // Ask for permission to get real device labels
+          const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const cameras = devices.filter(d => d.kind === 'videoinput');
+          const microphones = devices.filter(d => d.kind === 'audioinput');
+          
+          set((state) => ({
+            cameras,
+            microphones,
+            selectedCameraId: state.selectedCameraId || (cameras.length > 0 ? cameras[0].deviceId : null),
+            selectedMicId: state.selectedMicId || (microphones.length > 0 ? microphones[0].deviceId : null)
+          }));
+
+          // Stop temp stream
+          tempStream.getTracks().forEach(t => t.stop());
+        } catch (error) {
+          console.warn("Could not fetch devices or permission denied:", error);
+        }
+      },
+      
       // User Info
       userInfo: {
         id: getDeviceId(),
@@ -130,7 +159,9 @@ const useStore = create(
         userInfo: state.userInfo, 
         callMode: state.callMode,
         isLoggedIn: state.isLoggedIn,
-        friends: state.friends
+        friends: state.friends,
+        selectedCameraId: state.selectedCameraId,
+        selectedMicId: state.selectedMicId
       }),
     }
   )

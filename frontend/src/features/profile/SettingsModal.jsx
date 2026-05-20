@@ -1,13 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Settings, Camera, Mic, Bell } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
 export default function SettingsModal({ isOpen, onClose }) {
-  const { lang } = useStore();
+  const { 
+    lang,
+    cameras, microphones,
+    selectedCameraId, selectedMicId,
+    setSelectedCameraId, setSelectedMicId,
+    fetchDevices,
+    localStream, setLocalStream, callMode
+  } = useStore();
+  
   const t = translations[lang];
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchDevices();
+    }
+  }, [isOpen, fetchDevices]);
+
+  const handleDeviceChange = async (type, deviceId) => {
+    if (type === 'video') {
+      setSelectedCameraId(deviceId);
+    } else {
+      setSelectedMicId(deviceId);
+    }
+
+    // Lập tức khởi động lại luồng media để update preview nếu đang có stream
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      
+      const newVideoId = type === 'video' ? deviceId : selectedCameraId;
+      const newAudioId = type === 'audio' ? deviceId : selectedMicId;
+
+      const constraints = {
+        video: callMode === 'video' 
+          ? (newVideoId ? { deviceId: { exact: newVideoId } } : true)
+          : false,
+        audio: newAudioId ? { deviceId: { exact: newAudioId } } : true
+      };
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        setLocalStream(stream);
+      } catch (err) {
+        console.warn("Lỗi khi chuyển đổi thiết bị:", err);
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -35,10 +79,17 @@ export default function SettingsModal({ isOpen, onClose }) {
             <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-2">
               <Camera className="w-4 h-4" /> {t.CAMERA_INPUT}
             </label>
-            <select className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white appearance-none">
-              <option>{t.DEFAULT_CAM}</option>
-              <option>FaceTime HD Camera</option>
-              <option>OBS Virtual Camera</option>
+            <select 
+              className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white appearance-none"
+              value={selectedCameraId || ''}
+              onChange={(e) => handleDeviceChange('video', e.target.value)}
+            >
+              <option value="" disabled>{cameras.length === 0 ? t.DEFAULT_CAM : 'Select a camera'}</option>
+              {cameras.map(cam => (
+                <option key={cam.deviceId} value={cam.deviceId}>
+                  {cam.label || `Camera ${cam.deviceId.substring(0,5)}`}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -46,10 +97,17 @@ export default function SettingsModal({ isOpen, onClose }) {
             <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-2">
               <Mic className="w-4 h-4" /> {t.MIC_INPUT}
             </label>
-            <select className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white appearance-none">
-              <option>{t.DEFAULT_MIC}</option>
-              <option>MacBook Pro Microphone</option>
-              <option>External USB Mic</option>
+            <select 
+              className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white appearance-none"
+              value={selectedMicId || ''}
+              onChange={(e) => handleDeviceChange('audio', e.target.value)}
+            >
+              <option value="" disabled>{microphones.length === 0 ? t.DEFAULT_MIC : 'Select a microphone'}</option>
+              {microphones.map(mic => (
+                <option key={mic.deviceId} value={mic.deviceId}>
+                  {mic.label || `Microphone ${mic.deviceId.substring(0,5)}`}
+                </option>
+              ))}
             </select>
           </div>
 
