@@ -49,7 +49,8 @@ const useRoomStore = create((set) => ({
       const { userInfo, callMode } = useStore.getState();
       const userId = userInfo?.id;
 
-      socketService.connect(userId, (matchData) => {
+      // Wait for STOMP subscription to finish before joining the backend queue
+      await socketService.connect(userId, (matchData) => {
         set({
           isMatching: false,
           isConnected: true,
@@ -58,6 +59,7 @@ const useRoomStore = create((set) => ({
         });
       });
 
+      // Now join the matchmaking queue
       await axiosClient.post('/api/v1/matchmaking/join', null, {
         params: { userId, callType: callMode }
       });

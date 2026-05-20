@@ -115,18 +115,20 @@ const useStore = create(
           const { userInfo, callMode } = get();
           const userId = userInfo?.id;
           
-          socketService.connect(userId, (matchData) => {
-            set({
-              isMatching: false,
-              isConnected: true,
-              remoteUserId: matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id,
-              sessionId: matchData.sessionId
-            });
-          });
+      // Wait for socket to connect and subscribe BEFORE calling the API
+      await socketService.connect(userId, (matchData) => {
+        set({
+          isMatching: false,
+          isConnected: true,
+          remoteUserId: matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id,
+          sessionId: matchData.sessionId
+        });
+      });
 
-          await axiosClient.post('/api/v1/matchmaking/join', null, {
-            params: { userId, callType: callMode }
-          });
+      // Now join the matchmaking queue
+      await axiosClient.post('/api/v1/matchmaking/join', null, {
+        params: { userId, callType: callMode }
+      });
         } catch (error) {
           set({ isMatching: false });
           alert('Error joining matchmaking: ' + (error.response?.data?.message || error.message));

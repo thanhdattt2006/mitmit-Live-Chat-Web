@@ -7,38 +7,44 @@ class SocketService {
   }
 
   connect(userId, onMatchSuccess) {
-    if (this.stompClient && this.stompClient.active) {
-      this.disconnect();
-    }
-
-    const socketUrl = 'http://localhost:8080/ws';
-    this.stompClient = new Client({
-      webSocketFactory: () => new SockJS(socketUrl),
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log('STOMP Connected');
-        this.stompClient.subscribe(`/topic/match/${userId}`, (message) => {
-          if (message.body) {
-            try {
-              const data = JSON.parse(message.body);
-              console.log('Received match:', data);
-              onMatchSuccess(data);
-            } catch (err) {
-              console.error('Failed to parse match data:', err);
-            }
-          }
-        });
-      },
-      onStompError: (frame) => {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
-      },
-      onWebSocketError: (event) => {
-        console.error('WebSocket connection error:', event);
+    return new Promise((resolve, reject) => {
+      if (this.stompClient && this.stompClient.active) {
+        this.disconnect();
       }
-    });
 
-    this.stompClient.activate();
+      const socketUrl = 'http://localhost:8080/ws';
+      this.stompClient = new Client({
+        webSocketFactory: () => new SockJS(socketUrl),
+        reconnectDelay: 5000,
+        onConnect: () => {
+          console.log('STOMP Connected');
+          this.stompClient.subscribe(`/topic/match/${userId}`, (message) => {
+            if (message.body) {
+              try {
+                const data = JSON.parse(message.body);
+                console.log('Received match:', data);
+                onMatchSuccess(data);
+              } catch (err) {
+                console.error('Failed to parse match data:', err);
+              }
+            }
+          });
+          // Resolve Promise AFTER subscribing to ensure we don't miss messages
+          resolve();
+        },
+        onStompError: (frame) => {
+          console.error('Broker reported error: ' + frame.headers['message']);
+          console.error('Additional details: ' + frame.body);
+          reject(new Error(frame.headers['message']));
+        },
+        onWebSocketError: (event) => {
+          console.error('WebSocket connection error:', event);
+          reject(event);
+        }
+      });
+
+      this.stompClient.activate();
+    });
   }
 
   disconnect() {
