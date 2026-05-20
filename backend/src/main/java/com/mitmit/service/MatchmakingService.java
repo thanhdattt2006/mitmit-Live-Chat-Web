@@ -66,8 +66,8 @@ public class MatchmakingService {
                 payload.put("user1Id", user1Id);
                 payload.put("user2Id", user2Id);
 
-                messagingTemplate.convertAndSend("/topic/match/" + user1Id, payload);
-                messagingTemplate.convertAndSend("/topic/match/" + user2Id, payload);
+                messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
+                messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);
 
             } catch (Exception e) {
                 e.printStackTrace();

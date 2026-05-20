@@ -174,7 +174,7 @@ export default function VideoChat() {
       ) : callMode === 'video' ? (
         <>
           <img 
-            src={strangerImg} 
+            src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
             alt="Stranger" 
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isMatching ? 'opacity-0' : 'opacity-100'}`} 
           />
