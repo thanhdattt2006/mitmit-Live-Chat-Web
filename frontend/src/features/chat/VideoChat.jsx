@@ -5,7 +5,7 @@ import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
 
 export default function VideoChat() {
-  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId } = useStore();
+  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream } = useStore();
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -15,6 +15,7 @@ export default function VideoChat() {
   const [timeLeft, setTimeLeft] = useState(180);
 
   const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
 
   // Match state
   const [isLikedByMe, setIsLikedByMe] = useState(false);
@@ -163,6 +164,12 @@ export default function VideoChat() {
   }, [isIdle, callMode, isMatching, localStream]);
 
   useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [isIdle, callMode, isMatching, remoteStream]);
+
+  useEffect(() => {
     if (localStream) {
       localStream.getAudioTracks().forEach(track => {
         track.enabled = isMicOn;
@@ -223,12 +230,19 @@ export default function VideoChat() {
           <img 
             src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
             alt="Stranger" 
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isMatching ? 'opacity-0' : 'opacity-100'}`} 
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(isMatching || remoteStream) ? 'opacity-0' : 'opacity-100'}`} 
+          />
+          <video 
+            ref={remoteVideoRef} 
+            autoPlay 
+            playsInline 
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none"></div>
         </>
       ) : (
         <div className={`absolute inset-0 w-full h-full flex items-center justify-center bg-[#0a0a0a] transition-opacity duration-500 ${isMatching ? 'opacity-0' : 'opacity-100'}`}>
+           <video ref={remoteVideoRef} autoPlay playsInline className="hidden" />
            <div className="relative flex flex-col items-center">
              <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping scale-150"></div>
              <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-ping scale-[2] delay-150"></div>
