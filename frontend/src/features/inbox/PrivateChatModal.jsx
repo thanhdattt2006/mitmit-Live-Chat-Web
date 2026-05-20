@@ -196,7 +196,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       <div className="px-4 py-3 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md sm:rounded-t-3xl relative z-20">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <img src={friend.avatar} alt={friend.name} className="w-9 h-9 rounded-full object-cover border border-neutral-700" />
+            <img src={friend.avatarUrl || 'https://via.placeholder.com/150'} alt={friend.name} className="w-9 h-9 rounded-full object-cover border border-neutral-700" />
             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-[#141414]"></div>
           </div>
           <div>

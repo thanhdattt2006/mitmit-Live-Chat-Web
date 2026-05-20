@@ -8,12 +8,6 @@ import { translations } from '../utils/translation';
 import { MoreHorizontal, MessageCircle, Play, ArrowRight, Square, Loader2, AlertTriangle } from 'lucide-react';
 import ReportModal from '../components/common/ReportModal';
 
-const STRANGER_IMAGES = [
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1200&q=80"
-];
-
 export default function RoomPage() {
   const navigate = useNavigate();
   const { 
@@ -101,7 +95,7 @@ export default function RoomPage() {
             <div className="px-5 py-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 backdrop-blur-sm z-10 relative shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative shrink-0">
-                  <img src={STRANGER_IMAGES[0]} className="w-10 h-10 rounded-full object-cover border border-neutral-700" alt="Stranger" />
+                  <img src="https://via.placeholder.com/150" className="w-10 h-10 rounded-full object-cover border border-neutral-700" alt="Stranger" />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#141414] rounded-full"></div>
                 </div>
                 <div className="min-w-0">

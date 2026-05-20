@@ -145,7 +145,7 @@ export default function AdminDashboard() {
                     <tr key={report.id} className="border-b border-neutral-800 hover:bg-neutral-800/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <img src={report.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-neutral-700" />
+                          <img src={report.avatarUrl || 'https://via.placeholder.com/150'} alt="" className="w-8 h-8 rounded-full object-cover border border-neutral-700" />
                           <span className="font-medium text-white">{report.reportedUser}</span>
                         </div>
                       </td>

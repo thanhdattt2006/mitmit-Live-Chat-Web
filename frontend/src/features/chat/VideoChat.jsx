@@ -4,8 +4,6 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
 
-import ReportModal from '../../components/common/ReportModal';
-
 export default function VideoChat() {
   const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn } = useStore();
   const t = translations[lang];
@@ -77,6 +75,7 @@ export default function VideoChat() {
         } catch (err) {
           console.error("Camera/Mic access denied or error:", err);
         }
+      }
       await startMatching();
       clearMessages();
       setIsLikedByMe(false);

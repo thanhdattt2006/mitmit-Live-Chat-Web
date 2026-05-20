@@ -206,7 +206,7 @@ export default function Header() {
                     </div>
                   ) : (
                     <img 
-                      src={userInfo?.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"} 
+                      src={userInfo?.avatarUrl || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80"} 
                       alt="Avatar" 
                       className="w-full h-full object-cover"
                       onError={() => setAvatarError(true)}

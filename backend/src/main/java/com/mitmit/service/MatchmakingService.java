@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class MatchmakingService {
     private final UserService userService;
     private final ChatSessionRepository chatSessionRepository;
     private final FriendshipRepository friendshipRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private static final String QUEUE_PREFIX = "queue:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
@@ -56,6 +60,14 @@ public class MatchmakingService {
                         .startedAt(LocalDateTime.now())
                         .build();
                 chatSessionRepository.save(session);
+
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("sessionId", session.getId());
+                payload.put("user1Id", user1Id);
+                payload.put("user2Id", user2Id);
+
+                messagingTemplate.convertAndSend("/topic/match/" + user1Id, payload);
+                messagingTemplate.convertAndSend("/topic/match/" + user2Id, payload);
 
             } catch (Exception e) {
                 e.printStackTrace();

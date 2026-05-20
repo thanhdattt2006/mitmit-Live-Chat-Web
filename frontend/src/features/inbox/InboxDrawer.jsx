@@ -24,7 +24,7 @@ export default function InboxDrawer({ isOpen, onClose, onOpenPrivateChat }) {
               onClick={() => onOpenPrivateChat(friend)}
               className="flex items-center gap-3 p-3 rounded-2xl hover:bg-neutral-800/50 cursor-pointer transition-colors mb-1"
             >
-              <img src={friend.avatar} alt={friend.name} className="w-12 h-12 rounded-full object-cover border border-neutral-700 shrink-0" />
+              <img src={friend.avatarUrl || 'https://via.placeholder.com/150'} alt={friend.name} className="w-12 h-12 rounded-full object-cover border border-neutral-700 shrink-0" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-semibold text-sm truncate text-white">{friend.name}</h4>
                 <p className="text-xs text-gray-500 truncate">{friend.lastMsg}</p>
