@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axiosClient from '../api/axiosClient';
 import useStore from './useStore';
+import socketService from '../api/socketClient';
 
 /**
  * @typedef {Object} Message
@@ -47,6 +48,16 @@ const useRoomStore = create((set) => ({
     try {
       const { userInfo, callMode } = useStore.getState();
       const userId = userInfo?.id || 'guest';
+
+      socketService.connect(userId, (matchData) => {
+        set({
+          isMatching: false,
+          isConnected: true,
+          remoteUserId: matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id,
+          sessionId: matchData.sessionId
+        });
+      });
+
       await axiosClient.post('/api/v1/matchmaking/join', null, {
         params: { userId, callType: callMode }
       });
@@ -61,6 +72,21 @@ const useRoomStore = create((set) => ({
 
   /** Disconnect and reset streams */
   disconnect: async () => {
+    socketService.disconnect();
+    set({ isConnected: false, isMatching: false, remoteStream: null });
+    try {
+      const { userInfo, callMode } = useStore.getState();
+      const userId = userInfo?.id || 'guest';
+      await axiosClient.post('/api/v1/matchmaking/leave', null, {
+        params: { userId, callType: callMode }
+      });
+    } catch (error) {
+      console.error('Error leaving matchmaking:', error);
+    }
+  },
+
+  stopCall: async () => {
+    socketService.disconnect();
     set({ isConnected: false, isMatching: false, remoteStream: null });
     try {
       const { userInfo, callMode } = useStore.getState();

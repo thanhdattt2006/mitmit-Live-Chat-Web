@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axiosClient from '../api/axiosClient';
+import socketService from '../api/socketClient';
 
 const useStore = create(
   persist(
@@ -72,6 +73,16 @@ const useStore = create(
         try {
           const { userInfo, callMode } = get();
           const userId = userInfo?.id || 'guest';
+          
+          socketService.connect(userId, (matchData) => {
+            set({
+              isMatching: false,
+              isConnected: true,
+              remoteUserId: matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id,
+              sessionId: matchData.sessionId
+            });
+          });
+
           await axiosClient.post('/api/v1/matchmaking/join', null, {
             params: { userId, callType: callMode }
           });
@@ -82,6 +93,7 @@ const useStore = create(
       },
       setConnected: (connected) => set({ isConnected: connected, isMatching: false }),
       stopCall: async () => {
+        socketService.disconnect();
         set({ isConnected: false, isMatching: false });
         try {
           const { userInfo, callMode } = get();
