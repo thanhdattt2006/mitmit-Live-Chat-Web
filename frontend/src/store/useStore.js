@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axiosClient from '../api/axiosClient';
 import socketService from '../api/socketClient';
+import webRTCClient from '../api/webRTCClient';
 
 const getDeviceId = () => {
   let deviceId = localStorage.getItem('mitmit_device_id');
@@ -35,6 +36,7 @@ const useStore = create(
       }),
 
       localStream: null,
+      remoteStream: null,
       setLocalStream: (stream) => set({ localStream: stream }),
 
       // Language
@@ -116,14 +118,44 @@ const useStore = create(
           const userId = userInfo?.id;
           
       // Wait for socket to connect and subscribe BEFORE calling the API
-      await socketService.connect(userId, (matchData) => {
-        set({
-          isMatching: false,
-          isConnected: true,
-          remoteUserId: matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id,
-          sessionId: matchData.sessionId
-        });
-      });
+      // Wait for socket to connect and subscribe BEFORE calling the API
+      await socketService.connect(userId, 
+        async (matchData) => {
+          const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
+          set({
+            isMatching: false,
+            isConnected: true,
+            remoteUserId,
+            sessionId: matchData.sessionId
+          });
+
+          // Khởi tạo WebRTC Client ngay khi có phòng
+          const currentState = get();
+          webRTCClient.initialize(userId, (remoteStream) => {
+            set({ remoteStream });
+          });
+
+          // Gắn stream thật từ camera/mic vào kết nối
+          if (currentState.localStream) {
+            webRTCClient.addLocalStream(currentState.localStream);
+          }
+
+          // Quy định: User 2 sẽ là người chủ động gọi (Caller) để bắt tay
+          if (userId === matchData.user2Id) {
+            await webRTCClient.createOffer(remoteUserId);
+          }
+        },
+        async (signalData) => {
+          // Xử lý các tín hiệu WebRTC từ đối phương
+          if (signalData.type === 'offer') {
+            await webRTCClient.handleReceiveOffer(signalData.data, signalData.senderId);
+          } else if (signalData.type === 'answer') {
+            await webRTCClient.handleReceiveAnswer(signalData.data);
+          } else if (signalData.type === 'ice') {
+            await webRTCClient.handleReceiveIceCandidate(signalData.data);
+          }
+        }
+      );
 
       // Now join the matchmaking queue
       await axiosClient.post('/api/v1/matchmaking/join', null, {

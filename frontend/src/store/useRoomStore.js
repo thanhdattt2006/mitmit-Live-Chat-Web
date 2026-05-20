@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import axiosClient from '../api/axiosClient';
 import useStore from './useStore';
 import socketService from '../api/socketClient';
+import webRTCClient from '../api/webRTCClient';
 
 /**
  * @typedef {Object} Message
@@ -50,14 +51,43 @@ const useRoomStore = create((set) => ({
       const userId = userInfo?.id;
 
       // Wait for STOMP subscription to finish before joining the backend queue
-      await socketService.connect(userId, (matchData) => {
-        set({
-          isMatching: false,
-          isConnected: true,
-          remoteUserId: matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id,
-          sessionId: matchData.sessionId
-        });
-      });
+      await socketService.connect(userId, 
+        async (matchData) => {
+          const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
+          set({
+            isMatching: false,
+            isConnected: true,
+            remoteUserId,
+            sessionId: matchData.sessionId
+          });
+
+          // Khởi tạo WebRTC Client ngay khi có phòng
+          const { localStream } = useStore.getState();
+          webRTCClient.initialize(userId, (remoteStream) => {
+            set({ remoteStream });
+          });
+
+          // Gắn stream thật từ camera/mic vào kết nối
+          if (localStream) {
+            webRTCClient.addLocalStream(localStream);
+          }
+
+          // Quy định: User 2 sẽ là người chủ động gọi (Caller) để bắt tay
+          if (userId === matchData.user2Id) {
+            await webRTCClient.createOffer(remoteUserId);
+          }
+        },
+        async (signalData) => {
+          // Xử lý các tín hiệu WebRTC từ đối phương
+          if (signalData.type === 'offer') {
+            await webRTCClient.handleReceiveOffer(signalData.data, signalData.senderId);
+          } else if (signalData.type === 'answer') {
+            await webRTCClient.handleReceiveAnswer(signalData.data);
+          } else if (signalData.type === 'ice') {
+            await webRTCClient.handleReceiveIceCandidate(signalData.data);
+          }
+        }
+      );
 
       // Now join the matchmaking queue
       await axiosClient.post('/api/v1/matchmaking/join', null, {

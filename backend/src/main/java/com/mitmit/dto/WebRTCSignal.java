@@ -14,6 +14,6 @@ import lombok.Setter;
 public class WebRTCSignal {
     private String targetUserId;
     private String senderId;
-    private String type; // offer, answer, ice
-    private Object data; // SDP or ICE payload
+    private String type; // Các loại: "offer", "answer", "ice"
+    private Object data; // Chứa payload SDP hoặc ICE Candidate
 }

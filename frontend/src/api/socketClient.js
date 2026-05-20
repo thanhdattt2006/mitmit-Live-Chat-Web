@@ -6,7 +6,7 @@ class SocketService {
     this.stompClient = null;
   }
 
-  connect(userId, onMatchSuccess) {
+  connect(userId, onMatchSuccess, onSignalReceived) {
     return new Promise((resolve, reject) => {
       if (this.stompClient && this.stompClient.active) {
         this.disconnect();
@@ -22,8 +22,13 @@ class SocketService {
             if (message.body) {
               try {
                 const data = JSON.parse(message.body);
-                console.log('Received match:', data);
-                onMatchSuccess(data);
+                if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice') {
+                  console.log('Received WebRTC signal:', data.type);
+                  if (onSignalReceived) onSignalReceived(data);
+                } else if (data.sessionId) {
+                  console.log('Received match:', data);
+                  onMatchSuccess(data);
+                }
               } catch (err) {
                 console.error('Failed to parse match data:', err);
               }
