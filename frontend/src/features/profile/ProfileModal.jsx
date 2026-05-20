@@ -11,9 +11,6 @@ export default function ProfileModal({ isOpen, onClose }) {
 
   const [formData, setFormData] = useState({
     name: userInfo?.name || '',
-    age: userInfo?.age || '',
-    city: userInfo?.city || '',
-    gender: userInfo?.gender || 'male',
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [avatarError, setAvatarError] = useState(false);
@@ -23,9 +20,6 @@ export default function ProfileModal({ isOpen, onClose }) {
   const hasChanges = () => {
     return (
       formData.name !== (userInfo?.name || '') ||
-      formData.age !== (userInfo?.age || '') ||
-      formData.city !== (userInfo?.city || '') ||
-      formData.gender !== (userInfo?.gender || 'male') ||
       previewUrl !== null
     );
   };
@@ -34,9 +28,6 @@ export default function ProfileModal({ isOpen, onClose }) {
     if (isOpen) {
       setFormData({
         name: userInfo?.name || '',
-        age: userInfo?.age || '',
-        city: userInfo?.city || '',
-        gender: userInfo?.gender || 'male',
       });
       setPreviewUrl(null);
       setAvatarError(false);
@@ -85,7 +76,7 @@ export default function ProfileModal({ isOpen, onClose }) {
     try {
       setUserInfo({
         ...formData,
-        ...(previewUrl && { avatar: previewUrl }) // Update avatar only if a new one is selected
+        ...(previewUrl && { avatarUrl: previewUrl }) // Update avatar only if a new one is selected
       });
       setPreviewUrl(null);
       onClose(); // Intentionally not revoking URL here so it stays valid in the app session
@@ -133,7 +124,7 @@ export default function ProfileModal({ isOpen, onClose }) {
                 </div>
               ) : (
                 <img 
-                  src={previewUrl || userInfo?.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
+                  src={previewUrl || userInfo?.avatarUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
                   alt="Avatar" 
                   className="w-24 h-24 rounded-full object-cover border-4 border-neutral-800 bg-neutral-800"
                   onError={() => setAvatarError(true)} 
@@ -154,11 +145,6 @@ export default function ProfileModal({ isOpen, onClose }) {
             
             <div className="mt-4 flex items-center gap-2">
               <h3 className="font-semibold text-lg">{userInfo?.name || t.GUEST}</h3>
-              <span className="px-2 py-0.5 bg-neutral-800 rounded-full text-xs text-gray-300 border border-neutral-700 flex items-center gap-1 shrink-0">
-                {userInfo?.age || 21} <span className={`font-bold ${userInfo?.gender === 'female' ? 'text-pink-400' : userInfo?.gender === 'male' ? 'text-blue-400' : 'text-purple-400'}`}>
-                  {userInfo?.gender === 'female' ? '♀' : userInfo?.gender === 'male' ? '♂' : '⚥'}
-                </span>
-              </span>
             </div>
           </div>
 
@@ -170,41 +156,6 @@ export default function ProfileModal({ isOpen, onClose }) {
                 value={formData.name}
                 onChange={handleChange}
                 className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white placeholder-gray-500" 
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1 block truncate">{t.AGE}</label>
-                <input 
-                  name="age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white" 
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1 block truncate">{t.GENDER}</label>
-                <select 
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white appearance-none"
-                >
-                  <option value="male">{t.GENDER_MALE}</option>
-                  <option value="female">{t.GENDER_FEMALE}</option>
-                  <option value="other">{t.GENDER_OTHER}</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1 block truncate">{t.CITY}</label>
-              <input 
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="w-full bg-neutral-900 border border-transparent focus:border-neutral-700 rounded-xl px-4 py-3 text-sm outline-none transition-colors text-white" 
               />
             </div>
           </div>

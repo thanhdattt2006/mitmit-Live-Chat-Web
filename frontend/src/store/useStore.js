@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import axiosClient from '../api/axiosClient';
 
 const useStore = create(
   persist(
@@ -31,10 +32,7 @@ const useStore = create(
       // User Info
       userInfo: {
         name: 'Guest',
-        age: '18-21',
-        gender: 'male',
-        city: 'Hanoi',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
+        avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
         role: 'ADMIN'
       }, 
       setUserInfo: (info) => set((state) => ({ userInfo: { ...state.userInfo, ...info } })),
@@ -43,15 +41,15 @@ const useStore = create(
       isInboxOpen: false,
       setInboxOpen: (open) => set({ isInboxOpen: open }),
       friends: [
-        { id: 1, name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?', age: 21, gender: 'female' },
+        { id: 1, name: 'Anna Lee', avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', lastMsg: 'Hey, are you there?' },
       ],
       addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
       removeFriend: (id) => set((state) => ({ friends: state.friends.filter(f => f.id !== id) })),
 
       // Reports (Admin)
       reports: [
-        { id: 1, reporter: 'Anna Lee', reportedUser: 'Stranger #1294', reason: 'Harassment', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80' },
-        { id: 2, reporter: 'John Doe', reportedUser: 'Stranger #8429', reason: 'Spam', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80' }
+        { id: 1, reporter: 'Anna Lee', reportedUser: 'Stranger #1294', reason: 'Harassment', avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80' },
+        { id: 2, reporter: 'John Doe', reportedUser: 'Stranger #8429', reason: 'Spam', avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80' }
       ],
       removeReport: (id) => set((state) => ({ reports: state.reports.filter(r => r.id !== id) })),
 
@@ -69,9 +67,32 @@ const useStore = create(
       // Call State
       isMatching: false,
       isConnected: false,
-      startMatching: () => set({ isMatching: true, isConnected: false }),
+      startMatching: async () => {
+        set({ isMatching: true, isConnected: false });
+        try {
+          const { userInfo, callMode } = get();
+          const userId = userInfo?.id || 'guest';
+          await axiosClient.post('/api/v1/matchmaking/join', null, {
+            params: { userId, callType: callMode }
+          });
+        } catch (error) {
+          set({ isMatching: false });
+          alert('Error joining matchmaking: ' + (error.response?.data?.message || error.message));
+        }
+      },
       setConnected: (connected) => set({ isConnected: connected, isMatching: false }),
-      stopCall: () => set({ isConnected: false, isMatching: false }),
+      stopCall: async () => {
+        set({ isConnected: false, isMatching: false });
+        try {
+          const { userInfo, callMode } = get();
+          const userId = userInfo?.id || 'guest';
+          await axiosClient.post('/api/v1/matchmaking/leave', null, {
+            params: { userId, callType: callMode }
+          });
+        } catch (error) {
+          console.error('Error leaving matchmaking:', error);
+        }
+      },
 
       // Chat Messages
       messages: [],

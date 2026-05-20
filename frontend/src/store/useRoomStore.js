@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import axiosClient from '../api/axiosClient';
+import useStore from './useStore';
 
 /**
  * @typedef {Object} Message
@@ -15,8 +17,6 @@ import { create } from 'zustand';
  * @property {MediaStream|null} localStream - Local webcam/mic stream (null = not started)
  * @property {MediaStream|null} remoteStream - Remote peer stream (null = not connected)
  * @property {Message[]} messages - Chat message history
- * @property {number} coins - User's coin balance
- * @property {number} freeChats - Remaining free chat sessions
  * @property {boolean} isMicOn - Local microphone toggle state
  * @property {boolean} isCamOn - Local camera toggle state
  */
@@ -36,33 +36,75 @@ const useRoomStore = create((set) => ({
     { id: '4', text: 'Mình ở TP.HCM nè! 🌆', isMe: true, timestamp: Date.now() - 30000 },
   ],
 
-  // Economy
-  coins: 0,
-  freeChats: 10,
-
   // Media toggles
   isMicOn: true,
   isCamOn: true,
 
   // Actions
   /** Start searching for a match */
-  startMatching: () => set({ isMatching: true, isConnected: false, messages: [] }),
+  startMatching: async () => {
+    set({ isMatching: true, isConnected: false, messages: [] });
+    try {
+      const { userInfo, callMode } = useStore.getState();
+      const userId = userInfo?.id || 'guest';
+      await axiosClient.post('/api/v1/matchmaking/join', null, {
+        params: { userId, callType: callMode }
+      });
+    } catch (error) {
+      set({ isMatching: false });
+      alert('Error joining matchmaking: ' + (error.response?.data?.message || error.message));
+    }
+  },
 
   /** Called when a peer is successfully connected */
   onConnected: () => set({ isMatching: false, isConnected: true }),
 
   /** Disconnect and reset streams */
-  disconnect: () => set({ isConnected: false, isMatching: false, remoteStream: null }),
+  disconnect: async () => {
+    set({ isConnected: false, isMatching: false, remoteStream: null });
+    try {
+      const { userInfo, callMode } = useStore.getState();
+      const userId = userInfo?.id || 'guest';
+      await axiosClient.post('/api/v1/matchmaking/leave', null, {
+        params: { userId, callType: callMode }
+      });
+    } catch (error) {
+      console.error('Error leaving matchmaking:', error);
+    }
+  },
+
+  cancelMatching: async () => {
+    set({ isConnected: false, isMatching: false });
+    try {
+      const { userInfo, callMode } = useStore.getState();
+      const userId = userInfo?.id || 'guest';
+      await axiosClient.post('/api/v1/matchmaking/leave', null, {
+        params: { userId, callType: callMode }
+      });
+    } catch (error) {
+      console.error('Error leaving matchmaking:', error);
+    }
+  },
 
   /** Skip to the next stranger */
-  skipToNext: () =>
-    set((state) => ({
+  skipToNext: async () => {
+    set({
       isMatching: true,
       isConnected: false,
       remoteStream: null,
       messages: [],
-      freeChats: Math.max(0, state.freeChats - 1),
-    })),
+    });
+    try {
+      const { userInfo, callMode } = useStore.getState();
+      const userId = userInfo?.id || 'guest';
+      await axiosClient.post('/api/v1/matchmaking/join', null, {
+        params: { userId, callType: callMode }
+      });
+    } catch (error) {
+      set({ isMatching: false });
+      alert('Error joining matchmaking: ' + (error.response?.data?.message || error.message));
+    }
+  },
 
   /**
    * Append a new message to the chat
@@ -79,8 +121,6 @@ const useRoomStore = create((set) => ({
 
   toggleMic: () => set((state) => ({ isMicOn: !state.isMicOn })),
   toggleCam: () => set((state) => ({ isCamOn: !state.isCamOn })),
-
-  addCoins: (amount) => set((state) => ({ coins: state.coins + amount })),
 }));
 
 export default useRoomStore;

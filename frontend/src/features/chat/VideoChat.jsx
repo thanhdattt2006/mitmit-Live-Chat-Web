@@ -4,11 +4,7 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
 
-const STRANGER_IMAGES = [
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1200&q=80"
-];
+import ReportModal from '../../components/common/ReportModal';
 
 export default function VideoChat() {
   const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn } = useStore();
@@ -17,7 +13,7 @@ export default function VideoChat() {
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
   
-  const [strangerImg, setStrangerImg] = useState(STRANGER_IMAGES[0]);
+  const [strangerImg, setStrangerImg] = useState('');
   const [timeLeft, setTimeLeft] = useState(180);
 
   const localVideoRef = useRef(null);
@@ -81,20 +77,11 @@ export default function VideoChat() {
         } catch (err) {
           console.error("Camera/Mic access denied or error:", err);
         }
-      }
-
-      startMatching();
+      await startMatching();
       clearMessages();
       setIsLikedByMe(false);
       setIsLikedByStranger(false);
       setShowPremiumMatch(false);
-      
-      setTimeout(() => {
-        setStrangerImg(STRANGER_IMAGES[Math.floor(Math.random() * STRANGER_IMAGES.length)]);
-        setConnected(true);
-        setTimeLeft(180);
-        addMessage({ id: Date.now().toString(), type: 'system', text: t.SYSTEM_MSG_HELLO });
-      }, 1500);
     } catch (error) {
       console.error('Error starting next match:', error);
     }
@@ -159,23 +146,6 @@ export default function VideoChat() {
         if (isLikedByMe) return; // Prevent multiple triggers
       
       setIsLikedByMe(true);
-      
-      // Mock stranger like
-      setTimeout(() => {
-        setIsLikedByStranger(true);
-        setShowPremiumMatch(true);
-
-        addFriend({
-          id: Date.now(),
-          name: `${t.STRANGER} #8429`,
-          avatar: strangerImg,
-          lastMsg: t.ITS_A_MATCH,
-          age: 21,
-          gender: 'male'
-        });
-        
-        setTimeout(() => setShowPremiumMatch(false), 1500);
-      }, 2000);
       } catch (error) {
         console.error('Error processing heart click:', error);
       }
@@ -216,13 +186,9 @@ export default function VideoChat() {
            <div className="relative flex flex-col items-center">
              <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping scale-150"></div>
              <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-ping scale-[2] delay-150"></div>
-             
-             <img src={strangerImg} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
+             <img src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
              <div className="relative z-10 mt-6 flex items-center gap-2">
-               <p className="font-semibold text-lg text-white truncate">{t.STRANGER} #8429</p>
-               <span className="px-2 py-0.5 bg-neutral-800 rounded-full text-xs text-gray-300 border border-neutral-700 flex items-center gap-1">
-                 21 <span className="text-blue-400 font-bold">♂</span>
-               </span>
+               <p className="font-semibold text-lg text-white truncate">{t.STRANGER}</p>
              </div>
            </div>
         </div>
@@ -245,7 +211,7 @@ export default function VideoChat() {
               <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
             </div>
             <div className="relative">
-              <img src={strangerImg} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
+              <img src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
             </div>
           </div>
         </div>
