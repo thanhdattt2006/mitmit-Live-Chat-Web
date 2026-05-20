@@ -47,7 +47,7 @@ const useRoomStore = create((set) => ({
     set({ isMatching: true, isConnected: false, messages: [] });
     try {
       const { userInfo, callMode } = useStore.getState();
-      const userId = userInfo?.id || 'guest';
+      const userId = userInfo?.id;
 
       socketService.connect(userId, (matchData) => {
         set({
@@ -76,7 +76,7 @@ const useRoomStore = create((set) => ({
     set({ isConnected: false, isMatching: false, remoteStream: null });
     try {
       const { userInfo, callMode } = useStore.getState();
-      const userId = userInfo?.id || 'guest';
+      const userId = userInfo?.id;
       await axiosClient.post('/api/v1/matchmaking/leave', null, {
         params: { userId, callType: callMode }
       });
@@ -90,7 +90,7 @@ const useRoomStore = create((set) => ({
     set({ isConnected: false, isMatching: false, remoteStream: null });
     try {
       const { userInfo, callMode } = useStore.getState();
-      const userId = userInfo?.id || 'guest';
+      const userId = userInfo?.id;
       await axiosClient.post('/api/v1/matchmaking/leave', null, {
         params: { userId, callType: callMode }
       });
@@ -103,7 +103,7 @@ const useRoomStore = create((set) => ({
     set({ isConnected: false, isMatching: false });
     try {
       const { userInfo, callMode } = useStore.getState();
-      const userId = userInfo?.id || 'guest';
+      const userId = userInfo?.id;
       await axiosClient.post('/api/v1/matchmaking/leave', null, {
         params: { userId, callType: callMode }
       });
@@ -122,7 +122,7 @@ const useRoomStore = create((set) => ({
     });
     try {
       const { userInfo, callMode } = useStore.getState();
-      const userId = userInfo?.id || 'guest';
+      const userId = userInfo?.id;
       await axiosClient.post('/api/v1/matchmaking/join', null, {
         params: { userId, callType: callMode }
       });

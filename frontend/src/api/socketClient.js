@@ -16,11 +16,12 @@ class SocketService {
       webSocketFactory: () => new SockJS(socketUrl),
       reconnectDelay: 5000,
       onConnect: () => {
-        console.log('Connected to STOMP via SockJS');
+        console.log('STOMP Connected');
         this.stompClient.subscribe(`/topic/match/${userId}`, (message) => {
           if (message.body) {
             try {
               const data = JSON.parse(message.body);
+              console.log('Received match:', data);
               onMatchSuccess(data);
             } catch (err) {
               console.error('Failed to parse match data:', err);
@@ -45,6 +46,17 @@ class SocketService {
       this.stompClient.deactivate();
       this.stompClient = null;
       console.log('Disconnected from STOMP');
+    }
+  }
+
+  send(destination, body) {
+    if (this.stompClient && this.stompClient.active) {
+      this.stompClient.publish({
+        destination: destination,
+        body: JSON.stringify(body)
+      });
+    } else {
+      console.error('Cannot send message: STOMP client is not active');
     }
   }
 }

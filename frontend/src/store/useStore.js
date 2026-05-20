@@ -3,6 +3,17 @@ import { persist } from 'zustand/middleware';
 import axiosClient from '../api/axiosClient';
 import socketService from '../api/socketClient';
 
+const getDeviceId = () => {
+  let deviceId = localStorage.getItem('mitmit_device_id');
+  if (!deviceId) {
+    deviceId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    localStorage.setItem('mitmit_device_id', deviceId);
+  }
+  return deviceId;
+};
+
 const useStore = create(
   persist(
     (set, get) => ({
@@ -32,6 +43,7 @@ const useStore = create(
       
       // User Info
       userInfo: {
+        id: getDeviceId(),
         name: 'Guest',
         avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
         role: 'ADMIN'
@@ -72,7 +84,7 @@ const useStore = create(
         set({ isMatching: true, isConnected: false });
         try {
           const { userInfo, callMode } = get();
-          const userId = userInfo?.id || 'guest';
+          const userId = userInfo?.id;
           
           socketService.connect(userId, (matchData) => {
             set({
@@ -97,7 +109,7 @@ const useStore = create(
         set({ isConnected: false, isMatching: false });
         try {
           const { userInfo, callMode } = get();
-          const userId = userInfo?.id || 'guest';
+          const userId = userInfo?.id;
           await axiosClient.post('/api/v1/matchmaking/leave', null, {
             params: { userId, callType: callMode }
           });
