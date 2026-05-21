@@ -13,7 +13,7 @@ export default function RoomPage() {
   const { 
     userInfo, lang, callMode, 
     isConnected, isMatching, startMatching, setConnected, stopCall, clearMessages, addMessage,
-    isLoggedIn, setLoginModalOpen
+    isLoggedIn, setLoginModalOpen, setMatching
   } = useStore();
   const t = translations[lang];
 
@@ -69,6 +69,7 @@ export default function RoomPage() {
       }, 1500);
     } catch (error) {
       console.error('Error starting next text chat:', error);
+      setMatching(false);
     }
   };
 
@@ -78,6 +79,7 @@ export default function RoomPage() {
       clearMessages();
     } catch (error) {
       console.error('Error stopping text chat:', error);
+      setMatching(false);
     }
   };
 

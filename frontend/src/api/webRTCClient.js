@@ -3,12 +3,34 @@ import socketClient from './socketClient';
 class WebRTCClient {
   constructor() {
     this.peerConnection = null;
+    this.localStream = null;
     this.onTrackCallback = null;
     this.currentUserId = null;
     this.targetUserId = null; // Store to send ICE candidates later
     this.config = {
       iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: "stun:stun.relay.metered.ca:80" },
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "1d14a28e26cd1e005c235354",
+          credential: "2WfEEJ8dYOHJ0eNt",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:80?transport=tcp",
+          username: "1d14a28e26cd1e005c235354",
+          credential: "2WfEEJ8dYOHJ0eNt",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: "1d14a28e26cd1e005c235354",
+          credential: "2WfEEJ8dYOHJ0eNt",
+        },
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: "1d14a28e26cd1e005c235354",
+          credential: "2WfEEJ8dYOHJ0eNt",
+        }
       ]
     };
   }
@@ -51,6 +73,7 @@ class WebRTCClient {
   addLocalStream(stream) {
     try {
       if (this.peerConnection && stream) {
+        this.localStream = stream;
         stream.getTracks().forEach((track) => {
           this.peerConnection.addTrack(track, stream);
         });
@@ -129,15 +152,18 @@ class WebRTCClient {
   
   // Clean up connection
   close() {
+      if (this.localStream) {
+          this.localStream.getTracks().forEach(track => track.stop());
+          this.localStream = null;
+      }
       if (this.peerConnection) {
           this.peerConnection.close();
           this.peerConnection = null;
       }
       this.onTrackCallback = null;
       this.targetUserId = null;
-      console.log('WebRTC: Connection closed');
+      console.log('WebRTC: Connection closed and resources cleaned up');
   }
 }
 
-const webRTCClient = new WebRTCClient();
-export default webRTCClient;
+export default new WebRTCClient();

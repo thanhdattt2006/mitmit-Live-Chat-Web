@@ -5,11 +5,14 @@ import com.mitmit.repository.ChatSessionRepository;
 import com.mitmit.repository.FriendshipRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +27,20 @@ public class MatchmakingService {
     private static final String QUEUE_PREFIX = "queue:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
     private static final long BLACKLIST_TIME = 5; // 5 phút
+    private static final List<String> CALL_TYPES = Arrays.asList("video", "voice", "text");
 
     public void joinQueue(String userId, String callType) {
         redisService.pushToQueue(QUEUE_PREFIX + callType, userId);
-        tryMatch(callType);
     }
 
-    public void tryMatch(String callType) {
+    @Scheduled(fixedDelay = 2000)
+    public void processMatchmakingQueue() {
+        for (String callType : CALL_TYPES) {
+            tryMatch(callType);
+        }
+    }
+
+    private void tryMatch(String callType) {
         while (true) {
             try {
                 String user1Id = redisService.popFromQueue(QUEUE_PREFIX + callType);

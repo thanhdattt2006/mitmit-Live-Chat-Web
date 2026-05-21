@@ -111,6 +111,7 @@ const useStore = create(
       // Call State
       isMatching: false,
       isConnected: false,
+      setMatching: (isMatching) => set({ isMatching }),
       startMatching: async () => {
         set({ isMatching: true, isConnected: false });
         try {
@@ -167,7 +168,22 @@ const useStore = create(
         }
       },
       setConnected: (connected) => set({ isConnected: connected, isMatching: false }),
+      cancelMatching: async () => {
+        webRTCClient.close();
+        socketService.disconnect();
+        set({ isConnected: false, isMatching: false });
+        try {
+          const { userInfo, callMode } = get();
+          const userId = userInfo?.id;
+          await axiosClient.post('/api/v1/matchmaking/leave', null, {
+            params: { userId, callType: callMode }
+          });
+        } catch (error) {
+          console.error('Error leaving matchmaking:', error);
+        }
+      },
       stopCall: async () => {
+        webRTCClient.close();
         socketService.disconnect();
         set({ isConnected: false, isMatching: false });
         try {
