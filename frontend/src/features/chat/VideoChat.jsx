@@ -13,6 +13,7 @@ export default function VideoChat() {
   
   const [strangerImg, setStrangerImg] = useState('');
   const [timeLeft, setTimeLeft] = useState(180);
+  const [isBlurred, setIsBlurred] = useState(true);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -69,10 +70,17 @@ export default function VideoChat() {
       if (!localStream && callMode !== 'text') {
         try {
           const constraints = {
-            video: callMode === 'video' 
-              ? (selectedCameraId ? { deviceId: { exact: selectedCameraId } } : true) 
-              : false,
-            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+            video: callMode === 'video' ? {
+              deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
+              width: { ideal: 640, max: 1280 }, // Giới hạn max 720p, ideal 480p
+              height: { ideal: 480, max: 720 },
+              frameRate: { ideal: 24, max: 30 }
+            } : false,
+            audio: {
+              deviceId: selectedMicId ? { exact: selectedMicId } : undefined,
+              echoCancellation: true,
+              noiseSuppression: true
+            }
           };
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
           setLocalStream(stream);
@@ -164,9 +172,17 @@ export default function VideoChat() {
   }, [isIdle, callMode, isMatching, localStream]);
 
   useEffect(() => {
+    let blurTimeout;
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+      setIsBlurred(true);
+      blurTimeout = setTimeout(() => {
+        setIsBlurred(false);
+      }, 3000);
     }
+    return () => {
+      if (blurTimeout) clearTimeout(blurTimeout);
+    };
   }, [isIdle, callMode, isMatching, remoteStream]);
 
   useEffect(() => {
@@ -236,7 +252,11 @@ export default function VideoChat() {
             ref={remoteVideoRef} 
             autoPlay 
             playsInline 
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+            className={`absolute inset-0 w-full h-full object-cover ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+            style={{ 
+              filter: isBlurred ? 'blur(20px)' : 'blur(0px)',
+              transition: 'filter 1.5s ease-in-out, opacity 0.5s ease'
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none"></div>
         </>
