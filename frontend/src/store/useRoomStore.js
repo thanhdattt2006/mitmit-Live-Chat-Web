@@ -17,10 +17,6 @@ const useRoomStore = create((set) => ({
     { id: '4', text: 'Mình ở TP.HCM nè! 🌆', isMe: true, timestamp: Date.now() - 30000 },
   ],
 
-  // Media toggles
-  isMicOn: true,
-  isCamOn: true,
-
   /**
    * Append a new message to the chat
    * @param {string} text
@@ -35,9 +31,6 @@ const useRoomStore = create((set) => ({
     })),
 
   clearMessages: () => set({ messages: [] }),
-
-  toggleMic: () => set((state) => ({ isMicOn: !state.isMicOn })),
-  toggleCam: () => set((state) => ({ isCamOn: !state.isCamOn })),
 }));
 
 export default useRoomStore;

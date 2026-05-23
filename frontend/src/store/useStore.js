@@ -72,6 +72,12 @@ const useStore = create(
         }
       },
       
+      // Media toggles
+      isMicOn: true,
+      isCamOn: true,
+      toggleMic: () => set((state) => ({ isMicOn: !state.isMicOn })),
+      toggleCam: () => set((state) => ({ isCamOn: !state.isCamOn })),
+      
       // User Info
       userInfo: {
         id: getDeviceId(),
