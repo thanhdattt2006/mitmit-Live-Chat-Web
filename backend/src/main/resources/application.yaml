@@ -7,7 +7,7 @@ spring:
 
   # 1. Bộ não: MySQL (Nhớ đổi lại username và password cho đúng với máy mày)
   datasource:
-    url: jdbc:mysql://localhost:3306/mitmit?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/mitmit?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
     username: root
     password: root123
     driver-class-name: com.mysql.cj.jdbc.Driver
