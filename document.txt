@@ -1,0 +1,57 @@
+Dự án: mitmit (Web Real-time Communication App)
+Mô hình: OmeTV kết hợp Cơ chế Matching của Ứng dụng Hẹn hò (Dating App)
+
+1. TỔNG QUAN DỰ ÁN (EXECUTIVE SUMMARY)
+mitmit là một nền tảng giao tiếp trực tuyến thời gian thực (Real-time Communication) cho phép người dùng kết nối ngẫu nhiên thông qua Video, Voice và Text. Điểm đột phá của hệ thống là cơ chế "Blind Date 3 Phút": Các cuộc trò chuyện ban đầu bị giới hạn thời gian và ẩn danh. Chỉ khi cả hai bên đồng thuận (Match), họ mới trở thành bạn bè và mở khóa khả năng giao tiếp không giới hạn.
+
+2. LUỒNG NGƯỜI DÙNG CỐT LÕI (CORE WORKFLOW)
+Xác thực (Auth): Người dùng truy cập hệ thống. Có thể đăng nhập hoặc dùng chế độ Khách (Anonymous).
+
+Chọn Chế độ (Mode Selection): Lựa chọn 1 trong 3 phương thức kết nối: Video Chat, Voice Chat, hoặc Text Chat thuần.
+
+Kết nối & Đếm ngược (3-Minute Blind Date):
+
+Hệ thống tự động ghép cặp 2 người dùng ngẫu nhiên đang trong hàng chờ (Queue).
+
+Đồng hồ đếm ngược 180 giây (3 phút) bắt đầu.
+
+Giao diện và danh tính được ẩn danh một phần để tạo sự bí ẩn.
+
+Phán quyết (The Match Decision):
+
+Trong 3 phút, nếu cảm thấy hợp, người dùng ấn nút "Trái tim" (Match).
+
+Nếu hết 3 phút mà không đủ 2 lượt Match -> Hệ thống tự động ngắt kết nối.
+
+Nếu CẢ HAI cùng ấn Match -> Kích hoạt Match Success.
+
+Mở khóa Bạn bè (Friendship Unlocked): Xóa bỏ giới hạn 3 phút, hiện danh tính thật, tự động kết bạn và mở khóa tính năng Trò chuyện Riêng tư (Private Message).
+
+3. TÍNH NĂNG CHI TIẾT (FEATURE BREAKDOWN)
+3.1. Phân hệ Xác thực & Quản lý Tài khoản (Identity & Auth)
+OAuth2 Login: Hỗ trợ đăng nhập nhanh qua Google. Tích hợp GitHub OAuth đặc quyền dành cho Developer và Tester để vào mode Debug miễn phí.
+
+Anonymous Mode (Guest): Cho phép trải nghiệm nhanh không cần tạo tài khoản (hạn chế một số tính năng lưu trữ dài hạn).
+
+3.2. Phân hệ Phòng Chat Ngẫu Nhiên (Random Room)
+Đa phương thức: Hỗ trợ 3 Mode độc lập: Video WebRTC, Voice (chỉ thu âm thanh), Text.
+
+Live Chat đa nhiệm: Trong chế độ Video/Voice, hệ thống được tích hợp sẵn một khung Text Chat song song dành cho người dùng hướng nội hoặc môi trường ồn ào. Hỗ trợ hệ thống Emoji. Tin nhắn trong phòng tạm thời này sẽ được lưu trữ truy xuất siêu tốc bằng Redis Cache để tối ưu hiệu năng, tự động hủy khi phòng đóng.
+
+Timer Countdown: Đồng hồ đếm lùi 3 phút, được đồng bộ thời gian thực từ Backend.
+
+3.3. Phân hệ Trò Chuyện Riêng Tư (Private Messaging)
+Truy cập thông qua ngăn kéo Inbox (Biểu tượng Message trên Topbar) dành riêng cho những người đã "Match".
+
+Rich Media Chat: Hỗ trợ gửi tin nhắn văn bản, hình ảnh, và Tin nhắn thoại (Voice note - thu âm trực tiếp).
+
+Tương tác Tin nhắn: Khả năng thả Emoji reaction vào từng bong bóng tin nhắn.
+
+Kiểm soát Nội dung: Quyền "Thu hồi tin nhắn" (Unsend) từ cả 2 phía.
+
+Quản lý Mối quan hệ: Tính năng Xóa bạn (Unfriend) và Chặn (Block) đối phương.
+
+3.4. Phân hệ An toàn & Quản trị (Trust & Safety)
+Hệ thống Report: Người dùng có thể tố cáo hành vi vi phạm (Show hàng, lừa đảo, ngôn từ kích động...).
+
+Hình phạt Cấp cao (IP Ban): Tích hợp màng lọc chặn vĩnh viễn IP của các thiết bị có hành vi vi phạm nghiêm trọng để làm sạch môi trường ứng dụng.
