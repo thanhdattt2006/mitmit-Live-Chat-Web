@@ -30,56 +30,58 @@ public class MatchmakingService {
     private static final List<String> CALL_TYPES = Arrays.asList("video", "voice", "text");
 
     public void joinQueue(String userId, String callType) {
-        // Chỉ Push userId vào Redis Queue rồi return thành công luôn
         redisService.pushToQueue(QUEUE_PREFIX + callType, userId);
     }
 
     @Scheduled(fixedDelay = 2000)
     public void processMatchmakingQueue() {
-        // Cứ 2 giây nó tự động quét Redis 1 lần để khớp lệnh
         for (String callType : CALL_TYPES) {
-            while (true) {
-                try {
-                    String user1Id = redisService.popFromQueue(QUEUE_PREFIX + callType);
-                    if (user1Id == null) {
-                        break;
-                    }
+            tryMatch(callType);
+        }
+    }
 
-                    String user2Id = redisService.popFromQueue(QUEUE_PREFIX + callType);
-                    if (user2Id == null) {
-                        redisService.pushToQueue(QUEUE_PREFIX + callType, user1Id);
-                        break;
-                    }
-
-                    if (redisService.isMemberOfSet(BLACKLIST_PREFIX + user1Id, user2Id)) {
-                        redisService.pushToQueue(QUEUE_PREFIX + callType, user1Id);
-                        redisService.pushToQueue(QUEUE_PREFIX + callType, user2Id);
-                        break;
-                    }
-
-                    redisService.addToSetWithExpire(BLACKLIST_PREFIX + user1Id, user2Id, BLACKLIST_TIME);
-                    redisService.addToSetWithExpire(BLACKLIST_PREFIX + user2Id, user1Id, BLACKLIST_TIME);
-
-                    ChatSession session = ChatSession.builder()
-                            .user1Id(user1Id)
-                            .user2Id(user2Id)
-                            .callType(callType)
-                            .startedAt(LocalDateTime.now())
-                            .build();
-                    chatSessionRepository.save(session);
-
-                    Map<String, Object> payload = new HashMap<>();
-                    payload.put("sessionId", session.getId());
-                    payload.put("user1Id", user1Id);
-                    payload.put("user2Id", user2Id);
-
-                    messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
-                    messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+    private void tryMatch(String callType) {
+        while (true) {
+            try {
+                String user1Id = redisService.popFromQueue(QUEUE_PREFIX + callType);
+                if (user1Id == null) {
                     break;
                 }
+
+                String user2Id = redisService.popFromQueue(QUEUE_PREFIX + callType);
+                if (user2Id == null) {
+                    redisService.pushToQueue(QUEUE_PREFIX + callType, user1Id);
+                    break;
+                }
+
+                if (redisService.isMemberOfSet(BLACKLIST_PREFIX + user1Id, user2Id)) {
+                    redisService.pushToQueue(QUEUE_PREFIX + callType, user1Id);
+                    redisService.pushToQueue(QUEUE_PREFIX + callType, user2Id);
+                    break;
+                }
+
+                redisService.addToSetWithExpire(BLACKLIST_PREFIX + user1Id, user2Id, BLACKLIST_TIME);
+                redisService.addToSetWithExpire(BLACKLIST_PREFIX + user2Id, user1Id, BLACKLIST_TIME);
+
+                ChatSession session = ChatSession.builder()
+                        .user1Id(user1Id)
+                        .user2Id(user2Id)
+                        .callType(callType)
+                        .startedAt(LocalDateTime.now())
+                        .build();
+                chatSessionRepository.save(session);
+
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("sessionId", session.getId());
+                payload.put("user1Id", user1Id);
+                payload.put("user2Id", user2Id);
+
+                messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
+                messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                break;
             }
         }
     }
