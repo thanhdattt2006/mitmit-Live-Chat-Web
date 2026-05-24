@@ -2,26 +2,25 @@ package com.mitmit.service;
 
 import com.mitmit.document.ChatSession;
 import com.mitmit.repository.ChatSessionRepository;
-import com.mitmit.repository.FriendshipRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class MatchmakingService {
 
     private final RedisService redisService;
-    private final UserService userService;
     private final ChatSessionRepository chatSessionRepository;
-    private final FriendshipRepository friendshipRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final String QUEUE_PREFIX = "queue:";
@@ -30,7 +29,10 @@ public class MatchmakingService {
     private static final List<String> CALL_TYPES = Arrays.asList("video", "voice", "text");
 
     public void joinQueue(String userId, String callType) {
-        redisService.pushToQueue(QUEUE_PREFIX + callType, userId);
+        String queueKey = QUEUE_PREFIX + callType;
+        // 1. Xử lý Lỗi Duplicate Queue: Xóa user khỏi hàng đợi (nếu có) trước khi đẩy xuống cuối hàng
+        redisService.removeFromQueue(queueKey, userId);
+        redisService.pushToQueue(queueKey, userId);
     }
 
     @Scheduled(fixedDelay = 2000)
@@ -41,23 +43,36 @@ public class MatchmakingService {
     }
 
     private void tryMatch(String callType) {
+        String queueKey = QUEUE_PREFIX + callType;
+        List<String> requeueUsers = new ArrayList<>();
+
         while (true) {
             try {
-                String user1Id = redisService.popFromQueue(QUEUE_PREFIX + callType);
+                String user1Id = redisService.popFromQueue(queueKey);
                 if (user1Id == null) {
                     break;
                 }
 
-                String user2Id = redisService.popFromQueue(QUEUE_PREFIX + callType);
+                String user2Id = redisService.popFromQueue(queueKey);
                 if (user2Id == null) {
-                    redisService.pushToQueue(QUEUE_PREFIX + callType, user1Id);
+                    // Lẻ 1 người, đưa vào danh sách để requeue
+                    requeueUsers.add(user1Id);
                     break;
                 }
 
+                // Xử lý Race Condition khi có nhiều luồng request joinQueue đồng thời (user tự khớp với chính mình)
+                if (user1Id.equals(user2Id)) {
+                    requeueUsers.add(user1Id);
+                    continue;
+                }
+
+                // 2. Xử lý Lỗi Head-of-line blocking: Bỏ qua 2 user nằm trong Blacklist bằng continue
+                // Sau đó cho vào danh sách requeueUsers để đẩy xuống CUỐI hàng chờ ở bên ngoài vòng lặp
+                // Cách này tránh được hiện tượng treo vòng lặp vô hạn (Infinite loop)
                 if (redisService.isMemberOfSet(BLACKLIST_PREFIX + user1Id, user2Id)) {
-                    redisService.pushToQueue(QUEUE_PREFIX + callType, user1Id);
-                    redisService.pushToQueue(QUEUE_PREFIX + callType, user2Id);
-                    break;
+                    requeueUsers.add(user1Id);
+                    requeueUsers.add(user2Id);
+                    continue;
                 }
 
                 redisService.addToSetWithExpire(BLACKLIST_PREFIX + user1Id, user2Id, BLACKLIST_TIME);
@@ -69,20 +84,30 @@ public class MatchmakingService {
                         .callType(callType)
                         .startedAt(LocalDateTime.now())
                         .build();
-                chatSessionRepository.save(session);
 
-                Map<String, Object> payload = new HashMap<>();
-                payload.put("sessionId", session.getId());
-                payload.put("user1Id", user1Id);
-                payload.put("user2Id", user2Id);
+                // 3. Xử lý Nút thắt cổ chai I/O: Lưu vào Database và gửi Message qua websocket trên luồng Async
+                // Điều này giúp vòng lặp tryMatch chạy hết tốc lực không bị blocking
+                CompletableFuture.runAsync(() -> {
+                    chatSessionRepository.save(session);
 
-                messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
-                messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put("sessionId", session.getId());
+                    payload.put("user1Id", user1Id);
+                    payload.put("user2Id", user2Id);
+
+                    messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
+                    messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);
+                });
 
             } catch (Exception e) {
                 e.printStackTrace();
                 break;
             }
+        }
+
+        // Re-queue: Đẩy các user chưa thể ghép đôi (Blacklist hoặc bị lẻ) xuống cuối hàng chờ
+        for (String userId : requeueUsers) {
+            redisService.pushToQueue(queueKey, userId);
         }
     }
 
