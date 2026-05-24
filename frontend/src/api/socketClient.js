@@ -15,6 +15,9 @@ class SocketService {
       const socketUrl = 'http://localhost:8080/ws';
       this.stompClient = new Client({
         webSocketFactory: () => new SockJS(socketUrl),
+        connectHeaders: {
+          userId: userId
+        },
         reconnectDelay: 5000,
         onConnect: () => {
           console.log('STOMP Connected');
