@@ -5,7 +5,12 @@ import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
 
 export default function VideoChat() {
-  const { lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, addFriend, localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream } = useStore();
+  const { 
+    lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, 
+    addFriend, localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
+    isMatched, remoteUserInfo, sendMatchDecision
+  } = useStore();
+  
   const t = translations[lang];
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -20,12 +25,13 @@ export default function VideoChat() {
 
   // Match state
   const [isLikedByMe, setIsLikedByMe] = useState(false);
-  const [isLikedByStranger, setIsLikedByStranger] = useState(false);
   const [showPremiumMatch, setShowPremiumMatch] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const isMatch = isLikedByMe && isLikedByStranger;
   const isIdle = !isMatching && !isConnected;
+
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
+  const displayStrangerName = remoteUserInfo?.name || t.STRANGER;
 
   const handleGuestAction = (actionCallback) => {
     if (!isLoggedIn) {
@@ -44,8 +50,9 @@ export default function VideoChat() {
     actionCallback();
   };
 
+  // Timer useEffect
   useEffect(() => {
-    if (!isConnected || isMatch) return;
+    if (!isConnected || isMatched) return;
     
     if (timeLeft <= 0) {
       handleStartNext();
@@ -57,7 +64,17 @@ export default function VideoChat() {
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [isConnected, isMatch, timeLeft]);
+  }, [isConnected, isMatched, timeLeft]);
+
+  // Premium Match UI trigger
+  useEffect(() => {
+    if (isMatched) {
+      setShowPremiumMatch(true);
+      // Optional: Auto hide premium match overlay after 4 seconds
+      const timer = setTimeout(() => setShowPremiumMatch(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isMatched]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -132,10 +149,10 @@ export default function VideoChat() {
           setLocalStream(fakeStream);
         }
       }
+      setTimeLeft(180);
       await startMatching();
       clearMessages();
       setIsLikedByMe(false);
-      setIsLikedByStranger(false);
       setShowPremiumMatch(false);
     } catch (error) {
       console.error('Error starting next match:', error);
@@ -147,7 +164,6 @@ export default function VideoChat() {
       stopCall();
       clearMessages();
       setIsLikedByMe(false);
-      setIsLikedByStranger(false);
       setShowPremiumMatch(false);
 
       if (localStream) {
@@ -210,11 +226,12 @@ export default function VideoChat() {
   }, [localStream]);
 
   const handleHeartClick = () => {
-    handleGuestAction(() => {
+    handleGuestAction(async () => {
       try {
-        if (isLikedByMe) return; // Prevent multiple triggers
-      
-      setIsLikedByMe(true);
+        if (isLikedByMe || isMatched) return; // Prevent multiple triggers
+        
+        setIsLikedByMe(true);
+        await sendMatchDecision();
       } catch (error) {
         console.error('Error processing heart click:', error);
       }
@@ -244,7 +261,7 @@ export default function VideoChat() {
       ) : callMode === 'video' ? (
         <>
           <img 
-            src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
+            src={displayStrangerImg} 
             alt="Stranger" 
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(isMatching || remoteStream) ? 'opacity-0' : 'opacity-100'}`} 
           />
@@ -254,7 +271,7 @@ export default function VideoChat() {
             playsInline 
             className={`absolute inset-0 w-full h-full object-cover ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
             style={{ 
-              filter: isBlurred ? 'blur(20px)' : 'blur(0px)',
+              filter: (isBlurred && !isMatched) ? 'blur(20px)' : 'blur(0px)',
               transition: 'filter 1.5s ease-in-out, opacity 0.5s ease'
             }}
           />
@@ -266,9 +283,9 @@ export default function VideoChat() {
            <div className="relative flex flex-col items-center">
              <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping scale-150"></div>
              <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-ping scale-[2] delay-150"></div>
-             <img src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
+             <img src={displayStrangerImg} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
              <div className="relative z-10 mt-6 flex items-center gap-2">
-               <p className="font-semibold text-lg text-white truncate">{t.STRANGER}</p>
+               <p className="font-semibold text-lg text-white truncate">{displayStrangerName}</p>
              </div>
            </div>
         </div>
@@ -291,7 +308,7 @@ export default function VideoChat() {
               <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
             </div>
             <div className="relative">
-              <img src={strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
+              <img src={displayStrangerImg} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
             </div>
           </div>
         </div>
@@ -312,7 +329,7 @@ export default function VideoChat() {
       )}
 
       {/* Timer Overlay */}
-      {isConnected && !isMatch && (
+      {isConnected && !isMatched && (
         <div className={`absolute top-6 left-1/2 -translate-x-1/2 glass-panel text-white px-5 py-1.5 rounded-full shadow-lg border ${timeLeft <= 10 ? 'border-red-500/50 text-red-500' : 'border-white/10'} flex items-center gap-2 z-10 transition-colors whitespace-nowrap`}>
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></div>
           <span className="font-mono text-base font-semibold tracking-wider shrink-0">{formatTime(timeLeft)}</span>
@@ -353,7 +370,7 @@ export default function VideoChat() {
               onClick={handleHeartClick} 
               className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-pink-500/20 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-75 group shrink-0"
             >
-              <Heart className={`w-5 h-5 sm:w-6 sm:h-6 transition-all shrink-0 ${isLikedByMe ? 'fill-pink-500 text-pink-500 scale-110' : 'group-hover:text-pink-400'}`} />
+              <Heart className={`w-5 h-5 sm:w-6 sm:h-6 transition-all shrink-0 ${(isLikedByMe || isMatched) ? 'fill-pink-500 text-pink-500 scale-110' : 'group-hover:text-pink-400'}`} />
             </button>
 
             <button 

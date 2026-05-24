@@ -31,6 +31,8 @@ const useStore = create(
           isLoggedIn: false, 
           isMatching: false, 
           isConnected: false, 
+          isMatched: false,
+          remoteUserInfo: { name: '', avatarUrl: '' },
           localStream: null 
         };
       }),
@@ -111,57 +113,94 @@ const useStore = create(
       // Call State
       isMatching: false,
       isConnected: false,
+      isMatched: false,
+      remoteUserInfo: { name: '', avatarUrl: '' },
       setMatching: (isMatching) => set({ isMatching }),
+      
+      sendMatchDecision: async () => {
+        try {
+          const { userInfo, sessionId } = get();
+          await axiosClient.post('/api/v1/room/match', null, {
+            params: { userId: userInfo?.id, sessionId }
+          });
+        } catch (error) {
+          console.error('Error sending match decision:', error);
+        }
+      },
+
       startMatching: async () => {
-        set({ isMatching: true, isConnected: false });
+        set({ 
+          isMatching: true, 
+          isConnected: false, 
+          isMatched: false, 
+          remoteUserInfo: { name: '', avatarUrl: '' } 
+        });
+        
         try {
           const { userInfo, callMode } = get();
           const userId = userInfo?.id;
           
-      // Wait for socket to connect and subscribe BEFORE calling the API
-      // Wait for socket to connect and subscribe BEFORE calling the API
-      await socketService.connect(userId, 
-        async (matchData) => {
-          const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
-          set({
-            isMatching: false,
-            isConnected: true,
-            remoteUserId,
-            sessionId: matchData.sessionId
+          // Wait for socket to connect and subscribe BEFORE calling the API
+          await socketService.connect(userId, 
+            async (matchData) => {
+              const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
+              set({
+                isMatching: false,
+                isConnected: true,
+                remoteUserId,
+                sessionId: matchData.sessionId
+              });
+
+              // Subscribe to match_success topic for this session
+              if (socketService.stompClient) {
+                socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/match_success`, (message) => {
+                  try {
+                    const data = JSON.parse(message.body);
+                    set({
+                      isMatched: true,
+                      remoteUserInfo: {
+                        name: data.matchedUserName,
+                        avatarUrl: data.matchedUserAvatar
+                      }
+                    });
+                  } catch (err) {
+                    console.error("Failed to parse match_success data:", err);
+                  }
+                });
+              }
+
+              // Khởi tạo WebRTC Client ngay khi có phòng
+              const currentState = get();
+              webRTCClient.initialize(userId, (remoteStream) => {
+                set({ remoteStream });
+              });
+
+              // Gắn stream thật từ camera/mic vào kết nối
+              if (currentState.localStream) {
+                webRTCClient.addLocalStream(currentState.localStream);
+              }
+
+              // Quy định: User 2 sẽ là người chủ động gọi (Caller) để bắt tay
+              if (userId === matchData.user2Id) {
+                await webRTCClient.createOffer(remoteUserId);
+              }
+            },
+            async (signalData) => {
+              // Xử lý các tín hiệu WebRTC từ đối phương
+              if (signalData.type === 'offer') {
+                await webRTCClient.handleReceiveOffer(signalData.data, signalData.senderId);
+              } else if (signalData.type === 'answer') {
+                await webRTCClient.handleReceiveAnswer(signalData.data);
+              } else if (signalData.type === 'ice') {
+                await webRTCClient.handleReceiveIceCandidate(signalData.data);
+              }
+            }
+          );
+
+          // Now join the matchmaking queue
+          await axiosClient.post('/api/v1/matchmaking/join', null, {
+            params: { userId, callType: callMode }
           });
-
-          // Khởi tạo WebRTC Client ngay khi có phòng
-          const currentState = get();
-          webRTCClient.initialize(userId, (remoteStream) => {
-            set({ remoteStream });
-          });
-
-          // Gắn stream thật từ camera/mic vào kết nối
-          if (currentState.localStream) {
-            webRTCClient.addLocalStream(currentState.localStream);
-          }
-
-          // Quy định: User 2 sẽ là người chủ động gọi (Caller) để bắt tay
-          if (userId === matchData.user2Id) {
-            await webRTCClient.createOffer(remoteUserId);
-          }
-        },
-        async (signalData) => {
-          // Xử lý các tín hiệu WebRTC từ đối phương
-          if (signalData.type === 'offer') {
-            await webRTCClient.handleReceiveOffer(signalData.data, signalData.senderId);
-          } else if (signalData.type === 'answer') {
-            await webRTCClient.handleReceiveAnswer(signalData.data);
-          } else if (signalData.type === 'ice') {
-            await webRTCClient.handleReceiveIceCandidate(signalData.data);
-          }
-        }
-      );
-
-      // Now join the matchmaking queue
-      await axiosClient.post('/api/v1/matchmaking/join', null, {
-        params: { userId, callType: callMode }
-      });
         } catch (error) {
           set({ isMatching: false });
           alert('Error joining matchmaking: ' + (error.response?.data?.message || error.message));
