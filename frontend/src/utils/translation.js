@@ -23,6 +23,9 @@ export const translations = {
     SYSTEM_MSG_HELLO: "You're now chatting with a random stranger. Say hi!",
     SYSTEM_MSG_FINDING: "Connecting to a new stranger...",
     ADD_FRIEND: 'Add Friend',
+    FORCE_CLOSE_ALERT: 'Time is up! Match unsuccessful',
+    ADMIN: 'Admin',
+    MEMBER: 'Member',
     // New additions
     LOGIN: 'Login',
     NOTIFICATIONS: 'Notifications',
@@ -116,6 +119,9 @@ export const translations = {
     SYSTEM_MSG_HELLO: "Bạn đang trò chuyện với người lạ. Hãy nói Xin chào!",
     SYSTEM_MSG_FINDING: "Đang kết nối với người lạ mới...",
     ADD_FRIEND: 'Kết bạn',
+    FORCE_CLOSE_ALERT: 'Hết thời gian mất rồi!',
+    ADMIN: 'Quản trị viên',
+    MEMBER: 'Thành viên',
     // New additions
     LOGIN: 'Đăng nhập',
     NOTIFICATIONS: 'Thông báo',

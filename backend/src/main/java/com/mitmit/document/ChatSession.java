@@ -26,4 +26,6 @@ public class ChatSession {
     private LocalDateTime startedAt;
 
     private LocalDateTime endedAt;
+    
+    private boolean isMatched;
 }

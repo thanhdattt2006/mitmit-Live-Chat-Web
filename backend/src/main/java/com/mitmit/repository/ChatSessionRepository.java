@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ChatSessionRepository extends MongoRepository<ChatSession, String> {
     List<ChatSession> findByUser1IdOrUser2IdOrderByStartedAtDesc(String user1Id, String user2Id);
+    List<ChatSession> findByStartedAtBeforeAndEndedAtIsNullAndIsMatchedFalse(java.time.LocalDateTime cutoff);
 }

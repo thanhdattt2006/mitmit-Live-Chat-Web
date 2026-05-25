@@ -31,7 +31,7 @@ export default function ProfileDropdown({ onOpenProfile, onOpenSettings, onLogou
     return name.slice(0, 2).toUpperCase();
   };
 
-  const roleText = userInfo?.role === 'ADMIN' ? 'Admin' : 'Thành viên';
+  const roleText = userInfo?.role === 'ADMIN' ? t.ADMIN : t.MEMBER;
 
   return (
     <div className="relative shrink-0" ref={profileRef}>

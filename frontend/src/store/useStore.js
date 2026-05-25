@@ -172,6 +172,18 @@ const useStore = create(
                     console.error("Lỗi parse data match_success:", err);
                   }
                 });
+
+                socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/force_close`, (message) => {
+                  // Force close event from backend (Time expired without match)
+                  const state = get();
+                  if (state.stopCall) {
+                    state.stopCall(); // Terminate WebRTC and return to idle
+                  }
+                  // Notify user
+                  const lang = state.lang || 'vi';
+                  const t = window.translations ? window.translations[lang] : { FORCE_CLOSE_ALERT: "Hết thời gian! Phán quyết không thành công" };
+                  alert(t.FORCE_CLOSE_ALERT || "Hết thời gian! Phán quyết không thành công");
+                });
               }
 
               const currentState = get();

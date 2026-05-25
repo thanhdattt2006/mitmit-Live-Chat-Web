@@ -37,4 +37,9 @@ public class RedisService {
     public void deleteKey(String key) {
         redisTemplate.delete(key);
     }
+
+    public long getSetSize(String key) {
+        Long size = redisTemplate.opsForSet().size(key);
+        return size != null ? size : 0;
+    }
 }
