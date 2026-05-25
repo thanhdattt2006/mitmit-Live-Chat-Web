@@ -14,6 +14,7 @@ import org.springframework.security.config.Customizer;
 public class SecurityConfig {
 
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -21,11 +22,14 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // Dùng chung với CorsConfig đã cấu hình
             .csrf(csrf -> csrf.disable()) // Tắt CSRF để Postman/Axios gọi POST không bị chặn
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/users/me").authenticated()
                 .anyRequest().permitAll() // TẠM THỜI MỞ CỬA TOÀN BỘ
             )
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2AuthenticationSuccessHandler)
-            );
+            )
+            .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+            
         return http.build();
     }
 }

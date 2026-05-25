@@ -11,7 +11,10 @@ const axiosClient = axios.create({
 // Add a request interceptor
 axiosClient.interceptors.request.use(
   function (config) {
-    // Do something before request is sent
+    const token = localStorage.getItem('mitmit_jwt_token'); // Lấy token từ kho
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`; // Kẹp vào header
+    }
     return config;
   },
   function (error) {

@@ -4,6 +4,7 @@ import useStore from './store/useStore';
 import Header from './layouts/Header';
 import RoomPage from './pages/RoomPage';
 import AdminDashboard from './pages/AdminDashboard';
+import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
 export default function App() {
   const { updateOnlineCount } = useStore();
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/" element={<RoomPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
           </Routes>
         </main>
       </div>
