@@ -3,6 +3,7 @@ import { X, Camera } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import ProfileAvatarUpload from './ProfileAvatarUpload';
 
 export default function ProfileModal({ isOpen, onClose }) {
   const { userInfo, setUserInfo, lang } = useStore();
@@ -116,37 +117,13 @@ export default function ProfileModal({ isOpen, onClose }) {
         </div>
 
         <div className="p-6">
-          <div className="flex flex-col items-center mb-6">
-            <div className="relative">
-              {avatarError ? (
-                <div className="w-24 h-24 rounded-full border-4 border-neutral-800 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-bold">
-                  {getInitials(userInfo?.name)}
-                </div>
-              ) : (
-                <img 
-                  src={previewUrl || userInfo?.avatarUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80'} 
-                  alt="Avatar" 
-                  className="w-24 h-24 rounded-full object-cover border-4 border-neutral-800 bg-neutral-800"
-                  onError={() => setAvatarError(true)} 
-                />
-              )}
-              
-              <label className="absolute bottom-0 right-0 p-2 bg-neutral-800 border-2 border-[#141414] rounded-full hover:bg-neutral-700 transition-colors cursor-pointer">
-                <Camera className="w-4 h-4 text-white" />
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                />
-              </label>
-            </div>
-            
-            <div className="mt-4 flex items-center gap-2">
-              <h3 className="font-semibold text-lg">{userInfo?.name || t.GUEST}</h3>
-            </div>
-          </div>
+          <ProfileAvatarUpload 
+            previewUrl={previewUrl}
+            setPreviewUrl={setPreviewUrl}
+            avatarError={avatarError}
+            setAvatarError={setAvatarError}
+            getInitials={getInitials}
+          />
 
           <div className="space-y-4">
             <div>
