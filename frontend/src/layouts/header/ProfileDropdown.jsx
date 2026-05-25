@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, LogOut, Settings } from 'lucide-react';
-import useStore from '../../../store/useStore';
-import { translations } from '../../../utils/translation';
+import useStore from '../../store/useStore';
+import { translations } from '../../utils/translation';
 
 export default function ProfileDropdown({ onOpenProfile, onOpenSettings, onLogoutConfirm }) {
   const { lang, userInfo } = useStore();

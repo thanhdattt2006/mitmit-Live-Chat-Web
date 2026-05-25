@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell } from 'lucide-react';
-import useStore from '../../../store/useStore';
-import { translations } from '../../../utils/translation';
+import useStore from '../../store/useStore';
+import { translations } from '../../utils/translation';
 
 export default function NotificationDropdown() {
   const { lang } = useStore();

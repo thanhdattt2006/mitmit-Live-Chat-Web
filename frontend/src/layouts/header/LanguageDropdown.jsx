@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Globe, ChevronDown } from 'lucide-react';
-import useStore from '../../../store/useStore';
+import useStore from '../../store/useStore';
 
 export default function LanguageDropdown() {
   const { lang, setLang } = useStore();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Video, Mic, MessageCircle } from 'lucide-react';
-import useStore from '../../../store/useStore';
+import useStore from '../../store/useStore';
 
 export default function CallModeTabs() {
   const { callMode, setCallMode, isMatching, isConnected } = useStore();
