@@ -5,7 +5,22 @@ spring:
   application:
     name: mitmit
 
-  # 1. Bộ não: MySQL (Nhớ đổi lại username và password cho đúng với máy mày)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id:
+            client-secret:
+            scope: email, profile
+            redirect-uri: "http://localhost:8080/login/oauth2/code/{registrationId}"
+          github:
+            client-id:
+            client-secret:
+            scope: read:user, user:email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/{registrationId}"
+
+  # 1. Bộ não: MySQL
   datasource:
     url: jdbc:mysql://localhost:3306/mitmit?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
     username: root

@@ -10,6 +10,16 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
+
+    // Handle OAuth2 redirect token
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      localStorage.setItem('token', token);
+      useStore.getState().login();
+      // Remove token from URL for security without reloading
+      window.history.replaceState({}, document.title, '/');
+    }
   }, []);
 
   useEffect(() => {
