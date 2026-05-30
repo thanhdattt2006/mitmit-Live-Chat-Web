@@ -272,30 +272,36 @@ const useStore = create(
       setConnected: (connected) => set({ isConnected: connected, isMatching: false }),
       
       cancelMatching: async () => {
-        webRTCClient.close();
-        socketService.disconnect();
-        set({ isConnected: false, isMatching: false });
         try {
-          const { callMode } = get();
-          await axiosClient.post('/api/v1/matchmaking/leave', null, {
-            params: { callType: callMode }
-          });
-        } catch (error) {
-          console.error('Lỗi thoát hàng đợi:', error);
+          webRTCClient.close();
+          socketService.disconnect();
+        } finally {
+          set({ isConnected: false, isMatching: false });
+          try {
+            const { callMode } = get();
+            await axiosClient.post('/api/v1/matchmaking/leave', null, {
+              params: { callType: callMode }
+            });
+          } catch (error) {
+            console.error('Lỗi thoát hàng đợi:', error);
+          }
         }
       },
       
       stopCall: async () => {
-        webRTCClient.close();
-        socketService.disconnect();
-        set({ isConnected: false, isMatching: false });
         try {
-          const { callMode } = get();
-          await axiosClient.post('/api/v1/matchmaking/leave', null, {
-            params: { callType: callMode }
-          });
-        } catch (error) {
-          console.error('Lỗi kết thúc cuộc gọi:', error);
+          webRTCClient.close();
+          socketService.disconnect();
+        } finally {
+          set({ isConnected: false, isMatching: false });
+          try {
+            const { callMode } = get();
+            await axiosClient.post('/api/v1/matchmaking/leave', null, {
+              params: { callType: callMode }
+            });
+          } catch (error) {
+            console.error('Lỗi kết thúc cuộc gọi:', error);
+          }
         }
       },
 

@@ -23,9 +23,15 @@ public class MatchmakingController {
     }
 
     @PostMapping("/leave")
-    public ResponseEntity<?> leaveQueue(org.springframework.security.core.Authentication authentication, @RequestParam String callType) {
+    public ResponseEntity<?> leaveQueue(
+            org.springframework.security.core.Authentication authentication,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String callType) {
         String userId = (String) authentication.getPrincipal();
-        matchmakingService.leaveQueue(userId, callType);
+        if (callType != null && !callType.isEmpty()) {
+            matchmakingService.leaveQueue(userId, callType);
+        } else {
+            matchmakingService.leaveAllQueues(userId);
+        }
         return ResponseEntity.ok("Đã rời hàng chờ");
     }
 }

@@ -1,7 +1,10 @@
 package com.mitmit.service;
 
 import com.mitmit.document.ChatSession;
+import com.mitmit.entity.User;
 import com.mitmit.repository.ChatSessionRepository;
+import com.mitmit.repository.FriendshipRepository;
+import com.mitmit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,8 @@ public class MatchmakingService {
     private final RedisService redisService;
     private final ChatSessionRepository chatSessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
 
     private static final String QUEUE_PREFIX = "queue:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
@@ -63,6 +68,15 @@ public class MatchmakingService {
                 // Xử lý Race Condition khi có nhiều luồng request joinQueue đồng thời (user tự khớp với chính mình)
                 if (user1Id.equals(user2Id)) {
                     requeueUsers.add(user1Id);
+                    continue;
+                }
+
+                // Chặn ghép cặp lại với Bạn Bè
+                User user1 = userRepository.findById(user1Id).orElse(null);
+                User user2 = userRepository.findById(user2Id).orElse(null);
+                if (user1 != null && user2 != null && friendshipRepository.existsByUserIdAndFriendId(user1, user2)) {
+                    requeueUsers.add(user1Id);
+                    requeueUsers.add(user2Id);
                     continue;
                 }
 
@@ -113,5 +127,11 @@ public class MatchmakingService {
 
     public void leaveQueue(String userId, String callType) {
         redisService.removeFromQueue(QUEUE_PREFIX + callType, userId);
+    }
+
+    public void leaveAllQueues(String userId) {
+        for (String callType : CALL_TYPES) {
+            redisService.removeFromQueue(QUEUE_PREFIX + callType, userId);
+        }
     }
 }
