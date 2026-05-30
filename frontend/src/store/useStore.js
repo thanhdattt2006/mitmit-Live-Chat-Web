@@ -159,11 +159,34 @@ const useStore = create(
       },
 
       startMatching: async () => {
+        const { matchTimeoutId: oldTimeout } = get();
+        if (oldTimeout) clearTimeout(oldTimeout);
+
+        const newTimeoutId = setTimeout(() => {
+           const state = get();
+           if (state.isMatching && !state.isConnected) {
+               state.cancelMatching();
+               const lang = state.lang || 'vi';
+               const t = window.translations ? window.translations[lang] : { NO_ONE_ONLINE: "Không có ai online, vui lòng quay lại sau" };
+               
+               const toast = document.createElement('div');
+               toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-neutral-800 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2 border border-neutral-700';
+               toast.innerHTML = `<span>${t.NO_ONE_ONLINE || "Không có ai online, vui lòng quay lại sau"}</span>`;
+               document.body.appendChild(toast);
+               setTimeout(() => {
+                 toast.style.opacity = '0';
+                 toast.style.transition = 'opacity 0.3s ease';
+                 setTimeout(() => toast.remove(), 300);
+               }, 3000);
+           }
+        }, 60000);
+
         set({ 
           isMatching: true, 
           isConnected: false, 
           isMatched: false, 
-          remoteUserInfo: { name: '', avatarUrl: '' } 
+          remoteUserInfo: { name: '', avatarUrl: '' },
+          matchTimeoutId: newTimeoutId
         });
         
         try {
@@ -172,6 +195,9 @@ const useStore = create(
           
           await socketService.connect(userId, 
              (matchData) => {
+               const { matchTimeoutId } = get();
+               if (matchTimeoutId) clearTimeout(matchTimeoutId);
+
                const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
                set({
                  isMatching: false,
@@ -239,6 +265,8 @@ const useStore = create(
               const currentState = get();
               webRTCClient.initialize(userId, (remoteStream) => {
                 set({ remoteStream });
+              }, () => {
+                set({ partnerDisconnectedTrigger: Date.now() });
               });
 
               if (currentState.localStream) {
@@ -272,6 +300,9 @@ const useStore = create(
       setConnected: (connected) => set({ isConnected: connected, isMatching: false }),
       
       cancelMatching: async () => {
+        const { matchTimeoutId } = get();
+        if (matchTimeoutId) clearTimeout(matchTimeoutId);
+
         try {
           webRTCClient.close();
           socketService.disconnect();
@@ -289,6 +320,9 @@ const useStore = create(
       },
       
       stopCall: async () => {
+        const { matchTimeoutId } = get();
+        if (matchTimeoutId) clearTimeout(matchTimeoutId);
+
         try {
           webRTCClient.close();
           socketService.disconnect();

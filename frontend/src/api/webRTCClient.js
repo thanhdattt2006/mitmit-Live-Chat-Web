@@ -36,11 +36,18 @@ class WebRTCClient {
   }
 
   // Initialize WebRTC connection
-  initialize(currentUserId, onTrackCallback) {
+  initialize(currentUserId, onTrackCallback, onDisconnectCallback) {
     try {
       this.currentUserId = currentUserId;
       this.onTrackCallback = onTrackCallback;
       this.peerConnection = new RTCPeerConnection(this.config);
+
+      this.peerConnection.oniceconnectionstatechange = () => {
+        if (this.peerConnection.iceConnectionState === 'disconnected' || this.peerConnection.iceConnectionState === 'failed') {
+          console.log('WebRTC: Partner disconnected');
+          if (onDisconnectCallback) onDisconnectCallback();
+        }
+      };
 
       // Handle ICE Candidate
       this.peerConnection.onicecandidate = (event) => {

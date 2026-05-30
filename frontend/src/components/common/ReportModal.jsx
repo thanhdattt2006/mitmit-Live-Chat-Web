@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Flag, AlertTriangle } from 'lucide-react';
+import { X, Flag, AlertTriangle, Loader2 } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import axiosClient from '../../api/axiosClient';
@@ -9,6 +9,7 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, onReportS
   const t = translations[lang];
   const [selectedReason, setSelectedReason] = useState('');
   const [details, setDetails] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -21,8 +22,9 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, onReportS
   ];
 
   const handleSubmit = async () => {
-    if (!selectedReason || !reportedUserId) return;
+    if (!selectedReason || !reportedUserId || isSubmitting) return;
     
+    setIsSubmitting(true);
     try {
       await axiosClient.post('/api/v1/reports', {
         reportedId: reportedUserId,
@@ -48,6 +50,9 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, onReportS
       setDetails('');
     } catch (error) {
       console.error('Failed to submit report:', error);
+      alert('Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -114,10 +119,10 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, onReportS
           </button>
           <button 
             onClick={handleSubmit}
-            disabled={!selectedReason}
-            className="flex-1 py-3 rounded-2xl font-bold bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 text-white transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
+            disabled={!selectedReason || isSubmitting}
+            className="flex-1 flex justify-center items-center gap-2 py-3 rounded-2xl font-bold bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 text-white transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
           >
-            {t.REPORT_SUBMIT}
+            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : t.REPORT_SUBMIT}
           </button>
         </div>
       </div>

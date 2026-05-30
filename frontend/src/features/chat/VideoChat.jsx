@@ -12,7 +12,7 @@ export default function VideoChat() {
   const { 
     lang, isMatching, isConnected, startMatching, stopCall, clearMessages, callMode, 
     localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
-    isMatched, remoteUserInfo, sendMatchDecision
+    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger
   } = useStore();
   
   const t = translations[lang];
@@ -69,7 +69,14 @@ export default function VideoChat() {
 
   const handleStartNext = async () => {
     try {
-      if (!localStream && callMode !== 'text') {
+      // CLEAR SẠCH TÀN DƯ TRƯỚC KHI TÌM MỚI (Fix lỗi Freeze)
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
+      }
+      stopCall();
+
+      if (callMode !== 'text') {
         try {
           const constraints = {
             video: callMode === 'video' ? {
@@ -132,6 +139,12 @@ export default function VideoChat() {
       console.error('Error starting next match:', error);
     }
   };
+
+  useEffect(() => {
+    if (partnerDisconnectedTrigger && isConnected && !isMatched) {
+      handleStartNext();
+    }
+  }, [partnerDisconnectedTrigger]);
 
   const handleStop = () => {
     try {
