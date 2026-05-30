@@ -4,8 +4,14 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
 export default function InboxDrawer({ isOpen, onClose, onOpenPrivateChat }) {
-  const { friends, lang } = useStore();
+  const { friends, lang, loadFriends } = useStore();
   const t = translations[lang];
+
+  React.useEffect(() => {
+    if (isOpen) {
+      loadFriends();
+    }
+  }, [isOpen, loadFriends]);
 
   return (
     <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>

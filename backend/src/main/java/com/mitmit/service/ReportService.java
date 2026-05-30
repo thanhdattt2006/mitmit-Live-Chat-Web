@@ -1,0 +1,36 @@
+package com.mitmit.service;
+
+import com.mitmit.entity.Report;
+import com.mitmit.entity.ReportStatus;
+import com.mitmit.entity.User;
+import com.mitmit.repository.ReportRepository;
+import com.mitmit.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class ReportService {
+
+    private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public Report createReport(String reporterId, String reportedId, String reason, String details) {
+        User reporter = userRepository.findById(reporterId)
+                .orElseThrow(() -> new RuntimeException("Reporter not found"));
+        User reported = userRepository.findById(reportedId)
+                .orElseThrow(() -> new RuntimeException("Reported user not found"));
+
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .reason(reason)
+                .description(details)
+                .status(ReportStatus.PENDING)
+                .build();
+
+        return reportRepository.save(report);
+    }
+}

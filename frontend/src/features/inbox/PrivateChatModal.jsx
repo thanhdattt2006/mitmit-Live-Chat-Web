@@ -7,6 +7,7 @@ import SystemMessage from './SystemMessage';
 import PrivateMessageRow from './PrivateMessageRow';
 import PrivateChatHeader from './PrivateChatHeader';
 import PrivateChatInput from './PrivateChatInput';
+import axiosClient from '../../api/axiosClient';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const { lang, removeFriend, setInboxOpen } = useStore();
@@ -27,12 +28,25 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   }, [friend]);
 
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      setMessages([
-        { id: '1', type: 'system', text: friend?.lastMsg || t.MOCK_REPLIES[0], isMine: false }
-      ]);
+    if (isOpen && friend) {
+      axiosClient.get('/api/v1/messages', {
+        params: { friendshipId: friend.friendshipId }
+      }).then(response => {
+        const data = response?.data || response;
+        const mappedMessages = data.map(msg => ({
+          id: msg.id,
+          text: msg.content,
+          isMine: msg.senderId === useStore.getState().userInfo?.id,
+          reaction: msg.reaction,
+          replyTo: msg.replyToId ? { id: msg.replyToId } : null,
+          type: msg.type
+        }));
+        setMessages(mappedMessages);
+      }).catch(err => {
+        console.error("Lỗi fetch private messages:", err);
+      });
     }
-  }, [isOpen, friend, messages]);
+  }, [isOpen, friend]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,26 +54,45 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
   if (!isOpen || !friend) return null;
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e?.preventDefault();
     if (!text.trim()) return;
     
     try {
-      setMessages(prev => [...prev, { id: Date.now().toString(), text: text.trim(), isMine: true, replyTo: replyingTo }]);
+      const payload = {
+        friendshipId: friend.friendshipId,
+        content: text.trim(),
+        type: 'TEXT',
+        replyToId: replyingTo?.id || null
+      };
+
+      const response = await axiosClient.post('/api/v1/messages', payload);
+      const newMsg = response?.data || response;
+
+      setMessages(prev => [...prev, {
+        id: newMsg.id,
+        text: newMsg.content,
+        isMine: true,
+        replyTo: replyingTo,
+        reaction: null,
+        type: 'TEXT'
+      }]);
+
       setText('');
       setReplyingTo(null);
-      
-      setTimeout(() => {
-        setMessages(prev => [...prev, { id: Date.now().toString(), text: t.MOCK_REPLIES[4] || t.MOCK_REPLIES[0], isMine: false }]);
-      }, 1500);
     } catch (error) {
       console.error('Error sending private message:', error);
     }
   };
 
-  const handleUnsend = (id) => {
-    setMessages(prev => prev.filter(m => m.id !== id));
-    setActiveMenuId(null);
+  const handleUnsend = async (id) => {
+    try {
+      await axiosClient.delete(`/api/v1/messages/${id}`);
+      setMessages(prev => prev.filter(m => m.id !== id));
+      setActiveMenuId(null);
+    } catch (error) {
+      console.error('Error unsending message:', error);
+    }
   };
 
   const handleCopy = (text) => {
@@ -121,6 +154,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       <ReportModal 
         isOpen={showReportModal} 
         onClose={() => setShowReportModal(false)} 
+        reportedUserId={friend?.id}
         onReportSuccess={() => {
           removeFriend(friend.id);
           onClose();

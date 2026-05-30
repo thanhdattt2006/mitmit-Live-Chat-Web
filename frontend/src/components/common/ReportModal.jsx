@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { X, Flag, AlertTriangle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
+import axiosClient from '../../api/axiosClient';
 
-export default function ReportModal({ isOpen, onClose, onReportSuccess }) {
+export default function ReportModal({ isOpen, onClose, reportedUserId, onReportSuccess }) {
   const { lang } = useStore();
   const t = translations[lang];
   const [selectedReason, setSelectedReason] = useState('');
@@ -19,11 +20,16 @@ export default function ReportModal({ isOpen, onClose, onReportSuccess }) {
     { id: 'other', label: t.REPORT_REASON_OTHER },
   ];
 
-  const handleSubmit = () => {
-    if (!selectedReason) return;
+  const handleSubmit = async () => {
+    if (!selectedReason || !reportedUserId) return;
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await axiosClient.post('/api/v1/reports', {
+        reportedId: reportedUserId,
+        reason: selectedReason,
+        details: details
+      });
+
       // Create a toast notification
       const toast = document.createElement('div');
       toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-white text-neutral-900 px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
@@ -40,7 +46,9 @@ export default function ReportModal({ isOpen, onClose, onReportSuccess }) {
       onClose();
       setSelectedReason('');
       setDetails('');
-    }, 500);
+    } catch (error) {
+      console.error('Failed to submit report:', error);
+    }
   };
 
   return (

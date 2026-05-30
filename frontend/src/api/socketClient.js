@@ -25,6 +25,10 @@ class SocketService {
                 if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice') {
                   console.log('Received WebRTC signal:', data.type);
                   if (onSignalReceived) onSignalReceived(data);
+                } else if (data.type === 'REFRESH_FRIENDS') {
+                  import('../store/useStore').then((store) => {
+                    store.default.getState().loadFriends();
+                  });
                 } else if (data.sessionId) {
                   console.log('Received match:', data);
                   onMatchSuccess(data);

@@ -13,7 +13,8 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping("/match")
-    public ResponseEntity<?> sendMatchDecision(@RequestParam String userId, @RequestParam String sessionId) {
+    public ResponseEntity<?> sendMatchDecision(org.springframework.security.core.Authentication authentication, @RequestParam String sessionId) {
+        String userId = (String) authentication.getPrincipal();
         roomService.handleMatchDecision(userId, sessionId);
         return ResponseEntity.ok().build();
     }

@@ -18,4 +18,9 @@ public class SignalingController {
         // Forward the WebRTC signal to the specific target user's match topic
         messagingTemplate.convertAndSend("/topic/match/" + signal.getTargetUserId(), signal);
     }
+
+    @MessageMapping("/room/{sessionId}/chat")
+    public void handleRoomChat(@org.springframework.messaging.handler.annotation.DestinationVariable String sessionId, @Payload java.util.Map<String, Object> payload) {
+        messagingTemplate.convertAndSend("/topic/room/" + sessionId + "/chat", (Object) payload);
+    }
 }

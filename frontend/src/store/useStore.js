@@ -18,6 +18,7 @@ const useStore = create(
       isLoginModalOpen: false,
 
       setLoginModalOpen: (open) => set({ isLoginModalOpen: open }),
+      setUserInfo: (userInfo) => set({ userInfo }),
 
       // HÀM CHỦ CHỐT: Hứng Token từ OAuth2RedirectHandler
       loginWithToken: async (token) => {
@@ -30,7 +31,8 @@ const useStore = create(
         // 3. Gọi API lấy thông tin Profile thật của User từ Spring Boot
         try {
           const response = await axiosClient.get('/api/v1/users/me');
-          set({ userInfo: response.data });
+          const data = response?.data || response;
+          set({ userInfo: data });
         } catch (error) {
           console.error("Lỗi khi kéo thông tin User Profile:", error);
           // Tạm thời set một cục data giả nếu mày chưa code API /users/me bên Backend
@@ -103,6 +105,27 @@ const useStore = create(
       isInboxOpen: false,
       setInboxOpen: (open) => set({ isInboxOpen: open }),
       friends: [],
+      loadFriends: async () => {
+        try {
+          const response = await axiosClient.get('/api/v1/friendships/inbox');
+          const data = response?.data || response;
+          const currentUserId = get().userInfo?.id;
+          const friendsList = data.map(f => {
+            const isUser1 = f.user1?.id === currentUserId;
+            const friendUser = isUser1 ? f.user2 : f.user1;
+            return {
+              id: friendUser?.id,
+              friendshipId: f.id,
+              name: friendUser?.anonymousName || friendUser?.name || 'Stranger',
+              avatarUrl: friendUser?.avatarUrl || 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?auto=format&fit=crop&w=150&q=80',
+              lastMsg: ''
+            };
+          });
+          set({ friends: friendsList });
+        } catch (error) {
+          console.error("Lỗi load danh sách bạn bè:", error);
+        }
+      },
       addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
       removeFriend: (id) => set((state) => ({ friends: state.friends.filter(f => f.id !== id) })),
 
@@ -126,9 +149,9 @@ const useStore = create(
       
       sendMatchDecision: async () => {
         try {
-          const { userInfo, sessionId } = get();
+          const { sessionId } = get();
           await axiosClient.post('/api/v1/room/match', null, {
-            params: { userId: userInfo?.id, sessionId }
+            params: { sessionId }
           });
         } catch (error) {
           console.error('Lỗi khi thả tim:', error);
@@ -148,28 +171,55 @@ const useStore = create(
           const userId = userInfo?.id;
           
           await socketService.connect(userId, 
-            async (matchData) => {
-              const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
-              set({
-                isMatching: false,
-                isConnected: true,
-                remoteUserId,
-                sessionId: matchData.sessionId
-              });
+             (matchData) => {
+               const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
+               set({
+                 isMatching: false,
+                 isConnected: true,
+                 remoteUserId,
+                 sessionId: matchData.sessionId
+               });
+
+               if (callMode === 'text') {
+                 const helloMsg = translations[get().lang || 'en']?.SYSTEM_MSG_HELLO || "You're now chatting with a random stranger. Say hi!";
+                 set((state) => ({
+                   messages: [...state.messages, { id: Date.now().toString(), type: 'system', text: helloMsg }]
+                 }));
+               }
 
               if (socketService.stompClient) {
-                socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/match_success`, (message) => {
+                 socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/match_success`, (message) => {
                   try {
                     const data = JSON.parse(message.body);
+                    const isUser1 = data.user1Id === get().userInfo?.id;
                     set({
                       isMatched: true,
                       remoteUserInfo: {
-                        name: data.matchedUserName,
-                        avatarUrl: data.matchedUserAvatar
+                        name: isUser1 ? data.user2Name : data.user1Name,
+                        avatarUrl: isUser1 ? data.user2Avatar : data.user1Avatar
                       }
                     });
+                    get().loadFriends();
                   } catch (err) {
                     console.error("Lỗi parse data match_success:", err);
+                  }
+                });
+
+                socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/chat`, (message) => {
+                  try {
+                    const data = JSON.parse(message.body);
+                    if (data.senderId !== get().userInfo?.id) {
+                      set((state) => ({
+                        messages: [...state.messages, {
+                          id: data.id || Date.now().toString(),
+                          type: 'user',
+                          text: data.text,
+                          isMine: false
+                        }]
+                      }));
+                    }
+                  } catch (err) {
+                    console.error("Lỗi parse chat message:", err);
                   }
                 });
 
@@ -196,22 +246,22 @@ const useStore = create(
               }
 
               if (userId === matchData.user2Id) {
-                await webRTCClient.createOffer(remoteUserId);
+                webRTCClient.createOffer(remoteUserId);
               }
             },
-            async (signalData) => {
+             (signalData) => {
               if (signalData.type === 'offer') {
-                await webRTCClient.handleReceiveOffer(signalData.data, signalData.senderId);
+                webRTCClient.handleReceiveOffer(signalData.data, signalData.senderId);
               } else if (signalData.type === 'answer') {
-                await webRTCClient.handleReceiveAnswer(signalData.data);
+                webRTCClient.handleReceiveAnswer(signalData.data);
               } else if (signalData.type === 'ice') {
-                await webRTCClient.handleReceiveIceCandidate(signalData.data);
+                webRTCClient.handleReceiveIceCandidate(signalData.data);
               }
             }
           );
 
           await axiosClient.post('/api/v1/matchmaking/join', null, {
-            params: { userId, callType: callMode }
+            params: { callType: callMode }
           });
         } catch (error) {
           set({ isMatching: false });
@@ -226,13 +276,10 @@ const useStore = create(
         socketService.disconnect();
         set({ isConnected: false, isMatching: false });
         try {
-          const { userInfo, callMode } = get();
-          const userId = userInfo?.id;
-          if(userId) {
-            await axiosClient.post('/api/v1/matchmaking/leave', null, {
-              params: { userId, callType: callMode }
-            });
-          }
+          const { callMode } = get();
+          await axiosClient.post('/api/v1/matchmaking/leave', null, {
+            params: { callType: callMode }
+          });
         } catch (error) {
           console.error('Lỗi thoát hàng đợi:', error);
         }
@@ -243,13 +290,10 @@ const useStore = create(
         socketService.disconnect();
         set({ isConnected: false, isMatching: false });
         try {
-          const { userInfo, callMode } = get();
-          const userId = userInfo?.id;
-          if(userId) {
-            await axiosClient.post('/api/v1/matchmaking/leave', null, {
-              params: { userId, callType: callMode }
-            });
-          }
+          const { callMode } = get();
+          await axiosClient.post('/api/v1/matchmaking/leave', null, {
+            params: { callType: callMode }
+          });
         } catch (error) {
           console.error('Lỗi kết thúc cuộc gọi:', error);
         }

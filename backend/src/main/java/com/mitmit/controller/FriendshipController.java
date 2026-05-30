@@ -18,12 +18,14 @@ public class FriendshipController {
     private final FriendshipService friendshipService;
 
     @GetMapping("/inbox")
-    public ResponseEntity<?> getUserInbox(@RequestParam String userId) {
+    public ResponseEntity<?> getUserInbox(org.springframework.security.core.Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
         return ResponseEntity.ok(friendshipService.getUserInbox(userId));
     }
 
     @PostMapping("/{friendshipId}/block")
-    public ResponseEntity<?> blockUser(@PathVariable Long friendshipId, @RequestParam String requesterId) {
+    public ResponseEntity<?> blockUser(@PathVariable Long friendshipId, org.springframework.security.core.Authentication authentication) {
+        String requesterId = (String) authentication.getPrincipal();
         friendshipService.blockUser(friendshipId, requesterId);
         return ResponseEntity.ok("Đã chặn phòng chat thành công");
     }

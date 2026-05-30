@@ -3,6 +3,7 @@ import { Send, Smile } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import EmojiPicker from 'emoji-picker-react';
+import socketService from '../../api/socketClient';
 
 export default function ChatInput() {
   const [text, setText] = useState('');
@@ -44,7 +45,18 @@ export default function ChatInput() {
     if (!text.trim() || isMatching) return;
     
     try {
-      addMessage({ id: Date.now().toString(), type: 'user', text: text.trim(), isMine: true });
+      const messageId = Date.now().toString();
+      addMessage({ id: messageId, type: 'user', text: text.trim(), isMine: true });
+      
+      const { sessionId, userInfo } = useStore.getState();
+      if (sessionId) {
+        socketService.send(`/app/room/${sessionId}/chat`, {
+          id: messageId,
+          senderId: userInfo?.id,
+          text: text.trim()
+        });
+      }
+
       setText('');
       setShowEmojiPicker(false);
       
@@ -52,16 +64,6 @@ export default function ChatInput() {
         textareaRef.current.style.height = 'auto';
         textareaRef.current.focus();
       }
-
-      setTimeout(() => {
-        const mockReplies = t.MOCK_REPLIES || ["Haha!"];
-        addMessage({
-          id: Date.now().toString(),
-          type: 'user',
-          text: mockReplies[Math.floor(Math.random() * mockReplies.length)],
-          isMine: false
-        });
-      }, 1500 + Math.random() * 1500);
     } catch (error) {
       console.error('Error handling chat submission:', error);
     }

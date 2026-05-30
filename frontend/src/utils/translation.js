@@ -3,8 +3,6 @@ export const translations = {
     LOGO_TITLE: 'mit',
     LOGO_SUB: 'mit',
     ONLINE_COUNT: 'Online',
-    FREE_CHATS: 'Left',
-    RECHARGE: 'Top Up',
     NEXT_BUTTON: 'Next',
     START_BUTTON: 'START',
     STOP_BUTTON: 'Stop',
@@ -26,7 +24,6 @@ export const translations = {
     FORCE_CLOSE_ALERT: 'Time is up! Match unsuccessful',
     ADMIN: 'Admin',
     MEMBER: 'Member',
-    // New additions
     LOGIN: 'Login',
     NOTIFICATIONS: 'Notifications',
     NO_NOTIFICATIONS: 'No new notifications',
@@ -90,7 +87,6 @@ export const translations = {
     VOICE_MESSAGE: '🎤 Voice message',
     COPY_SUCCESS: 'Message copied',
     LOGIN_PROMPT: 'Login to connect with strangers around the world',
-    GUEST: 'Guest',
     GENDER_OTHER: 'Other',
     LOGIN_REQUIRED: 'Please login to use this feature',
     OK: 'OK'
@@ -99,8 +95,6 @@ export const translations = {
     LOGO_TITLE: 'mit',
     LOGO_SUB: 'mit',
     ONLINE_COUNT: 'Trực tuyến',
-    FREE_CHATS: 'Lượt',
-    RECHARGE: 'Nạp Xu',
     NEXT_BUTTON: 'Bỏ qua',
     START_BUTTON: 'BẮT ĐẦU',
     STOP_BUTTON: 'Dừng',
@@ -122,7 +116,6 @@ export const translations = {
     FORCE_CLOSE_ALERT: 'Hết thời gian mất rồi!',
     ADMIN: 'Quản trị viên',
     MEMBER: 'Thành viên',
-    // New additions
     LOGIN: 'Đăng nhập',
     NOTIFICATIONS: 'Thông báo',
     NO_NOTIFICATIONS: 'Không có thông báo mới',
@@ -186,7 +179,6 @@ export const translations = {
     VOICE_MESSAGE: '🎤 Tin nhắn thoại',
     COPY_SUCCESS: 'Đã sao chép tin nhắn',
     LOGIN_PROMPT: 'Đăng nhập để kết nối với người lạ trên toàn cầu',
-    GUEST: 'Khách',
     GENDER_OTHER: 'Khác',
     LOGIN_REQUIRED: 'Vui lòng đăng nhập để sử dụng tính năng này',
     OK: 'OK'

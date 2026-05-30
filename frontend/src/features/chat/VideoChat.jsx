@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Video as VideoIcon, VideoOff, Heart, ArrowRight, Loader2, Play, Square, MessageCircle, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
 import VideoChatControls from './VideoChatControls';
+import LocalStreamPreview from './LocalStreamPreview';
+import RemoteStreamVideo from './RemoteStreamVideo';
+import TimerCountdownOverlay from './TimerCountdownOverlay';
 
 export default function VideoChat() {
   const { 
-    lang, isMatching, isConnected, startMatching, setConnected, stopCall, addMessage, clearMessages, callMode, 
-    addFriend, localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
+    lang, isMatching, isConnected, startMatching, stopCall, clearMessages, callMode, 
+    localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
     isMatched, remoteUserInfo, sendMatchDecision
   } = useStore();
   
@@ -16,23 +19,18 @@ export default function VideoChat() {
 
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
-  
-  const [strangerImg, setStrangerImg] = useState('');
+  const [strangerImg] = useState('');
   const [timeLeft, setTimeLeft] = useState(180);
-  const [isBlurred, setIsBlurred] = useState(true);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  // Match state
   const [isLikedByMe, setIsLikedByMe] = useState(false);
   const [showPremiumMatch, setShowPremiumMatch] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
   const isIdle = !isMatching && !isConnected;
-
   const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
-  const displayStrangerName = remoteUserInfo?.name || t.STRANGER;
 
   const handleGuestAction = (actionCallback) => {
     if (!isLoggedIn) {
@@ -51,37 +49,23 @@ export default function VideoChat() {
     actionCallback();
   };
 
-  // Timer useEffect
   useEffect(() => {
     if (!isConnected || isMatched) return;
-    
     if (timeLeft <= 0) {
       handleStartNext();
       return;
     }
-
-    const timer = setTimeout(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-    
+    const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearTimeout(timer);
   }, [isConnected, isMatched, timeLeft]);
 
-  // Premium Match UI trigger
   useEffect(() => {
     if (isMatched) {
       setShowPremiumMatch(true);
-      // Optional: Auto hide premium match overlay after 4 seconds
       const timer = setTimeout(() => setShowPremiumMatch(false), 4000);
       return () => clearTimeout(timer);
     }
   }, [isMatched]);
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
 
   const handleStartNext = async () => {
     try {
@@ -90,7 +74,7 @@ export default function VideoChat() {
           const constraints = {
             video: callMode === 'video' ? {
               deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
-              width: { ideal: 640, max: 1280 }, // Giới hạn max 720p, ideal 480p
+              width: { ideal: 640, max: 1280 },
               height: { ideal: 480, max: 720 },
               frameRate: { ideal: 24, max: 30 }
             } : false,
@@ -104,48 +88,37 @@ export default function VideoChat() {
           setLocalStream(stream);
         } catch (err) {
           console.warn("Camera/Mic access error, creating fallback fake stream:", err);
-          
           const tracks = [];
-
           if (callMode === 'video') {
             const canvas = document.createElement('canvas');
             canvas.width = 640;
             canvas.height = 480;
             const ctx = canvas.getContext('2d');
-            
-            // Draw background
-            ctx.fillStyle = '#262626'; // dark gray
+            ctx.fillStyle = '#262626';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw text
             ctx.fillStyle = '#a3a3a3';
             ctx.font = '24px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('Camera in use / unavailable', canvas.width / 2, canvas.height / 2);
-            
             const canvasStream = canvas.captureStream(15);
             if (canvasStream.getVideoTracks().length > 0) {
               tracks.push(canvasStream.getVideoTracks()[0]);
             }
           }
-
           const AudioContext = window.AudioContext || window.webkitAudioContext;
           if (AudioContext) {
             const audioCtx = new AudioContext();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0; // silence
+            gainNode.gain.value = 0;
             const dst = audioCtx.createMediaStreamDestination();
-            
             oscillator.connect(gainNode);
             gainNode.connect(dst);
             oscillator.start();
-            
             if (dst.stream.getAudioTracks().length > 0) {
               tracks.push(dst.stream.getAudioTracks()[0]);
             }
           }
-
           const fakeStream = new MediaStream(tracks);
           setLocalStream(fakeStream);
         }
@@ -166,7 +139,6 @@ export default function VideoChat() {
       clearMessages();
       setIsLikedByMe(false);
       setShowPremiumMatch(false);
-
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         setLocalStream(null);
@@ -177,44 +149,14 @@ export default function VideoChat() {
   };
 
   useEffect(() => {
-    if (callMode === 'voice') {
-      setIsCamOn(false);
-    }
-  }, [callMode]);
-
-  useEffect(() => {
-    if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
-    }
-  }, [isIdle, callMode, isMatching, localStream]);
-
-  useEffect(() => {
-    let blurTimeout;
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
-      setIsBlurred(true);
-      blurTimeout = setTimeout(() => {
-        setIsBlurred(false);
-      }, 3000);
-    }
-    return () => {
-      if (blurTimeout) clearTimeout(blurTimeout);
-    };
-  }, [isIdle, callMode, isMatching, remoteStream]);
-
-  useEffect(() => {
     if (localStream) {
-      localStream.getAudioTracks().forEach(track => {
-        track.enabled = isMicOn;
-      });
+      localStream.getAudioTracks().forEach(track => { track.enabled = isMicOn; });
     }
   }, [isMicOn, localStream]);
 
   useEffect(() => {
     if (localStream) {
-      localStream.getVideoTracks().forEach(track => {
-        track.enabled = isCamOn;
-      });
+      localStream.getVideoTracks().forEach(track => { track.enabled = isCamOn; });
     }
   }, [isCamOn, localStream]);
 
@@ -229,8 +171,7 @@ export default function VideoChat() {
   const handleHeartClick = () => {
     handleGuestAction(async () => {
       try {
-        if (isLikedByMe || isMatched) return; // Prevent multiple triggers
-        
+        if (isLikedByMe || isMatched) return;
         setIsLikedByMe(true);
         await sendMatchDecision();
       } catch (error) {
@@ -239,59 +180,10 @@ export default function VideoChat() {
     });
   };
 
-  const renderModeIcon = () => {
-    if (callMode === 'video') return <VideoIcon className="w-8 h-8 text-gray-500" />;
-    if (callMode === 'voice') return <Mic className="w-8 h-8 text-gray-500" />;
-    return <MessageCircle className="w-8 h-8 text-gray-500" />;
-  };
-
   return (
     <section className="flex-1 relative rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-sm flex items-center justify-center h-full min-w-0">
+      <RemoteStreamVideo remoteVideoRef={remoteVideoRef} strangerImg={strangerImg} />
       
-      {/* Main Screen */}
-      {isIdle ? (
-        <div className="absolute inset-0 bg-[#0a0a0a] flex items-center justify-center">
-          <div className="text-center animate-fade-in p-4">
-             <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-neutral-700">
-               {renderModeIcon()}
-             </div>
-             <p className="text-gray-400 font-medium truncate">{t.READY_TO_CONNECT}</p>
-             <p className="text-neutral-600 text-sm mt-1 truncate">{t.PRESS_START}</p>
-          </div>
-        </div>
-      ) : callMode === 'video' ? (
-        <>
-          <img 
-            src={displayStrangerImg} 
-            alt="Stranger" 
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(isMatching || remoteStream) ? 'opacity-0' : 'opacity-100'}`} 
-          />
-          <video 
-            ref={remoteVideoRef} 
-            autoPlay 
-            playsInline 
-            className={`absolute inset-0 w-full h-full object-cover ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
-            style={{ 
-              filter: (isBlurred && !isMatched) ? 'blur(20px)' : 'blur(0px)',
-              transition: 'filter 1.5s ease-in-out, opacity 0.5s ease'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none"></div>
-        </>
-      ) : (
-        <div className={`absolute inset-0 w-full h-full flex items-center justify-center bg-[#0a0a0a] transition-opacity duration-500 ${isMatching ? 'opacity-0' : 'opacity-100'}`}>
-           <video ref={remoteVideoRef} autoPlay playsInline className="hidden" />
-           <div className="relative flex flex-col items-center">
-             <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping scale-150"></div>
-             <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-ping scale-[2] delay-150"></div>
-             <img src={displayStrangerImg} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
-             <div className="relative z-10 mt-6 flex items-center gap-2">
-               <p className="font-semibold text-lg text-white truncate">{displayStrangerName}</p>
-             </div>
-           </div>
-        </div>
-      )}
-
       {/* Loading Overlay */}
       <div className={`absolute inset-0 bg-neutral-900/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-300 text-white z-20 p-4 ${isMatching ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <Loader2 className="animate-spin w-10 h-10 mb-3 text-white shrink-0" />
@@ -305,39 +197,15 @@ export default function VideoChat() {
             {t.MATCH_SUCCESS.toUpperCase()}
           </h1>
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
-            </div>
-            <div className="relative">
-              <img src={displayStrangerImg} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
-            </div>
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
+            <img src={displayStrangerImg} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
           </div>
         </div>
       )}
 
-      {/* Your Camera PiP */}
-      {callMode === 'video' && !isIdle && (
-        <div className="absolute bottom-6 right-6 w-32 h-48 sm:w-40 sm:h-56 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
-          <video 
-            ref={localVideoRef}
-            autoPlay 
-            playsInline 
-            muted 
-            className="w-full h-full object-cover transform scale-x-[-1]" 
-          />
-          <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-white font-medium truncate max-w-[80%]">{t.YOU}</div>
-        </div>
-      )}
+      <LocalStreamPreview localVideoRef={localVideoRef} />
+      <TimerCountdownOverlay timeLeft={timeLeft} />
 
-      {/* Timer Overlay */}
-      {isConnected && !isMatched && (
-        <div className={`absolute top-6 left-1/2 -translate-x-1/2 glass-panel text-white px-5 py-1.5 rounded-full shadow-lg border ${timeLeft <= 10 ? 'border-red-500/50 text-red-500' : 'border-white/10'} flex items-center gap-2 z-10 transition-colors whitespace-nowrap`}>
-          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></div>
-          <span className="font-mono text-base font-semibold tracking-wider shrink-0">{formatTime(timeLeft)}</span>
-        </div>
-      )}
-
-      {/* Controls */}
       <VideoChatControls 
         isIdle={isIdle}
         isMatching={isMatching}
@@ -356,11 +224,7 @@ export default function VideoChat() {
         lang={lang}
       />
 
-      <ReportModal 
-        isOpen={showReportModal} 
-        onClose={() => setShowReportModal(false)} 
-        onReportSuccess={handleStartNext} 
-      />
+      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} onReportSuccess={handleStartNext} />
     </section>
   );
 }

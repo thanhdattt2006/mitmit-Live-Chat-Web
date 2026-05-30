@@ -16,13 +16,15 @@ public class MatchmakingController {
     private final MatchmakingService matchmakingService;
 
     @PostMapping("/join")
-    public ResponseEntity<?> joinQueue(@RequestParam String userId, @RequestParam String callType) {
+    public ResponseEntity<?> joinQueue(org.springframework.security.core.Authentication authentication, @RequestParam String callType) {
+        String userId = (String) authentication.getPrincipal();
         matchmakingService.joinQueue(userId, callType);
         return ResponseEntity.ok("Đã vào hàng chờ " + callType);
     }
 
     @PostMapping("/leave")
-    public ResponseEntity<?> leaveQueue(@RequestParam String userId, @RequestParam String callType) {
+    public ResponseEntity<?> leaveQueue(org.springframework.security.core.Authentication authentication, @RequestParam String callType) {
+        String userId = (String) authentication.getPrincipal();
         matchmakingService.leaveQueue(userId, callType);
         return ResponseEntity.ok("Đã rời hàng chờ");
     }

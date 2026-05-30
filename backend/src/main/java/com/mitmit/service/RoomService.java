@@ -1,7 +1,12 @@
 package com.mitmit.service;
 
 import com.mitmit.document.ChatSession;
+import com.mitmit.entity.Friendship;
+import com.mitmit.entity.FriendshipStatus;
+import com.mitmit.entity.User;
 import com.mitmit.repository.ChatSessionRepository;
+import com.mitmit.repository.FriendshipRepository;
+import com.mitmit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +24,8 @@ public class RoomService {
     private final RedisService redisService;
     private final ChatSessionRepository chatSessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
 
     public void handleMatchDecision(String userId, String sessionId) {
         String key = "room_match:" + sessionId;
@@ -33,16 +40,47 @@ public class RoomService {
                 session.setMatched(true);
                 chatSessionRepository.save(session);
                 
-                // Note: Normally we'd fetch actual user data, but placeholder for now
-                // Actually, the remote user info is what's needed. Let's let the frontend fetch it or send placeholder.
-                Map<String, Object> payload = new HashMap<>();
-                payload.put("matchedUserName", "Stranger");
-                payload.put("matchedUserAvatar", "https://via.placeholder.com/150"); 
+                String user1Id = session.getUser1Id();
+                String user2Id = session.getUser2Id();
                 
-                messagingTemplate.convertAndSend("/topic/room/" + sessionId + "/match_success", payload);
+                User user1 = userRepository.findById(user1Id).orElse(null);
+                User user2 = userRepository.findById(user2Id).orElse(null);
+                
+                if (user1 != null && user2 != null) {
+                    if (!friendshipRepository.existsByUser1AndUser2(user1, user2)) {
+                        Friendship f1 = Friendship.builder()
+                                .user1(user1)
+                                .user2(user2)
+                                .status(FriendshipStatus.MATCHED)
+                                .build();
+                        friendshipRepository.save(f1);
+                    }
+                    if (!friendshipRepository.existsByUser1AndUser2(user2, user1)) {
+                        Friendship f2 = Friendship.builder()
+                                .user1(user2)
+                                .user2(user1)
+                                .status(FriendshipStatus.MATCHED)
+                                .build();
+                        friendshipRepository.save(f2);
+                    }
+                    
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put("user1Id", user1Id);
+                    payload.put("user1Name", user1.getAnonymousName());
+                    payload.put("user1Avatar", user1.getAvatarUrl() != null ? user1.getAvatarUrl() : "https://via.placeholder.com/150");
+                    
+                    payload.put("user2Id", user2Id);
+                    payload.put("user2Name", user2.getAnonymousName());
+                    payload.put("user2Avatar", user2.getAvatarUrl() != null ? user2.getAvatarUrl() : "https://via.placeholder.com/150");
+
+                    messagingTemplate.convertAndSend("/topic/room/" + sessionId + "/match_success", (Object) payload);
+                    
+                    messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) Map.of("type", "REFRESH_FRIENDS"));
+                    messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) Map.of("type", "REFRESH_FRIENDS"));
+                }
             }
         }
-    }
+    }  
 
     @Scheduled(fixedDelay = 5000)
     public void processForceClose() {
