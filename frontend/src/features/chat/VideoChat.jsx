@@ -195,7 +195,7 @@ export default function VideoChat() {
 
   return (
     <section className="flex-1 relative rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-sm flex items-center justify-center h-full min-w-0">
-      <RemoteStreamVideo remoteVideoRef={remoteVideoRef} strangerImg={strangerImg} />
+      <RemoteStreamVideo ref={remoteVideoRef} strangerImg={strangerImg} />
       
       {/* Loading Overlay */}
       <div className={`absolute inset-0 bg-neutral-900/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-300 text-white z-20 p-4 ${isMatching ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -216,7 +216,7 @@ export default function VideoChat() {
         </div>
       )}
 
-      <LocalStreamPreview localVideoRef={localVideoRef} />
+      <LocalStreamPreview ref={localVideoRef} />
       <TimerCountdownOverlay timeLeft={timeLeft} />
 
       <VideoChatControls 

@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -32,6 +33,7 @@ public class ReportController {
         return ResponseEntity.ok(report);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports")
     public ResponseEntity<Page<ReportResponse>> getReports(
             @RequestParam(defaultValue = "0") int page,
@@ -48,12 +50,14 @@ public class ReportController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/reports/{reportId}/ignore")
     public ResponseEntity<Void> ignoreReport(@PathVariable Long reportId) {
         reportService.ignoreReport(reportId);
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/ban/{userId}")
     public ResponseEntity<Void> banUser(
             @PathVariable String userId,

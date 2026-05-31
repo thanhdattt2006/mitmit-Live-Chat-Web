@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import useStore from '../store/useStore'; // Đường dẫn trỏ tới useStore của mày
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import useStore from '../store/useStore';
 import { Loader2 } from 'lucide-react';
 
 export default function OAuth2RedirectHandler() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { loginWithToken } = useStore();
 
   useEffect(() => {
@@ -13,17 +14,15 @@ export default function OAuth2RedirectHandler() {
     const error = searchParams.get('error');
 
     if (token) {
-      // Xóa token khỏi URL ngay lập tức để bảo mật
-      window.history.replaceState({}, document.title, window.location.pathname);
-      // Gọi hàm lưu token vào state
+      // Xóa token khỏi URL của cả Browser và React Router state
+      navigate(location.pathname, { replace: true });
       loginWithToken(token);
-      // Đá về trang chủ
       navigate('/', { replace: true });
     } else if (error) {
       alert("Đăng nhập thất bại: " + error);
       navigate('/', { replace: true });
     }
-  }, [searchParams, navigate, loginWithToken]);
+  }, [searchParams, navigate, loginWithToken, location.pathname]);
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-white">

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef } from 'react';
 import { Video as VideoIcon, Mic, MessageCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
-export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
+const RemoteStreamVideo = forwardRef(({ strangerImg }, ref) => {
   const { 
     lang, isMatching, isConnected, callMode, remoteStream, isMatched, remoteUserInfo 
   } = useStore();
@@ -17,8 +17,8 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
 
   useEffect(() => {
     let blurTimeout;
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
+    if (ref && ref.current && remoteStream) {
+      ref.current.srcObject = remoteStream;
       setIsBlurred(true);
       blurTimeout = setTimeout(() => {
         setIsBlurred(false);
@@ -27,7 +27,7 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
     return () => {
       if (blurTimeout) clearTimeout(blurTimeout);
     };
-  }, [isIdle, callMode, isMatching, remoteStream, remoteVideoRef]);
+  }, [isIdle, callMode, isMatching, remoteStream, ref]);
 
   useEffect(() => {
     let audioContext;
@@ -38,6 +38,11 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
     if (remoteStream && remoteStream.getAudioTracks().length > 0 && callMode === 'voice' && !isIdle) {
       try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().catch(e => console.warn("Cannot resume audio context:", e));
+        }
+
         analyzer = audioContext.createAnalyser();
         analyzer.fftSize = 256;
         
@@ -100,7 +105,7 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(isMatching || remoteStream) ? 'opacity-0' : 'opacity-100'}`} 
         />
         <video 
-          ref={remoteVideoRef} 
+          ref={ref} 
           autoPlay 
           playsInline 
           className={`absolute inset-0 w-full h-full object-cover ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
@@ -116,7 +121,7 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
 
   return (
     <div className={`absolute inset-0 w-full h-full flex items-center justify-center bg-[#0a0a0a] transition-opacity duration-500 ${isMatching ? 'opacity-0' : 'opacity-100'}`}>
-       <video ref={remoteVideoRef} autoPlay playsInline className="hidden" />
+       <video ref={ref} autoPlay playsInline className="hidden" />
        <div className="relative flex flex-col items-center">
          <div className="absolute inset-0 bg-blue-500/20 rounded-full transition-transform duration-75 ease-out" style={{ transform: `scale(${1 + volume / 100})`, opacity: volume > 5 ? 0.8 : 0 }}></div>
          <div className="absolute inset-0 bg-blue-500/10 rounded-full transition-transform duration-150 ease-out" style={{ transform: `scale(${1 + volume / 50})`, opacity: volume > 5 ? 0.5 : 0 }}></div>
@@ -127,4 +132,6 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
        </div>
     </div>
   );
-}
+});
+
+export default RemoteStreamVideo;

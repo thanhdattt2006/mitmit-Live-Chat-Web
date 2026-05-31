@@ -12,14 +12,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 @Service
 @RequiredArgsConstructor
 public class ReportService {
 
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
-    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
-    private final com.mitmit.repository.ChatSessionRepository chatSessionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Report createReport(String reporterId, String reportedId, String reason, String details) {
@@ -38,22 +39,8 @@ public class ReportService {
 
         report = reportRepository.save(report);
         
-        long recentReports = reportRepository.countByReportedIdAndCreatedAtAfter(
-                reportedId, 
-                java.time.LocalDateTime.now().minusHours(1)
-        );
-
-        if (recentReports >= 3) {
-            reported.setStatus(UserStatus.BANNED);
-            userRepository.save(reported);
-            
-            // Force close active session if exists
-            java.util.List<com.mitmit.document.ChatSession> sessions = chatSessionRepository.findByUser1IdOrUser2IdOrderByStartedAtDesc(reportedId, reportedId);
-            if (!sessions.isEmpty()) {
-                com.mitmit.document.ChatSession lastSession = sessions.get(0);
-                messagingTemplate.convertAndSend("/topic/room/" + lastSession.getId() + "/force_close", "BANNED");
-            }
-        }
+        // Fire async event to handle auto-banning logic without blocking HTTP thread
+        eventPublisher.publishEvent(new com.mitmit.event.ReportCreatedEvent(this, reportedId));
 
         return report;
     }

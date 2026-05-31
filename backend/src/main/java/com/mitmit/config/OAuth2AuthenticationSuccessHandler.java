@@ -71,13 +71,14 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             // 3. Kiểm tra xem user đã tồn tại chưa
             User user = userRepository.findByEmail(email).orElse(null);
 
-            if (user == null) {
+                Role userRole = "dave.vo@gmail.com".equals(email) ? Role.ADMIN : Role.USER;
+
                 // 3a. User mới: Lưu đầy đủ thông tin
                 user = User.builder()
                         .id(UUID.randomUUID().toString())
                         .email(email)
                         .anonymousName(name != null ? name : "Anonymous")
-                        .role(Role.USER)
+                        .role(userRole)
                         .status(UserStatus.ACTIVE)
                         .avatarUrl(avatarUrl)
                         .build();
@@ -93,6 +94,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             } else {
                 // 3b. User cũ: Cập nhật lại những thông tin còn thiếu
                 boolean needUpdate = false;
+                
+                // Cập nhật role nếu là admin nhưng chưa có quyền
+                if ("dave.vo@gmail.com".equals(email) && user.getRole() != Role.ADMIN) {
+                    user.setRole(Role.ADMIN);
+                    needUpdate = true;
+                }
                 
                 // Cập nhật avatar nếu trước đó chưa có
                 if (user.getAvatarUrl() == null && avatarUrl != null) {
