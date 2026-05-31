@@ -1,13 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
 import { translations } from '../utils/translation';
 import { Shield, Users, Activity, Flag, Trash2, CheckCircle, Ban } from 'lucide-react';
+import axiosClient from '../api/axiosClient';
 
 export default function AdminDashboard() {
-  const { userInfo, lang, onlineCount, reports, removeReport } = useStore();
+  const { userInfo, lang, onlineCount } = useStore();
   const navigate = useNavigate();
   const t = translations[lang];
+  const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (userInfo?.role === 'ADMIN') {
+      fetchReports();
+    }
+  }, [userInfo]);
+
+  const fetchReports = async () => {
+    try {
+      setIsLoading(true);
+      const res = await axiosClient.get('/api/v1/reports');
+      setReports(res.data?.content || []);
+    } catch (err) {
+      console.error("Lỗi lấy danh sách report", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (userInfo?.role !== 'ADMIN') {
     return (
@@ -33,24 +54,34 @@ export default function AdminDashboard() {
     );
   }
 
-  const handleIgnore = (id) => {
-    removeReport(id);
+  const handleIgnore = async (id) => {
+    try {
+      await axiosClient.post(`/api/v1/reports/${id}/ignore`);
+      setReports(reports.filter(r => r.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleBan = (id) => {
-    // Show toast
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
-    toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>${t.BAN_SUCCESS}</span>`;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+  const handleBan = async (id, reportedId) => {
+    try {
+      await axiosClient.post(`/api/v1/admin/ban/${reportedId}?reportId=${id}`);
+      
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
+      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>${t.BAN_SUCCESS || 'User banned successfully'}</span>`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
 
-    removeReport(id);
+      setReports(reports.filter(r => r.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -133,7 +164,13 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {reports.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                      Loading reports...
+                    </td>
+                  </tr>
+                ) : reports.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
                       <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-500/50" />
@@ -164,7 +201,7 @@ export default function AdminDashboard() {
                             {t.IGNORE}
                           </button>
                           <button 
-                            onClick={() => handleBan(report.id)}
+                            onClick={() => handleBan(report.id, report.reportedId)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all shadow-sm"
                           >
                             <Ban className="w-3.5 h-3.5" />

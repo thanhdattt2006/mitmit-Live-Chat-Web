@@ -129,8 +129,8 @@ const useStore = create(
       addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
       removeFriend: (id) => set((state) => ({ friends: state.friends.filter(f => f.id !== id) })),
 
-      reports: [],
-      removeReport: (id) => set((state) => ({ reports: state.reports.filter(r => r.id !== id) })),
+      reports: [], // Bị loại bỏ vì đã tích hợp API thật
+      removeReport: (id) => {}, // Placeholder để tương thích ngược nếu còn lỡ gọi
 
       onlineCount: 1204,
       updateOnlineCount: () => set((state) => {

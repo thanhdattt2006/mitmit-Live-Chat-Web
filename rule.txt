@@ -7,3 +7,4 @@ perf: Cải thiện hiệu năng.
 test: Thêm hoặc sửa các bài kiểm thử (unit test).
 chore: Cập nhật build, công cụ, thư viện (không thuộc các loại trên).
 
+Lưu ý: commit bằng tiếng Anh chuẩn doanh nghiệp.
