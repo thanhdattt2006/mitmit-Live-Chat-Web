@@ -4,7 +4,7 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import axiosClient from '../../api/axiosClient';
 
-export default function ReportModal({ isOpen, onClose, reportedUserId, onReportSuccess }) {
+export default function ReportModal({ isOpen, onClose, reportedUserId, onReportSuccess, isFromInbox }) {
   const { lang } = useStore();
   const t = translations[lang];
   const [selectedReason, setSelectedReason] = useState('');
@@ -29,7 +29,8 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, onReportS
       await axiosClient.post('/api/v1/reports', {
         reportedId: reportedUserId,
         reason: selectedReason,
-        details: details
+        details: details,
+        isFromInbox: isFromInbox || false
       });
 
       // Create a toast notification

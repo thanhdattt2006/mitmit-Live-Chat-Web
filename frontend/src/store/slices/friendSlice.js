@@ -24,5 +24,12 @@ export const createFriendSlice = (set, get) => ({
     }
   },
   addFriend: (friend) => set((state) => ({ friends: [friend, ...state.friends] })),
-  removeFriend: (id) => set((state) => ({ friends: state.friends.filter(f => f.id !== id) })),
+  removeFriend: async (id) => {
+    try {
+      await axiosClient.delete(`/api/v1/friendships/${id}`);
+      set((state) => ({ friends: state.friends.filter(f => f.id !== id) }));
+    } catch (error) {
+      console.error("Lỗi xóa bạn bè:", error);
+    }
+  },
 });

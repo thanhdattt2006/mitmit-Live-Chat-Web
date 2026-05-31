@@ -34,4 +34,14 @@ public class FriendshipService {
         friendship.setStatus(FriendshipStatus.BLOCKED);
         friendshipRepository.save(friendship);
     }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void unfriend(String userId, String friendId) {
+        User user1 = userRepository.findById(userId).orElse(null);
+        User user2 = userRepository.findById(friendId).orElse(null);
+        if (user1 != null && user2 != null) {
+            friendshipRepository.findByUser1AndUser2(user1, user2).ifPresent(friendshipRepository::delete);
+            friendshipRepository.findByUser1AndUser2(user2, user1).ifPresent(friendshipRepository::delete);
+        }
+    }
 }

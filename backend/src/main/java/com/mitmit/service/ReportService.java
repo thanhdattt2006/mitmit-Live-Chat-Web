@@ -21,9 +21,11 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final FriendshipService friendshipService;
+    private final RedisService redisService;
 
     @Transactional
-    public Report createReport(String reporterId, String reportedId, String reason, String details) {
+    public Report createReport(String reporterId, String reportedId, String reason, String details, Boolean isFromInbox) {
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new RuntimeException("Reporter not found"));
         User reported = userRepository.findById(reportedId)
@@ -38,6 +40,13 @@ public class ReportService {
                 .build();
 
         report = reportRepository.save(report);
+        
+        if (Boolean.TRUE.equals(isFromInbox)) {
+            friendshipService.unfriend(reporterId, reportedId);
+            // Block (Blacklist for 10 years ~ 5256000 minutes)
+            redisService.addToSetWithExpire("blacklist:" + reporterId, reportedId, 5256000);
+            redisService.addToSetWithExpire("blacklist:" + reportedId, reporterId, 5256000);
+        }
         
         // Fire async event to handle auto-banning logic without blocking HTTP thread
         eventPublisher.publishEvent(new com.mitmit.event.ReportCreatedEvent(this, reportedId));

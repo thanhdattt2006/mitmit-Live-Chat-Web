@@ -155,6 +155,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         isOpen={showReportModal} 
         onClose={() => setShowReportModal(false)} 
         reportedUserId={friend?.id}
+        isFromInbox={true}
         onReportSuccess={() => {
           removeFriend(friend.id);
           onClose();

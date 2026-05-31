@@ -28,7 +28,8 @@ public class ReportController {
                 reporterId,
                 request.getReportedId(),
                 request.getReason(),
-                request.getDetails()
+                request.getDetails(),
+                request.getIsFromInbox()
         );
         return ResponseEntity.ok(report);
     }
@@ -71,6 +72,7 @@ public class ReportController {
         private String reportedId;
         private String reason;
         private String details;
+        private Boolean isFromInbox;
     }
 
     @Data

@@ -12,7 +12,7 @@ export default function VideoChat() {
   const { 
     lang, isMatching, isConnected, startMatching, stopCall, clearMessages, callMode, 
     localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
-    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger
+    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger, remoteUserId
   } = useStore();
   
   const t = translations[lang];
@@ -237,7 +237,7 @@ export default function VideoChat() {
         lang={lang}
       />
 
-      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} onReportSuccess={handleStartNext} />
+      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} reportedUserId={remoteUserId} onReportSuccess={handleStartNext} />
     </section>
   );
 }
