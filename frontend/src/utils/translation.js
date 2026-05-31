@@ -95,7 +95,8 @@ export const translations = {
     ADMIN_PIN_CODE: 'Admin PIN Code',
     LOGIN_AS_ADMIN: 'Login as Admin',
     RETURN_TO_APP: 'Return to App',
-    ERROR_MATCHING: 'Matching Error: '
+    ERROR_MATCHING: 'Matching Error: ',
+    TIMEOUT_NO_MATCH: 'No one is online right now, please try again later.'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -193,6 +194,7 @@ export const translations = {
     ADMIN_PIN_CODE: 'Mã PIN Quản Trị',
     LOGIN_AS_ADMIN: 'Đăng nhập Quản Trị',
     RETURN_TO_APP: 'Quay lại Ứng Dụng',
-    ERROR_MATCHING: 'Lỗi ghép phòng: '
+    ERROR_MATCHING: 'Lỗi ghép phòng: ',
+    TIMEOUT_NO_MATCH: 'Không có ai online, vui lòng quay lại sau.'
   }
 };

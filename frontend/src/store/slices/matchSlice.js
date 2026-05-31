@@ -33,11 +33,11 @@ export const createMatchSlice = (set, get) => ({
        if (state.isMatching && !state.isConnected) {
            state.cancelMatching();
            const lang = state.lang || 'vi';
-           const t = window.translations ? window.translations[lang] : { NO_ONE_ONLINE: "Không có ai online, vui lòng quay lại sau" };
+           const t = translations[lang] || translations['vi'];
            
            const toast = document.createElement('div');
            toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-neutral-800 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2 border border-neutral-700';
-           toast.innerHTML = `<span>${t.NO_ONE_ONLINE || "Không có ai online, vui lòng quay lại sau"}</span>`;
+           toast.innerHTML = `<span>${t.TIMEOUT_NO_MATCH || "Timeout, no match"}</span>`;
            document.body.appendChild(toast);
            setTimeout(() => {
              toast.style.opacity = '0';

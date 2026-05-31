@@ -16,7 +16,7 @@ const LocalStreamPreview = forwardRef((props, ref) => {
   if (callMode !== 'video' || isIdle || !localStream) return null;
 
   return (
-    <div className="absolute bottom-6 right-6 w-32 h-48 sm:w-40 sm:h-56 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
+    <div className="absolute bottom-20 sm:bottom-6 right-4 sm:right-6 w-24 h-36 sm:w-40 sm:h-56 bg-neutral-800 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-10 group cursor-pointer hover:scale-105 transition-transform duration-300">
       <video 
         ref={ref}
         autoPlay 

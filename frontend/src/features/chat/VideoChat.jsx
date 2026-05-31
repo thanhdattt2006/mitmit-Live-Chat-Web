@@ -12,7 +12,7 @@ export default function VideoChat() {
   const { 
     lang, isMatching, isConnected, startMatching, stopCall, clearMessages, callMode, 
     localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
-    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger, remoteUserId
+    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger, remoteUserId, userInfo
   } = useStore();
   
   const t = translations[lang];
@@ -210,7 +210,7 @@ export default function VideoChat() {
             {t.MATCH_SUCCESS.toUpperCase()}
           </h1>
           <div className="flex items-center gap-4">
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80" alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
+            <img src={userInfo?.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80"} alt="You" className="w-20 h-20 rounded-full object-cover border-4 border-blue-500 shadow-2xl relative z-10 animate-bounce" />
             <img src={displayStrangerImg} alt="Stranger" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-500 shadow-2xl relative z-10 animate-bounce delay-150" />
           </div>
         </div>
