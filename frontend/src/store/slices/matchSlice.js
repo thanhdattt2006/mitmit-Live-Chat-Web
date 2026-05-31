@@ -124,6 +124,18 @@ export const createMatchSlice = (set, get) => ({
               const t = window.translations ? window.translations[lang] : { FORCE_CLOSE_ALERT: "Hết thời gian! Phán quyết không thành công" };
               alert(t.FORCE_CLOSE_ALERT || "Hết thời gian! Phán quyết không thành công");
             });
+
+            socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/partner_left`, (message) => {
+              const state = get();
+              // Lập tức cleanup
+              webRTCClient.close();
+              const { matchTimeoutId } = state;
+              if (matchTimeoutId) clearTimeout(matchTimeoutId);
+              
+              if (state.startMatching) {
+                state.startMatching();
+              }
+            });
           }
 
           const currentState = get();
@@ -175,10 +187,15 @@ export const createMatchSlice = (set, get) => ({
     } finally {
       set({ isConnected: false, isMatching: false });
       try {
-        const { callMode } = get();
+        const { callMode, sessionId } = get();
         await axiosClient.post('/api/v1/matchmaking/leave', null, {
           params: { callType: callMode }
         });
+        if (sessionId) {
+          await axiosClient.post('/api/v1/room/leave', null, {
+            params: { sessionId }
+          });
+        }
       } catch (error) {
         console.error('Lỗi thoát hàng đợi:', error);
       }
@@ -195,10 +212,15 @@ export const createMatchSlice = (set, get) => ({
     } finally {
       set({ isConnected: false, isMatching: false });
       try {
-        const { callMode } = get();
+        const { callMode, sessionId } = get();
         await axiosClient.post('/api/v1/matchmaking/leave', null, {
           params: { callType: callMode }
         });
+        if (sessionId) {
+          await axiosClient.post('/api/v1/room/leave', null, {
+            params: { sessionId }
+          });
+        }
       } catch (error) {
         console.error('Lỗi kết thúc cuộc gọi:', error);
       }

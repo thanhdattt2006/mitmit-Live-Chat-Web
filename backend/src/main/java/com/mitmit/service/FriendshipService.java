@@ -20,7 +20,7 @@ public class FriendshipService {
     public List<Friendship> getUserInbox(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return friendshipRepository.findByUser1OrUser2(user, user);
+        return friendshipRepository.findByUser1(user);
     }
 
     public void blockUser(Long friendshipId, String requesterId) {

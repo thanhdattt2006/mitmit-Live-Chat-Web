@@ -47,15 +47,14 @@ public class RoomService {
                 User user2 = userRepository.findById(user2Id).orElse(null);
                 
                 if (user1 != null && user2 != null) {
-                    if (!friendshipRepository.existsByUser1AndUser2(user1, user2)) {
+                    if (!friendshipRepository.existsByUserIdAndFriendId(user1, user2)) {
                         Friendship f1 = Friendship.builder()
                                 .user1(user1)
                                 .user2(user2)
                                 .status(FriendshipStatus.MATCHED)
                                 .build();
                         friendshipRepository.save(f1);
-                    }
-                    if (!friendshipRepository.existsByUser1AndUser2(user2, user1)) {
+                        
                         Friendship f2 = Friendship.builder()
                                 .user1(user2)
                                 .user2(user1)
@@ -80,7 +79,19 @@ public class RoomService {
                 }
             }
         }
-    }  
+    }
+
+    public void handleLeaveRoom(String userId, String sessionId) {
+        ChatSession session = chatSessionRepository.findById(sessionId).orElse(null);
+        if (session != null && session.getEndedAt() == null) {
+            session.setEndedAt(LocalDateTime.now());
+            chatSessionRepository.save(session);
+            
+            Map<String, String> payload = new HashMap<>();
+            payload.put("reason", "PARTNER_LEFT");
+            messagingTemplate.convertAndSend("/topic/room/" + sessionId + "/partner_left", payload);
+        }
+    }
 
     @Scheduled(fixedDelay = 5000)
     public void processForceClose() {

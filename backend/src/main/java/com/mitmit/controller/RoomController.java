@@ -18,4 +18,11 @@ public class RoomController {
         roomService.handleMatchDecision(userId, sessionId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/leave")
+    public ResponseEntity<?> leaveRoom(org.springframework.security.core.Authentication authentication, @RequestParam String sessionId) {
+        String userId = (String) authentication.getPrincipal();
+        roomService.handleLeaveRoom(userId, sessionId);
+        return ResponseEntity.ok().build();
+    }
 }
