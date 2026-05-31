@@ -9,7 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface ReportRepository extends JpaRepository<Report, Long> {
     Page<Report> findByStatus(ReportStatus status, Pageable pageable);
+    long countByReportedIdAndCreatedAtAfter(String reportedId, LocalDateTime cutoff);
 }

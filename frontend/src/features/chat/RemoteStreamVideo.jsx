@@ -9,6 +9,7 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
   } = useStore();
   const t = translations[lang];
   const [isBlurred, setIsBlurred] = useState(true);
+  const [volume, setVolume] = useState(0);
 
   const isIdle = !isMatching && !isConnected;
   const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
@@ -27,6 +28,48 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
       if (blurTimeout) clearTimeout(blurTimeout);
     };
   }, [isIdle, callMode, isMatching, remoteStream, remoteVideoRef]);
+
+  useEffect(() => {
+    let audioContext;
+    let analyzer;
+    let source;
+    let animationFrame;
+
+    if (remoteStream && remoteStream.getAudioTracks().length > 0 && callMode === 'voice' && !isIdle) {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyzer = audioContext.createAnalyser();
+        analyzer.fftSize = 256;
+        
+        source = audioContext.createMediaStreamSource(new MediaStream([remoteStream.getAudioTracks()[0]]));
+        source.connect(analyzer);
+        
+        const dataArray = new Uint8Array(analyzer.frequencyBinCount);
+        
+        const updateVolume = () => {
+          analyzer.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for(let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const avg = sum / dataArray.length;
+          setVolume(avg);
+          animationFrame = requestAnimationFrame(updateVolume);
+        };
+        
+        updateVolume();
+      } catch (err) {
+        console.error("Audio API Error:", err);
+      }
+    }
+    
+    return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      if (source) source.disconnect();
+      if (analyzer) analyzer.disconnect();
+      if (audioContext && audioContext.state !== 'closed') audioContext.close();
+    };
+  }, [remoteStream, callMode, isIdle]);
 
   const renderModeIcon = () => {
     if (callMode === 'video') return <VideoIcon className="w-8 h-8 text-gray-500" />;
@@ -75,8 +118,8 @@ export default function RemoteStreamVideo({ remoteVideoRef, strangerImg }) {
     <div className={`absolute inset-0 w-full h-full flex items-center justify-center bg-[#0a0a0a] transition-opacity duration-500 ${isMatching ? 'opacity-0' : 'opacity-100'}`}>
        <video ref={remoteVideoRef} autoPlay playsInline className="hidden" />
        <div className="relative flex flex-col items-center">
-         <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping scale-150"></div>
-         <div className="absolute inset-0 bg-blue-500/10 rounded-full animate-ping scale-[2] delay-150"></div>
+         <div className="absolute inset-0 bg-blue-500/20 rounded-full transition-transform duration-75 ease-out" style={{ transform: `scale(${1 + volume / 100})`, opacity: volume > 5 ? 0.8 : 0 }}></div>
+         <div className="absolute inset-0 bg-blue-500/10 rounded-full transition-transform duration-150 ease-out" style={{ transform: `scale(${1 + volume / 50})`, opacity: volume > 5 ? 0.5 : 0 }}></div>
          <img src={displayStrangerImg} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
          <div className="relative z-10 mt-6 flex items-center gap-2">
            <p className="font-semibold text-lg text-white truncate">{displayStrangerName}</p>

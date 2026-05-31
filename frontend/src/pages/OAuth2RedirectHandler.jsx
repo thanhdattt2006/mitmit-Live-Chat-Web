@@ -13,9 +13,11 @@ export default function OAuth2RedirectHandler() {
     const error = searchParams.get('error');
 
     if (token) {
+      // Xóa token khỏi URL ngay lập tức để bảo mật
+      window.history.replaceState({}, document.title, window.location.pathname);
       // Gọi hàm lưu token vào state
       loginWithToken(token);
-      // Đá về trang chủ, xóa token khỏi URL để bảo mật
+      // Đá về trang chủ
       navigate('/', { replace: true });
     } else if (error) {
       alert("Đăng nhập thất bại: " + error);

@@ -17,6 +17,8 @@ import java.util.Map;
 public class WebSocketEventListener {
 
     private final MatchmakingService matchmakingService;
+    private final com.mitmit.service.RedisService redisService;
+    private static final String ONLINE_USERS_KEY = "online_users";
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
@@ -27,6 +29,7 @@ public class WebSocketEventListener {
             if (sessionAttributes != null) {
                 sessionAttributes.put("userId", userId);
                 log.info("User connected via STOMP: {}", userId);
+                redisService.addToSet(ONLINE_USERS_KEY, userId);
             }
         }
     }
@@ -40,6 +43,7 @@ public class WebSocketEventListener {
             if (userId != null) {
                 log.info("User disconnected: {}, removing from all matchmaking queues", userId);
                 matchmakingService.leaveAllQueues(userId);
+                redisService.removeFromSet(ONLINE_USERS_KEY, userId);
             }
         }
     }

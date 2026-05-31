@@ -89,7 +89,13 @@ export const translations = {
     LOGIN_PROMPT: 'Login to connect with strangers around the world',
     GENDER_OTHER: 'Other',
     LOGIN_REQUIRED: 'Please login to use this feature',
-    OK: 'OK'
+    OK: 'OK',
+    ADMIN_PORTAL: 'Admin Portal',
+    RESTRICTED_AREA: 'Restricted area. Please login with administrator credentials to access the dashboard.',
+    ADMIN_PIN_CODE: 'Admin PIN Code',
+    LOGIN_AS_ADMIN: 'Login as Admin',
+    RETURN_TO_APP: 'Return to App',
+    ERROR_MATCHING: 'Matching Error: '
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -181,6 +187,12 @@ export const translations = {
     LOGIN_PROMPT: 'Đăng nhập để kết nối với người lạ trên toàn cầu',
     GENDER_OTHER: 'Khác',
     LOGIN_REQUIRED: 'Vui lòng đăng nhập để sử dụng tính năng này',
-    OK: 'OK'
+    OK: 'OK',
+    ADMIN_PORTAL: 'Cổng Quản Trị',
+    RESTRICTED_AREA: 'Khu vực hạn chế. Vui lòng đăng nhập với quyền quản trị viên.',
+    ADMIN_PIN_CODE: 'Mã PIN Quản Trị',
+    LOGIN_AS_ADMIN: 'Đăng nhập Quản Trị',
+    RETURN_TO_APP: 'Quay lại Ứng Dụng',
+    ERROR_MATCHING: 'Lỗi ghép phòng: '
   }
 };

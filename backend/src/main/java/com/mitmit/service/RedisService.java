@@ -24,6 +24,14 @@ public class RedisService {
         redisTemplate.opsForList().remove(queueName, 0, value);
     }
 
+    public void addToSet(String key, String value) {
+        redisTemplate.opsForSet().add(key, value);
+    }
+
+    public void removeFromSet(String key, String value) {
+        redisTemplate.opsForSet().remove(key, value);
+    }
+
     public void addToSetWithExpire(String key, String value, long timeoutInMinutes) {
         redisTemplate.opsForSet().add(key, value);
         redisTemplate.expire(key, timeoutInMinutes, TimeUnit.MINUTES);
