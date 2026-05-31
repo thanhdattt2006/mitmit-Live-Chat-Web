@@ -71,6 +71,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             // 3. Kiểm tra xem user đã tồn tại chưa
             User user = userRepository.findByEmail(email).orElse(null);
 
+            if (user == null) {
                 Role userRole = "dave.vo@gmail.com".equals(email) ? Role.ADMIN : Role.USER;
 
                 // 3a. User mới: Lưu đầy đủ thông tin

@@ -1,3 +1,6 @@
 document.txt
 backend/src/main/resources/application.yaml
 TODO.md
+AGENTS.md
+spring.log
+rule.txt
