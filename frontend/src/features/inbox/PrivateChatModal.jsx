@@ -104,7 +104,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         content: text.trim(),
         type: 'TEXT',
         replyToId: replyingTo?.id || null,
-        senderId: useStore.getState().userInfo?.id
+        senderId: useStore.getState().userInfo?.id,
+        isUnsent: false
       };
 
       if (stompClientRef.current?.connected) {

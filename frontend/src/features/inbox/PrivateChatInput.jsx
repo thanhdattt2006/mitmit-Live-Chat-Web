@@ -73,7 +73,8 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
               content: audioUrl,
               type: 'VOICE',
               replyToId: replyingTo?.id || null,
-              senderId: useStore.getState().userInfo?.id
+              senderId: useStore.getState().userInfo?.id,
+              isUnsent: false
             };
             
             if (stompClientRef.current?.connected) {
@@ -129,7 +130,8 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
             content: imageUrl,
             type: 'IMAGE',
             replyToId: replyingTo?.id || null,
-            senderId: useStore.getState().userInfo?.id
+            senderId: useStore.getState().userInfo?.id,
+            isUnsent: false
           };
           
           if (stompClientRef.current?.connected) {

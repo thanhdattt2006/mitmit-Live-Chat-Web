@@ -12,7 +12,13 @@ export default function MatchStatusOverlay({ handleStartNextText }) {
       {isMatching ? (
         <div className="flex flex-col items-center animate-fade-in">
           <Loader2 className="animate-spin w-12 h-12 mb-4 text-white shrink-0" />
-          <p className="font-medium tracking-wide animate-pulse text-lg">{t.FINDING_SOMEONE}</p>
+          <p className="font-medium tracking-wide animate-pulse text-lg mb-6">{t.FINDING_SOMEONE}</p>
+          <button 
+            onClick={() => useStore.getState().cancelMatching?.()}
+            className="px-6 py-2 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:bg-neutral-800 transition-colors"
+          >
+            {t.CANCEL || 'Hủy'}
+          </button>
         </div>
       ) : (
         <div className="flex flex-col items-center animate-fade-in w-full max-w-sm">

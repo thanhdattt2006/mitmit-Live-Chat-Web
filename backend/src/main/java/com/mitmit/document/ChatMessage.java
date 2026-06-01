@@ -24,6 +24,6 @@ public class ChatMessage {
     private String content;
     private String replyToId;
     private String reaction;
-    private boolean isUnsent = false;
+    private Boolean isUnsent = false;
     private LocalDateTime createdAt;
 }
