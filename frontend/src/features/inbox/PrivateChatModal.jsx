@@ -32,19 +32,22 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
   useEffect(() => {
     if (isOpen && friend) {
-      axiosClient.get(`/api/v1/messages/${friend.friendshipId}`)
+      axiosClient.get('/api/v1/messages/' + friend.friendshipId)
       .then(response => {
         const data = response?.data || response;
-        const mappedMessages = data.map(msg => ({
-          id: msg.id,
-          text: msg.type === 'TEXT' ? msg.content : undefined,
-          imageUrl: msg.type === 'IMAGE' ? msg.content : undefined,
-          audioUrl: msg.type === 'VOICE' ? msg.content : undefined,
-          isMine: msg.senderId === useStore.getState().userInfo?.id,
-          reaction: msg.reaction,
-          replyTo: msg.replyToId ? { id: msg.replyToId, type: msg.replyToType, text: msg.replyToContent } : null,
-          type: msg.type
-        }));
+        const mappedMessages = data.map(msg => {
+          const msgType = msg.type ? msg.type.toUpperCase() : 'TEXT';
+          return {
+            id: msg.id,
+            text: msgType === 'TEXT' ? msg.content : undefined,
+            imageUrl: msgType === 'IMAGE' ? msg.content : undefined,
+            audioUrl: msgType === 'VOICE' ? msg.content : undefined,
+            isMine: msg.senderId === useStore.getState().userInfo?.id,
+            reaction: msg.reaction,
+            replyTo: msg.replyToId ? { id: msg.replyToId } : null,
+            type: msgType
+          };
+        });
         setMessages(mappedMessages);
       }).catch(err => {
         console.error("Lỗi fetch private messages:", err);

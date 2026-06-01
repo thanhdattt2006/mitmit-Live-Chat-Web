@@ -3,6 +3,7 @@ import { Send, Smile, Mic, X, Image as ImageIcon } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
+import axiosClient from '../../api/axiosClient';
 
 export default function PrivateChatInput({ text, setText, handleSend, replyingTo, setReplyingTo, friend, setMessages, stompClientRef }) {
   const { lang } = useStore();
