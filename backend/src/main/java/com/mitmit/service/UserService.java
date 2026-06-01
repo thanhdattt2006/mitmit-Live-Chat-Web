@@ -19,7 +19,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BanRepository banRepository;
 
-    public User loginOrRegister(String email, String googleId, String githubId, String avatarUrl) {
+    public User loginOrRegister(String email, String googleId, String avatarUrl) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isPresent()) {
@@ -38,7 +38,7 @@ public class UserService {
                     .id(UUID.randomUUID().toString())
                     .email(email)
                     .googleId(googleId)
-                    .githubId(githubId)
+
                     .avatarUrl(avatarUrl)
                     .anonymousName(anonymousName)
                     .role(Role.USER)

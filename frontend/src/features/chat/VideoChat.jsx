@@ -12,7 +12,7 @@ export default function VideoChat() {
   const { 
     lang, isMatching, isConnected, startMatching, stopCall, clearMessages, callMode, 
     localStream, setLocalStream, isLoggedIn, selectedCameraId, selectedMicId, remoteStream,
-    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger, remoteUserId, userInfo
+    isMatched, remoteUserInfo, sendMatchDecision, partnerDisconnectedTrigger, remoteUserId, userInfo, setLoginModalOpen
   } = useStore();
   
   const t = translations[lang];
@@ -34,16 +34,7 @@ export default function VideoChat() {
 
   const handleGuestAction = (actionCallback) => {
     if (!isLoggedIn) {
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
-      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>${t.LOGIN_REQUIRED}</span>`;
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      setLoginModalOpen(true);
       return;
     }
     actionCallback();
@@ -68,76 +59,78 @@ export default function VideoChat() {
   }, [isMatched]);
 
   const handleStartNext = async () => {
-    try {
-      // CLEAR SẠCH TÀN DƯ TRƯỚC KHI TÌM MỚI (Fix lỗi Freeze)
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        setLocalStream(null);
-      }
-      stopCall();
-
-      if (callMode !== 'text') {
-        try {
-          const constraints = {
-            video: callMode === 'video' ? {
-              deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
-              width: { ideal: 640, max: 1280 },
-              height: { ideal: 480, max: 720 },
-              frameRate: { ideal: 24, max: 30 }
-            } : false,
-            audio: {
-              deviceId: selectedMicId ? { exact: selectedMicId } : undefined,
-              echoCancellation: true,
-              noiseSuppression: true
-            }
-          };
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          setLocalStream(stream);
-        } catch (err) {
-          console.warn("Camera/Mic access error, creating fallback fake stream:", err);
-          const tracks = [];
-          if (callMode === 'video') {
-            const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 480;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#262626';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#a3a3a3';
-            ctx.font = '24px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Camera in use / unavailable', canvas.width / 2, canvas.height / 2);
-            const canvasStream = canvas.captureStream(15);
-            if (canvasStream.getVideoTracks().length > 0) {
-              tracks.push(canvasStream.getVideoTracks()[0]);
-            }
-          }
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (AudioContext) {
-            const audioCtx = new AudioContext();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0;
-            const dst = audioCtx.createMediaStreamDestination();
-            oscillator.connect(gainNode);
-            gainNode.connect(dst);
-            oscillator.start();
-            if (dst.stream.getAudioTracks().length > 0) {
-              tracks.push(dst.stream.getAudioTracks()[0]);
-            }
-          }
-          const fakeStream = new MediaStream(tracks);
-          setLocalStream(fakeStream);
+    handleGuestAction(async () => {
+      try {
+        // CLEAR SẠCH TÀN DƯ TRƯỚC KHI TÌM MỚI (Fix lỗi Freeze)
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          setLocalStream(null);
         }
+        stopCall();
+
+        if (callMode !== 'text') {
+          try {
+            const constraints = {
+              video: callMode === 'video' ? {
+                deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
+                frameRate: { ideal: 24, max: 30 }
+              } : false,
+              audio: {
+                deviceId: selectedMicId ? { exact: selectedMicId } : undefined,
+                echoCancellation: true,
+                noiseSuppression: true
+              }
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            setLocalStream(stream);
+          } catch (err) {
+            console.warn("Camera/Mic access error, creating fallback fake stream:", err);
+            const tracks = [];
+            if (callMode === 'video') {
+              const canvas = document.createElement('canvas');
+              canvas.width = 640;
+              canvas.height = 480;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#262626';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.fillStyle = '#a3a3a3';
+              ctx.font = '24px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('Camera in use / unavailable', canvas.width / 2, canvas.height / 2);
+              const canvasStream = canvas.captureStream(15);
+              if (canvasStream.getVideoTracks().length > 0) {
+                tracks.push(canvasStream.getVideoTracks()[0]);
+              }
+            }
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+              const audioCtx = new AudioContext();
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+              gainNode.gain.value = 0;
+              const dst = audioCtx.createMediaStreamDestination();
+              oscillator.connect(gainNode);
+              gainNode.connect(dst);
+              oscillator.start();
+              if (dst.stream.getAudioTracks().length > 0) {
+                tracks.push(dst.stream.getAudioTracks()[0]);
+              }
+            }
+            const fakeStream = new MediaStream(tracks);
+            setLocalStream(fakeStream);
+          }
+        }
+        setTimeLeft(180);
+        await startMatching();
+        clearMessages();
+        setIsLikedByMe(false);
+        setShowPremiumMatch(false);
+      } catch (error) {
+        console.error('Error starting next match:', error);
       }
-      setTimeLeft(180);
-      await startMatching();
-      clearMessages();
-      setIsLikedByMe(false);
-      setShowPremiumMatch(false);
-    } catch (error) {
-      console.error('Error starting next match:', error);
-    }
+    });
   };
 
   useEffect(() => {

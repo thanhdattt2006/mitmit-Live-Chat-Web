@@ -41,29 +41,22 @@ export default function RoomPage() {
 
   const handleGuestAction = (actionCallback) => {
     if (!isLoggedIn) {
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
-      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>${t.LOGIN_REQUIRED}</span>`;
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      setLoginModalOpen(true);
       return;
     }
     actionCallback();
   };
 
   const handleStartNextText = () => {
-    try {
-      clearMessages();
-      startMatching();
-    } catch (error) {
-      console.error('Error starting next text chat:', error);
-      setMatching(false);
-    }
+    handleGuestAction(() => {
+      try {
+        clearMessages();
+        startMatching();
+      } catch (error) {
+        console.error('Error starting next text chat:', error);
+        setMatching(false);
+      }
+    });
   };
 
   const handleStopText = () => {
