@@ -28,7 +28,18 @@ public class MessageController {
     public void handlePrivateMessage(Authentication authentication, @Payload ChatMessage messageRequest) {
         String senderId = messageRequest.getSenderId();
         if (authentication != null && authentication.getPrincipal() != null) {
-            senderId = (String) authentication.getPrincipal();
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof String) {
+                senderId = (String) principal;
+            } else if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User) {
+                // For OAuth2 sessions, we rely on the payload's senderId for now 
+                // or we could lookup by email.
+                // senderId remains messageRequest.getSenderId()
+            } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                senderId = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            } else {
+                senderId = authentication.getName();
+            }
         }
         messageService.sendMessage(senderId, messageRequest);
     }
@@ -48,7 +59,19 @@ public class MessageController {
     public ResponseEntity<ChatMessage> sendMessage(
             Authentication authentication,
             @RequestBody ChatMessage messageRequest) {
-        String senderId = (String) authentication.getPrincipal();
+        String senderId = messageRequest.getSenderId();
+        if (authentication != null && authentication.getPrincipal() != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof String) {
+                senderId = (String) principal;
+            } else if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User) {
+                // Keep senderId from payload
+            } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                senderId = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            } else {
+                senderId = authentication.getName();
+            }
+        }
         return ResponseEntity.ok(messageService.sendMessage(senderId, messageRequest));
     }
 

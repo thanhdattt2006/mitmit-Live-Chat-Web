@@ -6,12 +6,12 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
-@Document
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Document(collection = "chat_messages")
 public class ChatMessage {
     @Id
     private String id; // ObjectId của Mongo
