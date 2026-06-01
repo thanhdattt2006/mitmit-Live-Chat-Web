@@ -37,10 +37,12 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         const data = response?.data || response;
         const mappedMessages = data.map(msg => ({
           id: msg.id,
-          text: msg.content,
+          text: msg.type === 'TEXT' ? msg.content : undefined,
+          imageUrl: msg.type === 'IMAGE' ? msg.content : undefined,
+          audioUrl: msg.type === 'VOICE' ? msg.content : undefined,
           isMine: msg.senderId === useStore.getState().userInfo?.id,
           reaction: msg.reaction,
-          replyTo: msg.replyToId ? { id: msg.replyToId } : null,
+          replyTo: msg.replyToId ? { id: msg.replyToId, type: msg.replyToType, text: msg.replyToContent } : null,
           type: msg.type
         }));
         setMessages(mappedMessages);
@@ -61,7 +63,9 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
                   if (prev.some(m => m.id === newMsg.id)) return prev;
                   return [...prev, {
                     id: newMsg.id,
-                    text: newMsg.content,
+                    text: newMsg.type === 'TEXT' ? newMsg.content : undefined,
+                    imageUrl: newMsg.type === 'IMAGE' ? newMsg.content : undefined,
+                    audioUrl: newMsg.type === 'VOICE' ? newMsg.content : undefined,
                     isMine: newMsg.senderId === useStore.getState().userInfo?.id,
                     reaction: newMsg.reaction,
                     replyTo: newMsg.replyToId ? { id: newMsg.replyToId } : null,

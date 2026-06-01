@@ -113,7 +113,7 @@ export default function PrivateMessageRow({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {msg.type !== 'voice' && msg.type !== 'image' && (
+        {msg.type !== 'VOICE' && msg.type !== 'IMAGE' && (
           <button
             onClick={() => handleCopy(msg.text)}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700 transition-colors rounded-t-xl"
@@ -124,7 +124,7 @@ export default function PrivateMessageRow({
         <button
           onClick={() => { setReplyingTo(msg); setActiveMenuId(null); }}
           className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-neutral-700 transition-colors
-            ${msg.type === 'voice' || msg.type === 'image' ? 'rounded-t-xl' : ''}`}
+            ${msg.type === 'VOICE' || msg.type === 'IMAGE' ? 'rounded-t-xl' : ''}`}
         >
           <Reply className="w-3.5 h-3.5" /> {t.REPLY}
         </button>
@@ -194,13 +194,13 @@ export default function PrivateMessageRow({
         {/* ── Chat Bubble ── */}
         <div
           className={`relative max-w-[75%] text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap
-            ${msg.type === 'image'
+            ${msg.type === 'IMAGE'
               ? ''
               : msg.isMine
                 ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2'
                 : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700 px-3.5 py-2'
             }
-            ${msg.type === 'voice' ? 'p-0 overflow-hidden' : ''}`}
+            ${msg.type === 'VOICE' ? 'p-0 overflow-hidden' : ''}`}
         >
           {/* Replied-to quote */}
           {msg.replyTo && (
@@ -212,15 +212,15 @@ export default function PrivateMessageRow({
                 {msg.replyTo.isMine ? t.YOU : friend.name}
               </p>
               <p className="truncate">
-                {msg.replyTo.type === 'voice' ? t.VOICE_MESSAGE : msg.replyTo.text}
+                {msg.replyTo.type === 'VOICE' ? t.VOICE_MESSAGE : msg.replyTo.text}
               </p>
             </div>
           )}
 
           {/* Message content */}
-          {msg.type === 'voice' ? (
+          {msg.type === 'VOICE' ? (
             <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
-          ) : msg.type === 'image' ? (
+          ) : msg.type === 'IMAGE' ? (
             <img
               src={msg.imageUrl}
               alt="Sent image"

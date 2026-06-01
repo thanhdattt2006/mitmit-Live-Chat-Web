@@ -55,15 +55,31 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        setMessages(prev => [...prev, { 
-          id: Date.now().toString(), 
-          type: 'voice', 
-          audioUrl: audioUrl,
-          isMine: true,
-          replyTo: replyingTo
-        }]);
-        setReplyingTo(null);
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64data = reader.result;
+          try {
+            const payload = {
+              friendshipId: friend.friendshipId,
+              content: base64data,
+              type: 'VOICE',
+              replyToId: replyingTo?.id || null
+            };
+            const response = await axiosClient.post('/api/v1/messages', payload);
+            const newMsg = response?.data || response;
+            setMessages(prev => [...prev, { 
+              id: newMsg.id, 
+              type: 'VOICE', 
+              audioUrl: newMsg.content,
+              isMine: true,
+              replyTo: replyingTo
+            }]);
+            setReplyingTo(null);
+          } catch (error) {
+            console.error("Lỗi gửi voice:", error);
+          }
+        };
+        reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -89,15 +105,31 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) return;
-      const imageUrl = URL.createObjectURL(file);
-      setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        type: 'image', 
-        imageUrl: imageUrl, 
-        isMine: true,
-        replyTo: replyingTo 
-      }]);
-      setReplyingTo(null);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result;
+        try {
+          const payload = {
+            friendshipId: friend.friendshipId,
+            content: base64data,
+            type: 'IMAGE',
+            replyToId: replyingTo?.id || null
+          };
+          const response = await axiosClient.post('/api/v1/messages', payload);
+          const newMsg = response?.data || response;
+          setMessages(prev => [...prev, { 
+            id: newMsg.id, 
+            type: 'IMAGE', 
+            imageUrl: newMsg.content, 
+            isMine: true,
+            replyTo: replyingTo 
+          }]);
+          setReplyingTo(null);
+        } catch (error) {
+          console.error("Lỗi gửi ảnh:", error);
+        }
+      };
+      reader.readAsDataURL(file);
       e.target.value = '';
     }
   };
@@ -108,7 +140,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         <div className="flex items-center justify-between bg-neutral-800/80 backdrop-blur-sm border-l-2 border-blue-500 p-2 mb-2 rounded-r-lg shadow-sm animate-fade-in">
           <div className="flex-1 min-w-0 pr-2">
             <p className="text-[10px] font-semibold text-blue-400 mb-0.5">{t.REPLYING_TO} {replyingTo.isMine ? t.YOU : friend.name}</p>
-            <p className="text-xs text-gray-300 truncate">{replyingTo.type === 'voice' ? t.VOICE_MESSAGE : replyingTo.text}</p>
+            <p className="text-xs text-gray-300 truncate">{replyingTo.type === 'VOICE' ? t.VOICE_MESSAGE : replyingTo.type === 'IMAGE' ? t.IMAGE || 'Image' : replyingTo.text}</p>
           </div>
           <button type="button" onClick={() => setReplyingTo(null)} className="p-1 text-gray-500 hover:text-white rounded-full transition-colors shrink-0">
             <X className="w-3.5 h-3.5" />

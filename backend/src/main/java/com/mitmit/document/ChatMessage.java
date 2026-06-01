@@ -20,7 +20,7 @@ public class ChatMessage {
     private Long friendshipId; // Cái này để query tin nhắn theo phòng cực lẹ
 
     private String senderId;
-    private String type; // TEXT hoặc VOICE
+    private String type; // TEXT hoặc VOICE hoặc IMAGE
     private String content;
     private String replyToId;
     private String reaction;
