@@ -44,23 +44,10 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             String openId = null;
             String avatarUrl = null;
 
-            // 2. Lấy ID và Avatar đúng chuẩn của từng Provider
+            // 2. Lấy ID và Avatar đúng chuẩn của Provider
             if ("google".equalsIgnoreCase(registrationId)) {
                 openId = oAuth2User.getAttribute("sub"); // Google dùng 'sub' làm ID
                 avatarUrl = oAuth2User.getAttribute("picture"); // Google dùng 'picture' làm avatar
-            } else if ("github".equalsIgnoreCase(registrationId)) {
-                Object idObj = oAuth2User.getAttribute("id");
-                openId = idObj != null ? String.valueOf(idObj) : null;
-                avatarUrl = oAuth2User.getAttribute("avatar_url");
-                
-                // Fallback nếu GitHub không public email
-                if (email == null) {
-                    String login = oAuth2User.getAttribute("login");
-                    if (login != null) {
-                        email = login + "@github.com";
-                        if (name == null) name = login;
-                    }
-                }
             }
 
             // Đảm bảo có email để tiếp tục xử lý
@@ -86,8 +73,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 
                 if ("google".equalsIgnoreCase(registrationId)) {
                     user.setGoogleId(openId);
-                } else if ("github".equalsIgnoreCase(registrationId)) {
-                    user.setGithubId(openId);
                 }
                 
                 userRepository.save(user);
@@ -111,9 +96,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 // Cập nhật Provider ID để sau này có thể tra cứu nhanh
                 if ("google".equalsIgnoreCase(registrationId) && user.getGoogleId() == null) {
                     user.setGoogleId(openId);
-                    needUpdate = true;
-                } else if ("github".equalsIgnoreCase(registrationId) && user.getGithubId() == null) {
-                    user.setGithubId(openId);
                     needUpdate = true;
                 }
                 

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
 export default function ProfileDropdown({ onOpenProfile, onOpenSettings, onLogoutConfirm }) {
   const { lang, userInfo } = useStore();
   const t = translations[lang];
+  const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const profileRef = useRef(null);
@@ -66,6 +68,11 @@ export default function ProfileDropdown({ onOpenProfile, onOpenSettings, onLogou
           <button onClick={() => { setShowProfileDropdown(false); onOpenSettings(); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-neutral-800 transition-colors">
             <Settings className="w-4 h-4 shrink-0" /> <span className="truncate">{t.SETTINGS}</span>
           </button>
+          {userInfo?.role === 'ADMIN' && (
+            <button onClick={() => { setShowProfileDropdown(false); navigate('/admin'); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-amber-500 hover:bg-amber-500/10 transition-colors">
+              <Shield className="w-4 h-4 shrink-0" /> <span className="truncate">Admin Dashboard</span>
+            </button>
+          )}
           <div className="h-px bg-neutral-800 my-1"></div>
           <button onClick={() => { setShowProfileDropdown(false); onLogoutConfirm(); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10 transition-colors">
             <LogOut className="w-4 h-4 shrink-0" /> <span className="truncate">{t.LOGOUT}</span>

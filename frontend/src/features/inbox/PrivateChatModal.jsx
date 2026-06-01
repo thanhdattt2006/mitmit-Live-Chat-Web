@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
@@ -45,6 +47,39 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       }).catch(err => {
         console.error("Lỗi fetch private messages:", err);
       });
+
+      const socketUrl = 'http://localhost:8080/ws';
+      const stompClient = new Client({
+        webSocketFactory: () => new SockJS(socketUrl),
+        connectHeaders: { userId: useStore.getState().userInfo?.id },
+        onConnect: () => {
+          stompClient.subscribe(`/topic/messages/${useStore.getState().userInfo?.id}`, (msg) => {
+            try {
+              const newMsg = JSON.parse(msg.body);
+              if (newMsg.friendshipId === friend.friendshipId) {
+                setMessages(prev => {
+                  if (prev.some(m => m.id === newMsg.id)) return prev;
+                  return [...prev, {
+                    id: newMsg.id,
+                    text: newMsg.content,
+                    isMine: newMsg.senderId === useStore.getState().userInfo?.id,
+                    reaction: newMsg.reaction,
+                    replyTo: newMsg.replyToId ? { id: newMsg.replyToId } : null,
+                    type: newMsg.type
+                  }];
+                });
+              }
+            } catch (err) {
+              console.error('Lỗi parse real-time message:', err);
+            }
+          });
+        }
+      });
+      stompClient.activate();
+
+      return () => {
+        stompClient.deactivate();
+      };
     }
   }, [isOpen, friend]);
 

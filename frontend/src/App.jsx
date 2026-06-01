@@ -27,7 +27,10 @@ export default function App() {
         <main className="flex-1 flex w-full p-2 sm:p-4 gap-4 overflow-clip relative">
           <Routes>
             <Route path="/" element={<RoomPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route 
+              path="/admin" 
+              element={useStore().userInfo?.role === 'ADMIN' ? <AdminDashboard /> : <Navigate to="/" replace />} 
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
             <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
           </Routes>

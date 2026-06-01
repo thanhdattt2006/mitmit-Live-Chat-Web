@@ -194,7 +194,7 @@ export default function VideoChat() {
   };
 
   return (
-    <section className="flex-1 relative rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-sm flex items-center justify-center h-full min-w-0">
+    <section className="flex-1 relative lg:rounded-3xl overflow-hidden bg-black lg:bg-neutral-900 lg:border border-neutral-800 lg:shadow-sm flex items-center justify-center h-full min-w-0">
       <RemoteStreamVideo ref={remoteVideoRef} strangerImg={strangerImg} />
       
       {/* Loading Overlay */}

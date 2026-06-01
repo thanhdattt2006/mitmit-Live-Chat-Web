@@ -2,7 +2,10 @@ package com.mitmit.service;
 
 import com.mitmit.document.ChatMessage;
 import com.mitmit.repository.ChatMessageRepository;
+import com.mitmit.repository.FriendshipRepository;
+import com.mitmit.entity.Friendship;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,6 +16,8 @@ import java.util.List;
 public class MessageService {
 
     private final ChatMessageRepository chatMessageRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public List<ChatMessage> getMessages(Long friendshipId) {
         return chatMessageRepository.findByFriendshipIdOrderByCreatedAtAsc(friendshipId);
@@ -29,7 +34,19 @@ public class MessageService {
                 .isUnsent(false)
                 .createdAt(LocalDateTime.now())
                 .build();
-        return chatMessageRepository.save(message);
+        ChatMessage savedMessage = chatMessageRepository.save(message);
+
+        // Broadcast to receiver via STOMP
+        Friendship friendship = friendshipRepository.findById(messageRequest.getFriendshipId()).orElse(null);
+        if (friendship != null) {
+            String receiverId = friendship.getUser1().getId().equals(senderId) 
+                    ? friendship.getUser2().getId() 
+                    : friendship.getUser1().getId();
+            
+            messagingTemplate.convertAndSend("/topic/messages/" + receiverId, savedMessage);
+        }
+
+        return savedMessage;
     }
 
     public void unsendMessage(String id) {
