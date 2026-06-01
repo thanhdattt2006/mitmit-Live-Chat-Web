@@ -5,7 +5,10 @@ import com.mitmit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,9 +19,29 @@ public class MessageController {
 
     private final MessageService messageService;
 
-    @GetMapping
-    public ResponseEntity<List<ChatMessage>> getMessages(@RequestParam Long friendshipId) {
+    @GetMapping("/{friendshipId}")
+    public ResponseEntity<List<ChatMessage>> getMessages(@PathVariable Long friendshipId) {
         return ResponseEntity.ok(messageService.getMessages(friendshipId));
+    }
+
+    @MessageMapping("/chat.private")
+    public void handlePrivateMessage(Authentication authentication, @Payload ChatMessage messageRequest) {
+        String senderId = messageRequest.getSenderId();
+        if (authentication != null && authentication.getPrincipal() != null) {
+            senderId = (String) authentication.getPrincipal();
+        }
+        messageService.sendMessage(senderId, messageRequest);
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadMedia(@RequestParam("file") MultipartFile file) {
+        try {
+            String type = file.getContentType();
+            String base64 = java.util.Base64.getEncoder().encodeToString(file.getBytes());
+            return ResponseEntity.ok("data:" + type + ";base64," + base64);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Upload failed");
+        }
     }
 
     @PostMapping

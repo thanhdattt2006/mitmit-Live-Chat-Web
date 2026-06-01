@@ -219,7 +219,7 @@ export default function PrivateMessageRow({
 
           {/* Message content */}
           {msg.type === 'VOICE' ? (
-            <VoicePlayer audioUrl={msg.audioUrl} isMine={msg.isMine} />
+            <audio controls src={msg.audioUrl} className="max-w-[200px] sm:max-w-[250px] rounded-xl" />
           ) : msg.type === 'IMAGE' ? (
             <img
               src={msg.imageUrl}

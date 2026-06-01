@@ -4,7 +4,7 @@ import EmojiPicker from 'emoji-picker-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
-export default function PrivateChatInput({ text, setText, handleSend, replyingTo, setReplyingTo, friend, setMessages }) {
+export default function PrivateChatInput({ text, setText, handleSend, replyingTo, setReplyingTo, friend, setMessages, stompClientRef }) {
   const { lang } = useStore();
   const t = translations[lang];
 
@@ -59,21 +59,27 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         reader.onloadend = async () => {
           const base64data = reader.result;
           try {
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'audio.webm');
+            
+            const response = await axiosClient.post('/api/v1/messages/upload', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            const audioUrl = response?.data || response;
+            
             const payload = {
               friendshipId: friend.friendshipId,
-              content: base64data,
+              content: audioUrl,
               type: 'VOICE',
-              replyToId: replyingTo?.id || null
+              replyToId: replyingTo?.id || null,
+              senderId: useStore.getState().userInfo?.id
             };
-            const response = await axiosClient.post('/api/v1/messages', payload);
-            const newMsg = response?.data || response;
-            setMessages(prev => [...prev, { 
-              id: newMsg.id, 
-              type: 'VOICE', 
-              audioUrl: newMsg.content,
-              isMine: true,
-              replyTo: replyingTo
-            }]);
+            
+            if (stompClientRef.current?.connected) {
+              stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
+            }
+            
             setReplyingTo(null);
           } catch (error) {
             console.error("Lỗi gửi voice:", error);
@@ -109,21 +115,27 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
       reader.onloadend = async () => {
         const base64data = reader.result;
         try {
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const response = await axiosClient.post('/api/v1/messages/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          
+          const imageUrl = response?.data || response;
+          
           const payload = {
             friendshipId: friend.friendshipId,
-            content: base64data,
+            content: imageUrl,
             type: 'IMAGE',
-            replyToId: replyingTo?.id || null
+            replyToId: replyingTo?.id || null,
+            senderId: useStore.getState().userInfo?.id
           };
-          const response = await axiosClient.post('/api/v1/messages', payload);
-          const newMsg = response?.data || response;
-          setMessages(prev => [...prev, { 
-            id: newMsg.id, 
-            type: 'IMAGE', 
-            imageUrl: newMsg.content, 
-            isMine: true,
-            replyTo: replyingTo 
-          }]);
+          
+          if (stompClientRef.current?.connected) {
+            stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
+          }
+          
           setReplyingTo(null);
         } catch (error) {
           console.error("Lỗi gửi ảnh:", error);

@@ -24,6 +24,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const [activeReactionId, setActiveReactionId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
+  const stompClientRef = useRef(null);
 
   useEffect(() => {
     setShowReportModal(false);
@@ -31,9 +32,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
   useEffect(() => {
     if (isOpen && friend) {
-      axiosClient.get('/api/v1/messages', {
-        params: { friendshipId: friend.friendshipId }
-      }).then(response => {
+      axiosClient.get(`/api/v1/messages/${friend.friendshipId}`)
+      .then(response => {
         const data = response?.data || response;
         const mappedMessages = data.map(msg => ({
           id: msg.id,
@@ -55,7 +55,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         webSocketFactory: () => new SockJS(socketUrl),
         connectHeaders: { userId: useStore.getState().userInfo?.id },
         onConnect: () => {
-          stompClient.subscribe(`/topic/messages/${useStore.getState().userInfo?.id}`, (msg) => {
+          stompClientRef.current = stompClient;
+          stompClient.subscribe(`/user/${useStore.getState().userInfo?.id}/queue/messages`, (msg) => {
             try {
               const newMsg = JSON.parse(msg.body);
               if (newMsg.friendshipId === friend.friendshipId) {
@@ -102,20 +103,15 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         friendshipId: friend.friendshipId,
         content: text.trim(),
         type: 'TEXT',
-        replyToId: replyingTo?.id || null
+        replyToId: replyingTo?.id || null,
+        senderId: useStore.getState().userInfo?.id
       };
 
-      const response = await axiosClient.post('/api/v1/messages', payload);
-      const newMsg = response?.data || response;
-
-      setMessages(prev => [...prev, {
-        id: newMsg.id,
-        text: newMsg.content,
-        isMine: true,
-        replyTo: replyingTo,
-        reaction: null,
-        type: 'TEXT'
-      }]);
+      if (stompClientRef.current?.connected) {
+        stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
+      } else {
+        console.warn("STOMP connection not ready, message not sent");
+      }
 
       setText('');
       setReplyingTo(null);
@@ -188,6 +184,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         setReplyingTo={setReplyingTo}
         friend={friend}
         setMessages={setMessages}
+        stompClientRef={stompClientRef}
       />
 
       <ReportModal 

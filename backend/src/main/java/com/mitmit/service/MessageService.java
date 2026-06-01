@@ -45,7 +45,8 @@ public class MessageService {
                     ? friendship.getUser2().getId() 
                     : friendship.getUser1().getId();
             
-            messagingTemplate.convertAndSend("/topic/messages/" + receiverId, savedMessage);
+            messagingTemplate.convertAndSend("/user/" + receiverId + "/queue/messages", savedMessage);
+            messagingTemplate.convertAndSend("/user/" + senderId + "/queue/messages", savedMessage);
         }
 
         return savedMessage;
