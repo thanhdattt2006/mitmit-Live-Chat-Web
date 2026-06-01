@@ -19,6 +19,9 @@ public class User {
     @Column(unique = true)
     private String googleId;
 
+    @Column(unique = true)
+    private String githubId;
+
 
     @Column(nullable = false, unique = true)
     private String email;

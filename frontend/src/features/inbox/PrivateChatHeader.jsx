@@ -32,12 +32,6 @@ export default function PrivateChatHeader({ friend, onClose, setShowReportModal 
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-white">{friend.name}</h3>
-            {/* Giữ nguyên tag giả định nếu chưa có API thật cho friend */}
-            <span className="px-1.5 py-0.5 bg-neutral-800 rounded-full text-[10px] text-gray-300 border border-neutral-700 flex items-center gap-1 shrink-0">
-              {friend.age || 21} <span className={`font-bold ${friend.gender === 'female' ? 'text-pink-400' : friend.gender === 'male' ? 'text-blue-400' : 'text-purple-400'}`}>
-                {friend.gender === 'female' ? '♀' : friend.gender === 'male' ? '♂' : '⚥'}
-              </span>
-            </span>
           </div>
           <p className="text-[10px] text-green-400">{t.PRIVATE_CHAT}</p>
         </div>
