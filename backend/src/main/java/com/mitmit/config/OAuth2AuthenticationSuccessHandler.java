@@ -26,6 +26,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    @org.springframework.beans.factory.annotation.Value("${app.admin.emails:dave.vo@gmail.com}")
+    private java.util.List<String> adminEmails;
+
     // Hardcoded frontend URL for now, could be moved to application.yaml
     private static final String FRONTEND_REDIRECT_URL = "http://localhost:3000/oauth2/redirect?token=";
     private static final String FRONTEND_ERROR_URL = "http://localhost:3000/?error=oauth2_failure";
@@ -62,7 +65,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             User user = userRepository.findByEmail(email).orElse(null);
 
             if (user == null) {
-                Role userRole = ("dave.vo@gmail.com".equals(email) && "google".equalsIgnoreCase(registrationId)) ? Role.ADMIN : Role.USER;
+                Role userRole = (adminEmails.contains(email) && "google".equalsIgnoreCase(registrationId)) ? Role.ADMIN : Role.USER;
 
                 // 3a. User mới: Lưu đầy đủ thông tin
                 user = User.builder()
@@ -87,7 +90,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 boolean needUpdate = false;
                 
                 // Cập nhật role nếu là admin nhưng chưa có quyền
-                if ("dave.vo@gmail.com".equals(email) && "google".equalsIgnoreCase(registrationId) && user.getRole() != Role.ADMIN) {
+                if (adminEmails.contains(email) && "google".equalsIgnoreCase(registrationId) && user.getRole() != Role.ADMIN) {
                     user.setRole(Role.ADMIN);
                     needUpdate = true;
                 }

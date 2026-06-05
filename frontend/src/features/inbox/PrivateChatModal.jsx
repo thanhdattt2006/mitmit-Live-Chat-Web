@@ -54,9 +54,10 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       });
 
       const socketUrl = 'http://localhost:8080/ws';
+      const token = localStorage.getItem('mitmit_jwt_token');
       const stompClient = new Client({
         webSocketFactory: () => new SockJS(socketUrl),
-        connectHeaders: { userId: useStore.getState().userInfo?.id },
+        connectHeaders: { Authorization: `Bearer ${token}` },
         onConnect: () => {
           stompClientRef.current = stompClient;
           stompClient.subscribe(`/user/${useStore.getState().userInfo?.id}/queue/messages`, (msg) => {

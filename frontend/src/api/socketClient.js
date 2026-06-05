@@ -13,10 +13,11 @@ class SocketService {
       }
 
       const socketUrl = 'http://localhost:8080/ws';
+      const token = localStorage.getItem('mitmit_jwt_token');
       this.stompClient = new Client({
         webSocketFactory: () => new SockJS(socketUrl),
         connectHeaders: {
-          userId: userId
+          Authorization: `Bearer ${token}`
         },
         reconnectDelay: 5000,
         onConnect: () => {
