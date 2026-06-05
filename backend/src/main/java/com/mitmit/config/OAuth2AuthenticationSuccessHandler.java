@@ -26,9 +26,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    @org.springframework.beans.factory.annotation.Value("${app.admin.emails:dave.vo@gmail.com}")
-    private java.util.List<String> adminEmails;
-
     // Hardcoded frontend URL for now, could be moved to application.yaml
     private static final String FRONTEND_REDIRECT_URL = "http://localhost:3000/oauth2/redirect?token=";
     private static final String FRONTEND_ERROR_URL = "http://localhost:3000/?error=oauth2_failure";
@@ -65,14 +62,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             User user = userRepository.findByEmail(email).orElse(null);
 
             if (user == null) {
-                Role userRole = (adminEmails.contains(email) && "google".equalsIgnoreCase(registrationId)) ? Role.ADMIN : Role.USER;
-
-                // 3a. User mới: Lưu đầy đủ thông tin
+                // 3a. User mới: Mặc định luôn luôn là USER. Phân quyền ADMIN phải làm thủ công trong DB.
                 user = User.builder()
                         .id(UUID.randomUUID().toString())
                         .email(email)
                         .anonymousName(name != null ? name : "Anonymous")
-                        .role(userRole)
+                        .role(Role.USER)
                         .status(UserStatus.ACTIVE)
                         .avatarUrl(avatarUrl)
                         .build();
@@ -86,14 +81,17 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 userRepository.save(user);
                 log.info("Created new user via {}: {}", registrationId, email);
             } else {
-                // 3b. User cũ: Cập nhật lại những thông tin còn thiếu
-                boolean needUpdate = false;
+                // 3b. User cũ: Cập nhật thông tin
                 
-                // Cập nhật role nếu là admin nhưng chưa có quyền
-                if (adminEmails.contains(email) && "google".equalsIgnoreCase(registrationId) && user.getRole() != Role.ADMIN) {
-                    user.setRole(Role.ADMIN);
-                    needUpdate = true;
+                // BẢO MẬT ADMIN SPOOFING: 
+                // Nếu tài khoản trong DB đang là ADMIN, nhưng phương thức đăng nhập KHÔNG PHẢI Google -> Chặn ngay lập tức!
+                // Tránh việc hacker tạo acc Github có email trùng với Admin để cướp tài khoản.
+                if (user.getRole() == Role.ADMIN && !"google".equalsIgnoreCase(registrationId)) {
+                    log.warn("SECURITY ALERT: Attempted Admin login via {} for email {}", registrationId, email);
+                    throw new SecurityException("Admin accounts must login via Google");
                 }
+
+                boolean needUpdate = false;
                 
                 // Cập nhật avatar nếu trước đó chưa có
                 if (user.getAvatarUrl() == null && avatarUrl != null) {
