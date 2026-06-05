@@ -51,7 +51,7 @@ public class MessageController {
         try {
             java.nio.file.Files.createDirectories(java.nio.file.Paths.get(UPLOAD_DIR));
             String filename = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            java.nio.file.Path filePath = java.util.nio.file.Paths.get(UPLOAD_DIR + filename);
+            java.nio.file.Path filePath = java.nio.file.Paths.get(UPLOAD_DIR + filename);
             java.nio.file.Files.write(filePath, file.getBytes());
             // Trả về URL để frontend có thể hiển thị
             return ResponseEntity.ok("http://localhost:8080/uploads/" + filename);
