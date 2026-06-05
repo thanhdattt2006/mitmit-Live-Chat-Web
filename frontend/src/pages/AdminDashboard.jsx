@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
-import { translations } from '../utils/translation';
-import { Shield, Users, Activity, Flag, Trash2, CheckCircle, Ban } from 'lucide-react';
+import { Shield, Users, Activity, Flag, CheckCircle, Ban, ArrowLeft } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 
 export default function AdminDashboard() {
-  const { userInfo, lang, onlineCount } = useStore();
+  const { userInfo, onlineCount } = useStore();
   const navigate = useNavigate();
-  const t = translations[lang];
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (userInfo?.role === 'ADMIN') {
-      fetchReports();
-    }
+    if (userInfo?.role === 'ADMIN') fetchReports();
   }, [userInfo]);
 
   const fetchReports = async () => {
@@ -30,193 +26,120 @@ export default function AdminDashboard() {
     }
   };
 
-  if (userInfo?.role !== 'ADMIN') {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#0a0a0a] w-full h-full p-4">
-        <div className="bg-[#141414] border border-neutral-800 p-8 rounded-3xl w-full max-w-md shadow-2xl animate-slide-up text-center">
-          <Shield className="w-16 h-16 text-rose-500 mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-white mb-2">{t.ADMIN_PORTAL}</h2>
-          <p className="text-gray-400 text-sm mb-8">{t.RESTRICTED_AREA}</p>
-          <div className="space-y-3">
-            <input type="password" placeholder={t.ADMIN_PIN_CODE} className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white text-center tracking-widest outline-none focus:border-rose-500/50" />
-            <button className="w-full py-3 rounded-xl font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-95">
-              {t.LOGIN_AS_ADMIN}
-            </button>
-            <button 
-              onClick={() => navigate('/')}
-              className="w-full py-3 rounded-xl font-semibold bg-transparent hover:bg-neutral-800 text-gray-400 hover:text-white transition-all active:scale-95"
-            >
-              {t.RETURN_TO_APP}
-            </button>
-          </div>
+  const handleAction = async (type, reportId, reportedId) => {
+    try {
+      if (type === 'ignore') await axiosClient.post(`/api/v1/reports/${reportId}/ignore`);
+      if (type === 'ban') await axiosClient.post(`/api/v1/admin/ban/${reportedId}?reportId=${reportId}`);
+      setReports(reports.filter(r => r.id !== reportId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (userInfo?.role !== 'ADMIN') return null;
+
+  const StatCard = ({ icon: Icon, label, value, color }) => (
+    <div className="relative overflow-hidden bg-neutral-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 transition-all hover:scale-[1.02] hover:bg-neutral-900/60 group">
+      <div className={`absolute -right-6 -top-6 w-24 h-24 bg-${color}-500/20 rounded-full blur-2xl group-hover:bg-${color}-500/30 transition-all`}></div>
+      <div className="flex items-center gap-4 relative z-10">
+        <div className={`w-14 h-14 bg-${color}-500/10 rounded-2xl flex items-center justify-center shrink-0 border border-${color}-500/20`}>
+          <Icon className={`w-7 h-7 text-${color}-400`} />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-400 mb-1">{label}</p>
+          <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
         </div>
       </div>
-    );
-  }
-
-  const handleIgnore = async (id) => {
-    try {
-      await axiosClient.post(`/api/v1/reports/${id}/ignore`);
-      setReports(reports.filter(r => r.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleBan = async (id, reportedId) => {
-    try {
-      await axiosClient.post(`/api/v1/admin/ban/${reportedId}?reportId=${id}`);
-      
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2';
-      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> <span>${t.BAN_SUCCESS || 'User banned successfully'}</span>`;
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-
-      setReports(reports.filter(r => r.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    </div>
+  );
 
   return (
-    <div className="flex-1 flex w-full h-full gap-4 overflow-hidden">
-      {/* Sidebar */}
-      <div className="hidden lg:flex w-64 bg-[#141414] rounded-3xl border border-neutral-800 flex-col p-6 shadow-sm shrink-0">
-        <div className="flex items-center gap-3 text-rose-500 mb-8">
-          <Shield className="w-8 h-8" />
-          <h2 className="font-bold text-xl tracking-tight">{t.ADMIN_DASHBOARD}</h2>
+    <div className="flex w-full h-full bg-[#050505] text-white overflow-hidden font-sans">
+      {/* Sidebar (Glassmorphism) */}
+      <div className="hidden lg:flex w-72 bg-white/5 backdrop-blur-2xl border-r border-white/10 flex-col p-6 shadow-2xl z-10">
+        <div className="flex items-center gap-3 text-rose-500 mb-10 px-2">
+          <div className="p-2 bg-rose-500/20 rounded-xl border border-rose-500/30">
+            <Shield className="w-6 h-6" />
+          </div>
+          <h2 className="font-extrabold text-2xl tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">QUẢN TRỊ</h2>
         </div>
-        
-        <nav className="flex-1 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-neutral-800 text-white font-medium transition-colors">
-            <Activity className="w-5 h-5" /> Dashboard
+        <nav className="flex-1 space-y-3">
+          <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/10 text-white font-semibold shadow-lg border border-white/5 transition-all">
+            <Activity className="w-5 h-5 text-blue-400" /> Bảng Điều Khiển
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-neutral-800/50 font-medium transition-colors">
-            <Users className="w-5 h-5" /> Users
+          <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 font-medium transition-all">
+            <Users className="w-5 h-5" /> Quản lý Người Dùng
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-neutral-800/50 font-medium transition-colors">
-            <Flag className="w-5 h-5" /> Reports
+          <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 font-medium transition-all">
+            <Flag className="w-5 h-5" /> Xử lý Vi Phạm
           </button>
         </nav>
+        <button onClick={() => navigate('/')} className="mt-auto w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-rose-500/10 hover:border-rose-500/20 border border-transparent font-medium transition-all group">
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Quay lại Ứng Dụng
+        </button>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-[#141414] rounded-3xl border border-neutral-800 overflow-y-auto shadow-sm p-6 lg:p-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">{t.ADMIN_DASHBOARD}</h1>
-          <p className="text-gray-400 text-sm">Monitor user activity and manage reports.</p>
-        </div>
+      <div className="flex-1 overflow-y-auto p-6 lg:p-10 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="max-w-6xl mx-auto relative z-10">
+          <header className="mb-10 flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight mb-2">Tổng Quan Hệ Thống</h1>
+              <p className="text-gray-400">Giám sát và bảo vệ môi trường an toàn cho người dùng.</p>
+            </div>
+            <button onClick={() => navigate('/')} className="lg:hidden p-3 bg-white/10 rounded-xl"><ArrowLeft /></button>
+          </header>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-400">{t.TOTAL_USERS}</p>
-              <h3 className="text-2xl font-bold text-white">45,231</h3>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <StatCard icon={Users} label="Tổng Người Dùng" value="1,248" color="blue" />
+            <StatCard icon={Activity} label="Đang Online" value={onlineCount} color="emerald" />
+            <StatCard icon={Flag} label="Tố Cáo Chờ Xử Lý" value={reports.length} color="rose" />
           </div>
-          <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center shrink-0">
-              <Activity className="w-6 h-6 text-emerald-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-400">{t.ONLINE_USERS}</p>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <h3 className="text-2xl font-bold text-white">{onlineCount.toLocaleString()}</h3>
-              </div>
-            </div>
-          </div>
-          <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center shrink-0">
-              <Flag className="w-6 h-6 text-rose-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-400">{t.PENDING_REPORTS}</p>
-              <h3 className="text-2xl font-bold text-white">{reports.length}</h3>
-            </div>
-          </div>
-        </div>
 
-        {/* Reports Table */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/80">
-            <h2 className="font-semibold text-lg">{t.REPORT_LIST}</h2>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-300">
-              <thead className="text-xs text-gray-400 uppercase bg-neutral-900/30">
-                <tr>
-                  <th className="px-6 py-4 font-medium">{t.REPORTED_USER}</th>
-                  <th className="px-6 py-4 font-medium">{t.REPORTER}</th>
-                  <th className="px-6 py-4 font-medium">{t.REASON}</th>
-                  <th className="px-6 py-4 font-medium text-right">{t.ACTION}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
+          {/* Table Area */}
+          <div className="bg-neutral-900/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="px-8 py-6 border-b border-white/10 bg-white/5">
+              <h2 className="font-bold text-xl">Danh Sách Bị Tố Cáo</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-black/20 text-gray-400 text-sm">
                   <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                      Loading reports...
-                    </td>
+                    <th className="px-8 py-5 font-semibold">Người bị Tố cáo</th>
+                    <th className="px-8 py-5 font-semibold">Người Tố cáo</th>
+                    <th className="px-8 py-5 font-semibold">Lý do</th>
+                    <th className="px-8 py-5 font-semibold text-right">Hành động</th>
                   </tr>
-                ) : reports.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-500/50" />
-                      No pending reports. Great job!
-                    </td>
-                  </tr>
-                ) : (
-                  reports.map((report) => (
-                    <tr key={report.id} className="border-b border-neutral-800 hover:bg-neutral-800/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <img src={report.avatarUrl || 'https://via.placeholder.com/150'} alt="" className="w-8 h-8 rounded-full object-cover border border-neutral-700" />
-                          <span className="font-medium text-white">{report.reportedUser}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-400">{report.reporter}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-rose-500/10 text-rose-500 border border-rose-500/20">
-                          {report.reason}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button 
-                            onClick={() => handleIgnore(report.id)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white hover:bg-neutral-800 transition-colors"
-                          >
-                            {t.IGNORE}
-                          </button>
-                          <button 
-                            onClick={() => handleBan(report.id, report.reportedId)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all shadow-sm"
-                          >
-                            <Ban className="w-3.5 h-3.5" />
-                            {t.BAN_USER}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {isLoading ? (
+                    <tr><td colSpan="4" className="p-10 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                  ) : reports.length === 0 ? (
+                    <tr><td colSpan="4" className="p-16 text-center text-gray-500"><CheckCircle className="w-12 h-12 mx-auto mb-4 text-emerald-500/40" />Hệ thống đang sạch sẽ, không có tố cáo nào!</td></tr>
+                  ) : (
+                    reports.map(r => (
+                      <tr key={r.id} className="hover:bg-white/5 transition-colors group">
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-4">
+                            <img src={r.avatarUrl || 'https://via.placeholder.com/150'} className="w-10 h-10 rounded-full object-cover border-2 border-white/10" alt="" />
+                            <span className="font-semibold text-gray-200">{r.reportedUser}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 text-gray-400">{r.reporter}</td>
+                        <td className="px-8 py-5"><span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">{r.reason}</span></td>
+                        <td className="px-8 py-5 text-right space-x-3">
+                          <button onClick={() => handleAction('ignore', r.id)} className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all">Bỏ qua</button>
+                          <button onClick={() => handleAction('ban', r.id, r.reportedId)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5"><Ban className="w-4 h-4" /> Khóa Mõm</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   );
