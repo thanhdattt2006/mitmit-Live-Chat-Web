@@ -44,12 +44,17 @@ public class MessageController {
         messageService.sendMessage(senderId, messageRequest);
     }
 
+    private static final String UPLOAD_DIR = "uploads/";
+
     @PostMapping("/upload")
     public ResponseEntity<String> uploadMedia(@RequestParam("file") MultipartFile file) {
         try {
-            String type = file.getContentType();
-            String base64 = java.util.Base64.getEncoder().encodeToString(file.getBytes());
-            return ResponseEntity.ok("data:" + type + ";base64," + base64);
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(UPLOAD_DIR));
+            String filename = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            java.nio.file.Path filePath = java.util.nio.file.Paths.get(UPLOAD_DIR + filename);
+            java.nio.file.Files.write(filePath, file.getBytes());
+            // Trả về URL để frontend có thể hiển thị
+            return ResponseEntity.ok("http://localhost:8080/uploads/" + filename);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Upload failed");
         }

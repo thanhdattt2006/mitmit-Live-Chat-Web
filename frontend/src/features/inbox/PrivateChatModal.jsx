@@ -35,7 +35,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       axiosClient.get('/api/v1/messages/' + friend.friendshipId)
       .then(response => {
         const data = response?.data || response;
-        const mappedMessages = data.map(msg => {
+        const msgList = Array.isArray(data) ? data : (data?.content || []);
+        const mappedMessages = msgList.map(msg => {
           const msgType = msg.type ? msg.type.toUpperCase() : 'TEXT';
           return {
             id: msg.id,

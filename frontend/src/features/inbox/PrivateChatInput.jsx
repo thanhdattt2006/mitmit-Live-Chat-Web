@@ -54,40 +54,35 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64data = reader.result;
-          try {
-            const formData = new FormData();
-            formData.append('file', audioBlob, 'audio.webm');
-            
-            const response = await axiosClient.post('/api/v1/messages/upload', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            
-            const audioUrl = response?.data || response;
-            
-            const payload = {
-              friendshipId: friend.friendshipId,
-              content: audioUrl,
-              type: 'VOICE',
-              replyToId: replyingTo?.id || null,
-              senderId: useStore.getState().userInfo?.id,
-              isUnsent: false
-            };
-            
-            if (stompClientRef.current?.connected) {
-              stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
-            }
-            
-            setReplyingTo(null);
-          } catch (error) {
-            console.error("Lỗi gửi voice:", error);
+        try {
+          const formData = new FormData();
+          formData.append('file', audioBlob, 'audio.webm');
+          
+          const response = await axiosClient.post('/api/v1/messages/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          
+          const audioUrl = response?.data || response;
+          
+          const payload = {
+            friendshipId: friend.friendshipId,
+            content: audioUrl,
+            type: 'VOICE',
+            replyToId: replyingTo?.id || null,
+            senderId: useStore.getState().userInfo?.id,
+            isUnsent: false
+          };
+          
+          if (stompClientRef.current?.connected) {
+            stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
           }
-        };
-        reader.readAsDataURL(audioBlob);
+          
+          setReplyingTo(null);
+        } catch (error) {
+          console.error("Lỗi gửi voice:", error);
+        }
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -109,42 +104,37 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64data = reader.result;
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-          
-          const response = await axiosClient.post('/api/v1/messages/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-          
-          const imageUrl = response?.data || response;
-          
-          const payload = {
-            friendshipId: friend.friendshipId,
-            content: imageUrl,
-            type: 'IMAGE',
-            replyToId: replyingTo?.id || null,
-            senderId: useStore.getState().userInfo?.id,
-            isUnsent: false
-          };
-          
-          if (stompClientRef.current?.connected) {
-            stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
-          }
-          
-          setReplyingTo(null);
-        } catch (error) {
-          console.error("Lỗi gửi ảnh:", error);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await axiosClient.post('/api/v1/messages/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        const imageUrl = response?.data || response;
+        
+        const payload = {
+          friendshipId: friend.friendshipId,
+          content: imageUrl,
+          type: 'IMAGE',
+          replyToId: replyingTo?.id || null,
+          senderId: useStore.getState().userInfo?.id,
+          isUnsent: false
+        };
+        
+        if (stompClientRef.current?.connected) {
+          stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
         }
-      };
-      reader.readAsDataURL(file);
+        
+        setReplyingTo(null);
+      } catch (error) {
+        console.error("Lỗi gửi ảnh:", error);
+      }
       e.target.value = '';
     }
   };
