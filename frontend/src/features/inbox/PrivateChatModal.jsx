@@ -12,7 +12,7 @@ import PrivateChatInput from './PrivateChatInput';
 import axiosClient from '../../api/axiosClient';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
-  const { lang, removeFriend, setInboxOpen } = useStore();
+  const { lang, removeFriend, setInboxOpen, userInfo } = useStore();
   const t = translations[lang];
   
   const [messages, setMessages] = useState([]);
@@ -38,14 +38,27 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         const msgList = Array.isArray(data) ? data : (data?.content || []);
         const mappedMessages = msgList.map(msg => {
           const msgType = msg.type ? msg.type.toUpperCase() : 'TEXT';
+          let replyToObj = null;
+          if (msg.replyToId) {
+             const parent = msgList.find(m => m.id === msg.replyToId);
+             if (parent) {
+                const parentType = parent.type ? parent.type.toUpperCase() : 'TEXT';
+                replyToObj = {
+                   id: parent.id,
+                   type: parentType,
+                   text: parentType === 'TEXT' ? parent.content : (parentType === 'IMAGE' ? 'Image' : 'Voice'),
+                   isMine: parent.senderId === userInfo?.id
+                };
+             }
+          }
           return {
             id: msg.id,
             text: msgType === 'TEXT' ? msg.content : undefined,
             imageUrl: msgType === 'IMAGE' ? msg.content : undefined,
             audioUrl: msgType === 'VOICE' ? msg.content : undefined,
-            isMine: msg.senderId === useStore.getState().userInfo?.id,
+            isMine: msg.senderId === userInfo?.id,
             reaction: msg.reaction,
-            replyTo: msg.replyToId ? { id: msg.replyToId } : null,
+            replyTo: replyToObj,
             type: msgType
           };
         });
@@ -61,20 +74,36 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         connectHeaders: { Authorization: `Bearer ${token}` },
         onConnect: () => {
           stompClientRef.current = stompClient;
-          stompClient.subscribe(`/user/${useStore.getState().userInfo?.id}/queue/messages`, (msg) => {
+          stompClient.subscribe(`/user/${userInfo?.id}/queue/messages`, (msg) => {
             try {
               const newMsg = JSON.parse(msg.body);
               if (newMsg.friendshipId === friend.friendshipId) {
                 setMessages(prev => {
-                  if (prev.some(m => m.id === newMsg.id)) return prev;
+                  // Cập nhật reaction nếu tin nhắn đã tồn tại
+                  if (prev.some(m => m.id === newMsg.id)) {
+                    return prev.map(m => m.id === newMsg.id ? { ...m, reaction: newMsg.reaction } : m);
+                  }
+                  
+                  let replyToObj = null;
+                  if (newMsg.replyToId) {
+                     const parent = prev.find(m => m.id === newMsg.replyToId);
+                     if (parent) {
+                        replyToObj = {
+                           id: parent.id,
+                           type: parent.type,
+                           text: parent.text || 'Media',
+                           isMine: parent.isMine
+                        };
+                     }
+                  }
                   return [...prev, {
                     id: newMsg.id,
                     text: newMsg.type === 'TEXT' ? newMsg.content : undefined,
                     imageUrl: newMsg.type === 'IMAGE' ? newMsg.content : undefined,
                     audioUrl: newMsg.type === 'VOICE' ? newMsg.content : undefined,
-                    isMine: newMsg.senderId === useStore.getState().userInfo?.id,
+                    isMine: newMsg.senderId === userInfo?.id,
                     reaction: newMsg.reaction,
-                    replyTo: newMsg.replyToId ? { id: newMsg.replyToId } : null,
+                    replyTo: replyToObj,
                     type: newMsg.type
                   }];
                 });
@@ -91,7 +120,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         stompClient.deactivate();
       };
     }
-  }, [isOpen, friend]);
+  }, [isOpen, friend, userInfo?.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -143,9 +172,15 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
     setTimeout(() => setToastMsg(''), 2000);
   };
   
-  const handleReact = (id, emoji) => {
+  const handleReact = async (id, emoji) => {
+    // Optimistic UI update
     setMessages(prev => prev.map(m => m.id === id ? { ...m, reaction: emoji } : m));
     setActiveReactionId(null);
+    try {
+      await axiosClient.put(`/api/v1/messages/${id}/reaction?reaction=${encodeURIComponent(emoji)}`);
+    } catch (error) {
+      console.error('Error reacting to message:', error);
+    }
   };
 
   return (

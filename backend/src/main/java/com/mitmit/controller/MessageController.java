@@ -85,4 +85,9 @@ public class MessageController {
         messageService.unsendMessage(id);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}/reaction")
+    public ResponseEntity<ChatMessage> reactToMessage(@PathVariable String id, @RequestParam String reaction) {
+        return ResponseEntity.ok(messageService.reactToMessage(id, reaction));
+    }
 }

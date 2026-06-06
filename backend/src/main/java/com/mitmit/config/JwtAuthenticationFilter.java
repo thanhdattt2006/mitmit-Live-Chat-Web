@@ -35,17 +35,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (jwtUtil.validateToken(jwt)) {
                 String userId = jwtUtil.extractUserId(jwt);
-                
+
                 // Assuming authorities are not needed right now, empty list
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userId, null, new ArrayList<>()
-                );
-                
+                        userId, null, new ArrayList<>());
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (Exception e) {
-            // Invalid token
+            System.out.println("Invalid token: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
 
         filterChain.doFilter(request, response);

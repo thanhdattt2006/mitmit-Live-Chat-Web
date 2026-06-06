@@ -55,4 +55,20 @@ public class MessageService {
     public void unsendMessage(String id) {
         chatMessageRepository.deleteById(id);
     }
+
+    @Transactional
+    public ChatMessage reactToMessage(String id, String reaction) {
+        ChatMessage msg = chatMessageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+        msg.setReaction(reaction);
+        ChatMessage saved = chatMessageRepository.save(msg);
+        
+        // Broadcast reaction update
+        Friendship friendship = friendshipRepository.findById(msg.getFriendshipId()).orElse(null);
+        if (friendship != null) {
+            messagingTemplate.convertAndSend("/user/" + friendship.getUser1().getId() + "/queue/messages", saved);
+            messagingTemplate.convertAndSend("/user/" + friendship.getUser2().getId() + "/queue/messages", saved);
+        }
+        return saved;
+    }
 }
