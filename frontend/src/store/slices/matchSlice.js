@@ -69,7 +69,8 @@ export const createMatchSlice = (set, get) => ({
              isMatching: false,
              isConnected: true,
              remoteUserId,
-             sessionId: matchData.sessionId
+             sessionId: matchData.sessionId,
+             matchEndTime: matchData.endTime
            });
 
            if (callMode === 'text') {

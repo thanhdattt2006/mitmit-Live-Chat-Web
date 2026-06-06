@@ -32,31 +32,19 @@ export default function RoomPage() {
   }, []);
 
   useEffect(() => {
-    const hasPrompted = sessionStorage.getItem('hasPromptedLogin');
-    if (!isLoggedIn && !hasPrompted) {
+    if (!isLoggedIn) {
       setLoginModalOpen(true);
-      sessionStorage.setItem('hasPromptedLogin', 'true');
     }
   }, [isLoggedIn, setLoginModalOpen]);
 
-  const handleGuestAction = (actionCallback) => {
-    if (!isLoggedIn) {
-      setLoginModalOpen(true);
-      return;
-    }
-    actionCallback();
-  };
-
   const handleStartNextText = () => {
-    handleGuestAction(() => {
-      try {
-        clearMessages();
-        startMatching();
-      } catch (error) {
-        console.error('Error starting next text chat:', error);
-        setMatching(false);
-      }
-    });
+    try {
+      clearMessages();
+      startMatching();
+    } catch (error) {
+      console.error('Error starting next text chat:', error);
+      setMatching(false);
+    }
   };
 
   const handleStopText = () => {
@@ -68,6 +56,10 @@ export default function RoomPage() {
       setMatching(false);
     }
   };
+
+  if (!isLoggedIn) {
+    return <div className="flex-1 bg-black w-full h-full flex items-center justify-center"></div>;
+  }
 
   return (
     <div className={`flex-1 flex flex-col ${callMode === 'text' ? 'items-center p-4' : 'lg:flex-row lg:p-4'} w-full lg:gap-4 overflow-clip relative bg-black lg:bg-transparent`}>
@@ -109,7 +101,7 @@ export default function RoomPage() {
                   {showMoreMenu && (
                     <div className="absolute top-full right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl z-[9999] animate-slide-up origin-top-right p-1">
                       <button 
-                        onClick={() => handleGuestAction(() => { setShowReportModal(true); setShowMoreMenu(false); })}
+                        onClick={() => { setShowReportModal(true); setShowMoreMenu(false); }}
                         className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
                       >
                         <AlertTriangle className="w-4 h-4 text-rose-500" />

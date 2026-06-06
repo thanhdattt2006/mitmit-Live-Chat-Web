@@ -108,6 +108,7 @@ public class MatchmakingService {
                     payload.put("sessionId", session.getId());
                     payload.put("user1Id", user1Id);
                     payload.put("user2Id", user2Id);
+                    payload.put("endTime", System.currentTimeMillis() + 180000);
 
                     messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
                     messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);

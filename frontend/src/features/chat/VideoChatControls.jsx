@@ -10,7 +10,6 @@ export default function VideoChatControls({
   isCamOn,
   setIsMicOn,
   setIsCamOn,
-  handleGuestAction,
   setShowReportModal,
   handleHeartClick,
   isLikedByMe,
@@ -43,7 +42,7 @@ export default function VideoChatControls({
             <div className="w-px h-8 bg-white/20 mx-1 shrink-0"></div>
 
             <button 
-              onClick={() => handleGuestAction(() => setShowReportModal(true))} 
+              onClick={() => setShowReportModal(true)} 
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-rose-500/20 text-gray-300 hover:text-rose-500 flex items-center justify-center backdrop-blur-md transition-all active:scale-95 group shrink-0"
               title={t.REPORT_USER}
             >
