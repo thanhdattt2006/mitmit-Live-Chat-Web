@@ -20,15 +20,16 @@ public class MessageService {
     private final FriendshipRepository friendshipRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public List<ChatMessage> getMessages(Long friendshipId) {
+    public org.springframework.data.domain.Page<ChatMessage> getMessages(Long friendshipId, int page, int size) {
+        org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
         Friendship f = friendshipRepository.findById(friendshipId).orElse(null);
         if (f != null) {
             Friendship partnerF = friendshipRepository.findByUser1AndUser2(f.getUser2(), f.getUser1()).orElse(null);
             if (partnerF != null) {
-                return chatMessageRepository.findByFriendshipIdInOrderByCreatedAtAsc(java.util.List.of(f.getId(), partnerF.getId()));
+                return chatMessageRepository.findByFriendshipIdInOrderByCreatedAtDesc(java.util.List.of(f.getId(), partnerF.getId()), pageRequest);
             }
         }
-        return chatMessageRepository.findByFriendshipIdOrderByCreatedAtAsc(friendshipId);
+        return chatMessageRepository.findByFriendshipIdOrderByCreatedAtDesc(friendshipId, pageRequest);
     }
 
     @Transactional

@@ -36,11 +36,12 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       .then(response => {
         const data = response?.data || response;
         const msgList = Array.isArray(data) ? data : (data?.content || []);
-        const mappedMessages = msgList.map(msg => {
+        const sortedMsgList = [...msgList].reverse();
+        const mappedMessages = sortedMsgList.map(msg => {
           const msgType = msg.type ? msg.type.toUpperCase() : 'TEXT';
           let replyToObj = null;
           if (msg.replyToId) {
-             const parent = msgList.find(m => m.id === msg.replyToId);
+             const parent = sortedMsgList.find(m => m.id === msg.replyToId);
              if (parent) {
                 const parentType = parent.type ? parent.type.toUpperCase() : 'TEXT';
                 replyToObj = {

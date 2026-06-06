@@ -20,8 +20,11 @@ public class MessageController {
     private final MessageService messageService;
 
     @GetMapping("/{friendshipId}")
-    public ResponseEntity<List<ChatMessage>> getMessages(@PathVariable Long friendshipId) {
-        return ResponseEntity.ok(messageService.getMessages(friendshipId));
+    public ResponseEntity<org.springframework.data.domain.Page<ChatMessage>> getMessages(
+            @PathVariable Long friendshipId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return ResponseEntity.ok(messageService.getMessages(friendshipId, page, size));
     }
 
     @MessageMapping("/chat.private")
