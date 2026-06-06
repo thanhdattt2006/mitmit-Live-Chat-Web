@@ -21,6 +21,13 @@ public class MessageService {
     private final SimpMessagingTemplate messagingTemplate;
 
     public List<ChatMessage> getMessages(Long friendshipId) {
+        Friendship f = friendshipRepository.findById(friendshipId).orElse(null);
+        if (f != null) {
+            Friendship partnerF = friendshipRepository.findByUser1AndUser2(f.getUser2(), f.getUser1()).orElse(null);
+            if (partnerF != null) {
+                return chatMessageRepository.findByFriendshipIdInOrderByCreatedAtAsc(java.util.List.of(f.getId(), partnerF.getId()));
+            }
+        }
         return chatMessageRepository.findByFriendshipIdOrderByCreatedAtAsc(friendshipId);
     }
 
@@ -45,8 +52,25 @@ public class MessageService {
                     ? friendship.getUser2().getId() 
                     : friendship.getUser1().getId();
             
-            messagingTemplate.convertAndSend("/queue/chat-" + receiverId, savedMessage);
             messagingTemplate.convertAndSend("/queue/chat-" + senderId, savedMessage);
+
+            Friendship partnerF = friendshipRepository.findByUser1AndUser2(friendship.getUser2(), friendship.getUser1()).orElse(null);
+            if (partnerF != null) {
+                ChatMessage messageForReceiver = ChatMessage.builder()
+                        .id(savedMessage.getId())
+                        .friendshipId(partnerF.getId())
+                        .senderId(savedMessage.getSenderId())
+                        .type(savedMessage.getType())
+                        .content(savedMessage.getContent())
+                        .replyToId(savedMessage.getReplyToId())
+                        .reaction(savedMessage.getReaction())
+                        .isUnsent(savedMessage.getIsUnsent())
+                        .createdAt(savedMessage.getCreatedAt())
+                        .build();
+                messagingTemplate.convertAndSend("/queue/chat-" + receiverId, messageForReceiver);
+            } else {
+                messagingTemplate.convertAndSend("/queue/chat-" + receiverId, savedMessage);
+            }
         }
 
         return savedMessage;
@@ -66,8 +90,27 @@ public class MessageService {
         // Broadcast reaction update
         Friendship friendship = friendshipRepository.findById(msg.getFriendshipId()).orElse(null);
         if (friendship != null) {
-            messagingTemplate.convertAndSend("/queue/chat-" + friendship.getUser1().getId(), saved);
-            messagingTemplate.convertAndSend("/queue/chat-" + friendship.getUser2().getId(), saved);
+            String senderId = friendship.getUser1().getId();
+            String receiverId = friendship.getUser2().getId();
+            messagingTemplate.convertAndSend("/queue/chat-" + senderId, saved);
+
+            Friendship partnerF = friendshipRepository.findByUser1AndUser2(friendship.getUser2(), friendship.getUser1()).orElse(null);
+            if (partnerF != null) {
+                ChatMessage msgForReceiver = ChatMessage.builder()
+                        .id(saved.getId())
+                        .friendshipId(partnerF.getId())
+                        .senderId(saved.getSenderId())
+                        .type(saved.getType())
+                        .content(saved.getContent())
+                        .replyToId(saved.getReplyToId())
+                        .reaction(saved.getReaction())
+                        .isUnsent(saved.getIsUnsent())
+                        .createdAt(saved.getCreatedAt())
+                        .build();
+                messagingTemplate.convertAndSend("/queue/chat-" + receiverId, msgForReceiver);
+            } else {
+                messagingTemplate.convertAndSend("/queue/chat-" + receiverId, saved);
+            }
         }
         return saved;
     }
