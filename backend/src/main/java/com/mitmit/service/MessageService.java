@@ -45,8 +45,8 @@ public class MessageService {
                     ? friendship.getUser2().getId() 
                     : friendship.getUser1().getId();
             
-            messagingTemplate.convertAndSend("/user/" + receiverId + "/queue/messages", savedMessage);
-            messagingTemplate.convertAndSend("/user/" + senderId + "/queue/messages", savedMessage);
+            messagingTemplate.convertAndSend("/queue/chat-" + receiverId, savedMessage);
+            messagingTemplate.convertAndSend("/queue/chat-" + senderId, savedMessage);
         }
 
         return savedMessage;
@@ -66,8 +66,8 @@ public class MessageService {
         // Broadcast reaction update
         Friendship friendship = friendshipRepository.findById(msg.getFriendshipId()).orElse(null);
         if (friendship != null) {
-            messagingTemplate.convertAndSend("/user/" + friendship.getUser1().getId() + "/queue/messages", saved);
-            messagingTemplate.convertAndSend("/user/" + friendship.getUser2().getId() + "/queue/messages", saved);
+            messagingTemplate.convertAndSend("/queue/chat-" + friendship.getUser1().getId(), saved);
+            messagingTemplate.convertAndSend("/queue/chat-" + friendship.getUser2().getId(), saved);
         }
         return saved;
     }

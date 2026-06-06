@@ -74,7 +74,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         connectHeaders: { Authorization: `Bearer ${token}` },
         onConnect: () => {
           stompClientRef.current = stompClient;
-          stompClient.subscribe(`/user/${userInfo?.id}/queue/messages`, (msg) => {
+          stompClient.subscribe(`/queue/chat-${userInfo?.id}`, (msg) => {
             try {
               const newMsg = JSON.parse(msg.body);
               if (newMsg.friendshipId === friend.friendshipId) {
