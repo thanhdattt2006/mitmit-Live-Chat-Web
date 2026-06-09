@@ -200,7 +200,7 @@ export default function PrivateMessageRow({
                 ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2'
                 : 'bg-neutral-800 text-gray-100 rounded-2xl rounded-bl-sm border border-neutral-700 px-3.5 py-2'
             }
-            ${msg.type === 'VOICE' ? 'p-0 overflow-hidden' : ''}`}
+            ${msg.type === 'VOICE' ? '!p-1.5' : ''}`}
         >
           {/* Replied-to quote */}
           {msg.replyTo && (
