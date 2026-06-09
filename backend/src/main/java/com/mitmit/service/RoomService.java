@@ -34,6 +34,11 @@ public class RoomService {
         redisService.addToSetWithExpire(key, userId, 5); // expire in 5 minutes
         
         if (redisService.getSetSize(key) >= 2) {
+            String lockKey = "lock:room_match:" + sessionId;
+            if (!redisService.setIfAbsent(lockKey, "locked", 10)) {
+                return; // Luồng khác đã xử lý rồi
+            }
+
             // Both matched!
             ChatSession session = chatSessionRepository.findById(sessionId).orElse(null);
             if (session != null) {

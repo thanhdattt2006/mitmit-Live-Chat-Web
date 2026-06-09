@@ -68,7 +68,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         console.error("Lỗi fetch private messages:", err);
       });
 
-      const socketUrl = 'http://localhost:8080/ws';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const socketUrl = `${apiUrl}/ws`;
       const token = localStorage.getItem('mitmit_jwt_token');
       const stompClient = new Client({
         webSocketFactory: () => new SockJS(socketUrl),

@@ -8,11 +8,16 @@ class SocketService {
 
   connect(userId, onMatchSuccess, onSignalReceived) {
     return new Promise((resolve, reject) => {
+      this.onMatchSuccess = onMatchSuccess;
+      this.onSignalReceived = onSignalReceived;
+
       if (this.stompClient && this.stompClient.active) {
-        this.disconnect();
+        resolve();
+        return;
       }
 
-      const socketUrl = 'http://localhost:8080/ws';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const socketUrl = `${apiUrl}/ws`;
       const token = localStorage.getItem('mitmit_jwt_token');
       this.stompClient = new Client({
         webSocketFactory: () => new SockJS(socketUrl),
@@ -28,14 +33,14 @@ class SocketService {
                 const data = JSON.parse(message.body);
                 if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice') {
                   console.log('Received WebRTC signal:', data.type);
-                  if (onSignalReceived) onSignalReceived(data);
+                  if (this.onSignalReceived) this.onSignalReceived(data);
                 } else if (data.type === 'REFRESH_FRIENDS') {
                   import('../store/useStore').then((store) => {
                     store.default.getState().loadFriends();
                   });
                 } else if (data.sessionId) {
                   console.log('Received match:', data);
-                  onMatchSuccess(data);
+                  if (this.onMatchSuccess) this.onMatchSuccess(data);
                 }
               } catch (err) {
                 console.error('Failed to parse match data:', err);

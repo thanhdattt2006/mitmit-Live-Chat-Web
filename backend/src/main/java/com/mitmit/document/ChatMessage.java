@@ -2,7 +2,8 @@ package com.mitmit.document;
 
 import lombok.*;
 import jakarta.persistence.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
@@ -12,11 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Document(collection = "chat_messages")
+@CompoundIndexes({
+    @CompoundIndex(name = "friendship_createdAt_idx", def = "{'friendshipId': 1, 'createdAt': -1}")
+})
 public class ChatMessage {
     @Id
     private String id; // ObjectId của Mongo
 
-    @Indexed
     private Long friendshipId; // Cái này để query tin nhắn theo phòng cực lẹ
 
     private String senderId;

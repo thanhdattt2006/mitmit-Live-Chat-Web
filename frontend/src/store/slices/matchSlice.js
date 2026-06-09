@@ -11,6 +11,7 @@ export const createMatchSlice = (set, get) => ({
   isConnected: false,
   isMatched: false,
   remoteUserInfo: { name: '', avatarUrl: '' },
+  roomSubscriptions: [],
   setMatching: (isMatching) => set({ isMatching }),
   
   sendMatchDecision: async () => {
@@ -81,7 +82,7 @@ export const createMatchSlice = (set, get) => ({
            }
 
           if (socketService.stompClient) {
-             socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/match_success`, (message) => {
+             const sub1 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/match_success`, (message) => {
               try {
                 const data = JSON.parse(message.body);
                 const isUser1 = data.user1Id === get().userInfo?.id;
@@ -98,7 +99,7 @@ export const createMatchSlice = (set, get) => ({
               }
             });
 
-            socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/chat`, (message) => {
+            const sub2 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/chat`, (message) => {
               try {
                 const data = JSON.parse(message.body);
                 if (data.senderId !== get().userInfo?.id) {
@@ -116,7 +117,7 @@ export const createMatchSlice = (set, get) => ({
               }
             });
 
-            socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/force_close`, (message) => {
+            const sub3 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/force_close`, (message) => {
               const state = get();
               if (state.stopCall) {
                 state.stopCall(); 
@@ -126,7 +127,7 @@ export const createMatchSlice = (set, get) => ({
               alert(t.FORCE_CLOSE_ALERT || "Hết thời gian! Phán quyết không thành công");
             });
 
-            socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/partner_left`, (message) => {
+            const sub4 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/partner_left`, (message) => {
               const state = get();
               // Lập tức cleanup
               webRTCClient.close();
@@ -137,6 +138,8 @@ export const createMatchSlice = (set, get) => ({
                 state.startMatching();
               }
             });
+
+            set({ roomSubscriptions: [sub1, sub2, sub3, sub4] });
           }
 
           const currentState = get();
@@ -184,7 +187,9 @@ export const createMatchSlice = (set, get) => ({
 
     try {
       webRTCClient.close();
-      socketService.disconnect();
+      const { roomSubscriptions } = get();
+      roomSubscriptions?.forEach(sub => sub.unsubscribe());
+      set({ roomSubscriptions: [] });
     } finally {
       set({ isConnected: false, isMatching: false });
       try {
@@ -209,7 +214,9 @@ export const createMatchSlice = (set, get) => ({
 
     try {
       webRTCClient.close();
-      socketService.disconnect();
+      const { roomSubscriptions } = get();
+      roomSubscriptions?.forEach(sub => sub.unsubscribe());
+      set({ roomSubscriptions: [] });
     } finally {
       set({ isConnected: false, isMatching: false });
       try {

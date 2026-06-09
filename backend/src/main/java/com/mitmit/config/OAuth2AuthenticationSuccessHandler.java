@@ -27,8 +27,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final JwtUtil jwtUtil;
 
     // Hardcoded frontend URL for now, could be moved to application.yaml
-    private static final String FRONTEND_REDIRECT_URL = "http://localhost:3000/oauth2/redirect?token=";
-    private static final String FRONTEND_ERROR_URL = "http://localhost:3000/?error=oauth2_failure";
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -116,12 +116,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
             // 4. Generate JWT Token & Redirect
             String token = jwtUtil.generateToken(user.getId());
-            response.sendRedirect(FRONTEND_REDIRECT_URL + token);
+            response.sendRedirect(frontendUrl + "/oauth2/redirect?token=" + token);
 
         } catch (Exception e) {
             log.error("Error occurred during OAuth2 authentication success handler", e);
             // Redirect về frontend kèm param báo lỗi để UI có thể hiển thị Toast hoặc Alert
-            response.sendRedirect(FRONTEND_ERROR_URL);
+            response.sendRedirect(frontendUrl + "/?error=oauth2_failure");
         }
     }
 }

@@ -46,7 +46,11 @@ public class MessageController {
             java.nio.file.Path filePath = java.nio.file.Paths.get(UPLOAD_DIR + filename);
             java.nio.file.Files.write(filePath, file.getBytes());
             // Trả về URL để frontend có thể hiển thị
-            return ResponseEntity.ok("http://localhost:8080/uploads/" + filename);
+            String backendUrl = System.getenv("APP_BACKEND_URL");
+            if (backendUrl == null || backendUrl.isEmpty()) {
+                backendUrl = "http://localhost:8080";
+            }
+            return ResponseEntity.ok(backendUrl + "/uploads/" + filename);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Upload failed");
         }

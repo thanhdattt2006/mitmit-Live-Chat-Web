@@ -50,4 +50,9 @@ public class RedisService {
         Long size = redisTemplate.opsForSet().size(key);
         return size != null ? size : 0;
     }
+
+    public boolean setIfAbsent(String key, String value, long timeoutInSeconds) {
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(key, value, timeoutInSeconds, TimeUnit.SECONDS);
+        return Boolean.TRUE.equals(success);
+    }
 }
