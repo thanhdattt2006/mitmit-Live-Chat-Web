@@ -25,7 +25,7 @@ function AppContent() {
   return (
     <div className="bg-[#0a0a0a] text-gray-100 h-screen w-full overflow-hidden flex flex-col antialiased selection:bg-white selection:text-black">
       {!isAdminRoute && <Header />}
-      <main className={`flex-1 flex w-full ${isAdminRoute ? '' : 'p-2 sm:p-4'} gap-4 overflow-clip relative`}>
+      <main className={`flex-1 min-h-0 flex w-full ${isAdminRoute ? '' : 'p-2 sm:p-4'} gap-4 overflow-clip relative`}>
         <Routes>
           <Route path="/" element={<RoomPage />} />
           <Route 

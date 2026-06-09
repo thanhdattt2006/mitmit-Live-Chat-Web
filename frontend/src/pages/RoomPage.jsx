@@ -62,7 +62,7 @@ export default function RoomPage() {
   }
 
   return (
-    <div className={`flex-1 flex flex-col ${callMode === 'text' ? 'items-center p-4' : 'lg:flex-row lg:p-4'} w-full lg:gap-4 overflow-clip relative bg-black lg:bg-transparent`}>
+    <div className={`flex-1 min-h-0 flex flex-col ${callMode === 'text' ? 'items-center p-4' : 'lg:flex-row lg:p-4'} w-full lg:gap-4 overflow-clip relative bg-black lg:bg-transparent`}>
       {callMode !== 'text' && <VideoChat />}
 
       <section className={`w-full flex-col bg-[#141414] shadow-sm transition-all duration-500 relative overflow-hidden ${callMode === 'text' ? 'flex max-w-3xl mx-auto rounded-3xl border-2 border-neutral-800 h-full' : `${isConnected ? 'flex' : 'hidden'} lg:flex h-[40dvh] lg:h-full lg:w-[30%] lg:min-w-[350px] lg:max-w-[400px] rounded-t-3xl lg:rounded-3xl border-t lg:border border-neutral-800 shrink-0 z-20`}`}>

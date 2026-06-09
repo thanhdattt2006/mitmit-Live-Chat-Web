@@ -102,7 +102,7 @@ export default function ChatInput() {
             rows={1} 
             maxLength={500}
             style={{ maxHeight: '120px' }}
-            className="w-full bg-transparent py-3 pl-4 pr-10 text-sm outline-none resize-none overflow-y-auto disabled:opacity-50 text-neutral-900 dark:text-white placeholder:text-gray-400 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700" 
+            className="w-full bg-transparent py-3 pl-4 pr-10 text-[16px] outline-none resize-none overflow-y-auto disabled:opacity-50 text-neutral-900 dark:text-white placeholder:text-gray-400 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700" 
             placeholder={t.CHAT_PLACEHOLDER}
           />
           <button 
