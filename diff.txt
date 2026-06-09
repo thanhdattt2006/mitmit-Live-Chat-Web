@@ -1,0 +1,342 @@
+﻿diff --git a/TODO.md b/TODO.md
+new file mode 100644
+index 0000000..2494e19
+--- /dev/null
++++ b/TODO.md
+@@ -0,0 +1,286 @@
++# mitmit - Master Development Roadmap
++
++- [ ] **1. Fix Lß╗ùi Crash Profile (Axios Double Unwrap)**
++  - **Vß║Ñn ─æß╗ü:** `axiosClient.js` ─æ├ú tß╗▒ ─æß╗Öng b├│c lß║Ñy `response.data`. Nh╞░ng trong `useStore.js` (`loginWithToken`), lß║íi tiß║┐p tß╗Ñc gß╗ìi `set({ userInfo: response.data })` dß║½n ─æß║┐n data bß╗ï g├ín th├ánh `undefined`, n├ít lu├┤n th├┤ng tin User. 
++  - **Vß║Ñn ─æß╗ü phß╗Ñ:** `App.jsx` ─æang gß╗ìi mß╗Öt h├ám `login()` ─æ├⌐o tß╗ôn tß║íi trong store.
++  - **Giß║úi ph├íp:**
++    - `useStore.js`: Sß╗¡a th├ánh `const data = response.data || response; set({ userInfo: data });`.
++    - `App.jsx`: X├│a sß║ích nhß╗»ng d├▓ng gß╗ìi `login()`. Chß╗ë dß╗▒a v├áo state `isLoggedIn` tß╗½ `useStore()`.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **2. Bß╗ït Lß╗ù Hß╗òng Bß║úo Mß║¡t & X├│a `userId` tr├¬n URL**
++  - **Vß║Ñn ─æß╗ü:** Backend (c├íc h├ám `/match`, `/join`, `/leave`) vß║½n ─æang d├╣ng `@RequestParam String userId`. Lß╗Ö ID ra URL l├á sai s├ích bß║úo mß║¡t. Th├¬m nß╗»a, `SecurityConfig.java` ─æang ─æß╗â `.permitAll()` cho mß╗ìi endpoint.
++  - **Giß║úi ph├íp Backend:** X├│a to├án bß╗Ö `@RequestParam String userId`. Nß║íp `Authentication authentication` v├áo tham sß╗æ h├ám v├á lß║Ñy ID bß║▒ng `authentication.getName()` (hoß║╖c `getPrincipal()`).
++  - **Giß║úi ph├íp Frontend:** Mß╗ƒ `useStore.js`, x├│a tham sß╗æ `userId` trong tß║Ñt cß║ú c├íc lß╗çnh gß╗ìi Axios POST.
++  - **SecurityConfig:** Kh├│a cß╗¡a lß║íi. Chß╗ë cho ph├⌐p `/api/v1/auth/**` v├á `/ws/**` l├á `.permitAll()`, c├▓n lß║íi `.anyRequest().authenticated()`.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **3. B─âm Nhß╗Å Code M├¼ ├¥ (Spaghetti Code)**
++  - **Vß║Ñn ─æß╗ü:** Vi phß║ím luß║¡t `< 150 d├▓ng/file`. `VideoChat.jsx` (367 d├▓ng), `RoomPage.jsx` v├á cß╗Ñm Private Chat ─æang qu├í khß╗ò.
++  - **Giß║úi ph├íp:** - T├ích `VideoChat.jsx`: ─Éß║╗ ra c├íc file con nh╞░ `<LocalStreamPreview />`, `<RemoteStreamVideo />`, `<TimerCountdownOverlay />`.
++    - T├ích `RoomPage.jsx`: T├ích ri├¬ng phß║ºn UI chß╗ìn Mode (`<CallActionTabs />`) v├á th├┤ng b├ío Match (`<MatchStatusOverlay />`).
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **4. Dß╗ìn R├íc File Ng├┤n Ngß╗» (Translation)**
++  - **Vß║Ñn ─æß╗ü:** App 100% login v├á miß╗àn ph├¡, nh╞░ng `translation.js` vß║½n c├▓n key "Nß║íp xu", "Free Chats", "Guest".
++  - **Giß║úi ph├íp:** X├│a ngay lß║¡p tß╗⌐c. Cß║Ñm tuyß╗çt ─æß╗æi t╞░ duy code app Freemium/Guest.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **5. Nß╗æi d├óy Chat Text & Nhß║»n tin ri├¬ng (Inbox)**
++  - **Vß║Ñn ─æß╗ü:** Hiß╗çn ─æang d├╣ng `setTimeout` ─æß╗â tß╗▒ rep (ß║úo ma canada). Ko c├│ WebSockets hay DB g├¼ cß║ú.
++  - **Giß║úi ph├íp Ph├▓ng ngß║½u nhi├¬n (Text Mode):** Nß╗æi STOMP topic `/topic/room/{sessionId}/chat`. Bß║»n message real-time qua WebSocket (chß╗ë cß║ºn cache Redis cho nhanh, kh├┤ng l╞░u MySQL v├¼ ─æ├│ng ph├▓ng l├á hß╗ºy).
++  - **Giß║úi ph├íp Inbox ri├¬ng t╞░:** Thiß║┐t kß║┐ Entity `ChatMessage` (MySQL). Mß╗ƒ endpoint `POST /api/v1/messages` v├á `GET` ─æß╗â l╞░u trß╗» v├á hiß╗ân thß╗ï lß╗ïch sß╗¡ chat cß╗ºa bß║ín b├¿. Sß╗¡a UI `PrivateChatModal.jsx` ─æß╗â ─ân API thß║¡t.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **6. Ho├án thiß╗çn Hß╗ç thß╗æng Match & Kß║┐t bß║ín**
++  - **Vß║Ñn ─æß╗ü:** 2 b├¬n thß║ú tim xong, Backend n├⌐m vß╗ü t├¬n "Stranger" vß╗¢i ß║únh lß╗ùi. Kh├┤ng tß║ío record kß║┐t bß║ín trong bß║úng `Friendship`.
++  - **Giß║úi ph├íp Backend (`RoomService.java`):** Khi cß║ú 2 user ß║Ñn tim -> Lß║Ñy ID 2 ─æß╗⌐a query MySQL ra t├¬n thß║¡t + Avatar thß║¡t ─æß╗â n├⌐m vß╗ü JSON `match_success`.
++  - **Quan trß╗ìng:** Code logic tß╗▒ ─æß╗Öng Insert 2 d├▓ng records v├áo bß║úng `Friendship` (A ch╞íi vß╗¢i B, B ch╞íi vß╗¢i A). Bß║»n th├¬m STOMP event ─æß╗â UI tß╗▒ ─æß╗Öng cß║¡p nhß║¡t danh s├ích bß║ín b├¿ ß╗ƒ Navbar.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **7. X├óy dß╗▒ng Hß╗ç thß╗æng Tß╗æ c├ío (Report)**
++  - **Vß║Ñn ─æß╗ü:** Modal Report tr├¬n Frontend bß║Ñm gß╗¡i cho vui, hiß╗çn th├┤ng b├ío giß║ú.
++  - **Giß║úi ph├íp Backend:** Khß╗ƒi tß║ío Entity `Report` (chß╗⌐a `reporterId`, `reportedId`, `reason`, `createdAt`). Mß╗ƒ endpoint `POST /api/v1/reports`.
++  - **Giß║úi ph├íp Frontend:** Nß╗æi `ReportModal.jsx` gß╗ìi Axios l├¬n h├ám POST n├áy. X├│a c├íi setTimeout ─æi.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **8. Sß╗¡a luß╗ông v├áo Ph├▓ng Text (Bß╗Å ├⌐p Join)**
++  - **Vß║Ñn ─æß╗ü:** Text Chat ─æang x├ái lß╗çnh `setTimeout 1.5s` ─æß╗â ├⌐p UI v├áo ph├▓ng, ─æ├⌐o th├¿m chß╗¥ hß╗ç thß╗æng Matchmaking xß║┐p h├áng.
++  - **Giß║úi ph├íp:** X├│a ─æoß║ín `setTimeout` r├íc trong `RoomPage.jsx`/`useStore.js`. Bß║»t buß╗Öc Text Chat c┼⌐ng phß║úi v├áo h├áng ─æß╗úi v├á ─æß╗úi t├¡n hiß╗çu `/topic/match/{userId}` tß╗½ Backend b├ío vß╗ü mß╗¢i ─æ╞░ß╗úc render ph├▓ng.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **9. Dß╗ìn r├íc H├áng ─æß╗úi Redis (Chß╗æng kß║╣t Loading Loop & B├│ng ma)**
++  - **Vß║Ñn ─æß╗ü:** Khi user bß║Ñm "Cancel" hoß║╖c tß║»t ngang tab tr├¼nh duyß╗çt, ID cß╗ºa hß╗ì Vß║¬N Kß║╕T lß║íi trong Queue cß╗ºa Redis. Hß║¡u quß║ú: Khi ß║Ñn t├¼m lß║íi hoß║╖c c├│ ng╞░ß╗¥i kh├íc match tr├║ng c├íi ID chß║┐t ─æ├│, hß╗ç thß╗æng sß║╜ bß╗ï l├║, dß║½n ─æß║┐n kß║╣t v├▓ng lß║╖p Loading v├┤ tß║¡n.
++  - **Giß║úi ph├íp:** - *Backend:* Mß╗ƒ API `POST /api/v1/matchmaking/leave` ─æß╗â Frontend chß╗º ─æß╗Öng r├║t lui. 
++    - *Backend (Quan trß╗ìng):* Code th├¬m mß╗Öt file `WebSocketEventListener.java` ─æß╗â lß║»ng nghe sß╗▒ kiß╗çn `SessionDisconnectEvent`. Khi mß╗Öt user mß║Ñt kß║┐t nß╗æi STOMP (rß╗¢t mß║íng, ─æ├│ng tab), Backend phß║úi tß╗▒ ─æß╗Öng r├á so├ít v├á x├│a sß║ích ID cß╗ºa user ─æ├│ khß╗Åi mß╗ìi h├áng ─æß╗úi trong Redis.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **10. N├óng cß║Ñp Matchmaking (Chß║╖n gh├⌐p cß║╖p lß║íi vß╗¢i Bß║ín B├¿)**
++  - **Vß║Ñn ─æß╗ü:** Hiß╗çn tß║íi v├▓ng lß║╖p qu├⌐t Redis cß╗ºa `MatchmakingService` ─æang bß║»t cß║╖p mß╗Öt c├ích m├╣ qu├íng. N├│ ─æ├⌐o check xem 2 thß║▒ng vß╗½a bß╗æc ra ─æ├ú c├│ tiß╗ün ├ín kß║┐t bß║ín vß╗¢i nhau ch╞░a (ch╞íi app ß║⌐n danh m├á cß╗⌐ bß╗æc tr├║ng ng╞░ß╗¥i quen th├¼ vß╗⌐t).
++  - **Giß║úi ph├íp:** - *Backend:* Trong `MatchmakingService`, ngay sau khi pop 2 user tß╗½ Redis ra, Bß║«T BUß╗ÿC phß║úi d├╣ng `friendshipRepository.existsByUserIdAndFriendId(user1, user2)` ─æß╗â kiß╗âm tra. 
++    - Nß║┐u trß║ú vß╗ü `true` (─æ├ú l├á bß║ín), hß╗ºy viß╗çc tß║ío Room, ─æß║⌐y `user2` trß║ú lß║íi Queue v├á t├¼m ng╞░ß╗¥i kh├íc cho `user1`.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **11. ─Éß║úm bß║úo dß╗ìn dß║╣p State Frontend (Cleanup Guarantee)**
++  - **Vß║Ñn ─æß╗ü:** Trong `useStore.js` (c├íc h├ám `cancelMatching`, `stopCall`), lß╗çnh gß╗ìi API `/leave` ─æang nß║▒m d╞░ß╗¢i c├╣ng. Nß║┐u ph├¡a tr├¬n (kh├║c ─æ├│ng WebRTC) bß╗ï lß╗ùi crash ngß║ºm, lß╗çnh `/leave` ─æ├⌐o ─æ╞░ß╗úc chß║íy, Frontend bß╗ï lß╗çch pha vß╗¢i Backend.
++  - **Giß║úi ph├íp:** - *Frontend:* Bß╗ìc lß║íi to├án bß╗Ö logic trong `try / finally`. ─Éß║úm bß║úo c├íi ─æoß║ín gß╗ìi `axiosClient.post('/api/v1/matchmaking/leave')` phß║úi ─æ╞░ß╗úc n├⌐m v├áo block `finally` ─æß╗â n├│ **chß║»c chß║»n 100% ─æ╞░ß╗úc gß╗ìi**, cho d├╣ WebRTC hay Socket c├│ bß╗ï crash tung sß╗ì ─æi nß╗»a.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **12. Fix Lß╗ùi ─Éß╗⌐ng H├¼nh (Freeze) khi Auto-Next & Thiß║┐u n├║t Match**
++  - **Vß║Ñn ─æß╗ü:** Khi ─æß╗æi ph╞░╞íng tho├ít hoß║╖c ß║Ñn Next, user tß╗▒ ─æß╗Öng nhß║úy sang t├¼m ng╞░ß╗¥i mß╗¢i nh╞░ng video bß╗ï ─æß╗⌐ng im (freeze) v├á Timer cß╗ºa ph├▓ng c┼⌐ vß║½n tiß║┐p tß╗Ñc chß║íy. Ngo├ái ra, giao diß╗çn Text Chat ─æang ho├án to├án kh├┤ng c├│ n├║t "Match" (Thß║ú tim).
++  - **Giß║úi ph├íp:** - *Frontend (Xß╗¡ l├╜ Freeze):* Trong logic bß║»t sß╗▒ kiß╗çn ─æß╗æi ph╞░╞íng out, bß║»t buß╗Öc phß║úi clear sß║ích t├án d╞░ (gß╗ìi `clearTimeout`, `webRTCClient.close()`, clear stream) TR╞»ß╗ÜC KHI k├¡ch hoß║ít lß║íi h├ám `startMatching()`.
++    - *Frontend (UI Text Mode):* Cß║¡p nhß║¡t component cß╗ºa Text Chat ─æß╗â render th├¬m n├║t Thß║ú tim, gß║»n logic gß╗ìi h├ám `sendMatchDecision()` giß╗æng hß╗çt chß║┐ ─æß╗Ö Video/Voice.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **13. N├óng cß║Ñp Hiß╗çu ß╗⌐ng M├íy Ch├⌐m (FOMO)**
++  - **Vß║Ñn ─æß╗ü:** Hß║┐t 3 ph├║t, hß╗ç thß╗æng s├║t v─âng user bß║▒ng mß╗Öt c├íi alert mß║╖c ─æß╗ïnh rß║Ñt ph├¿n, kh├┤ng tß║ío ─æ╞░ß╗úc cß║úm gi├íc hß╗Ñt hß║½ng hay tiß║┐c nuß╗æi.
++  - **Giß║úi ph├íp:** - *Frontend:* Tß╗▒ custom lß║íi UI (Th├¬m progress bar, nhß║Ñp nh├íy ─æß╗Å ß╗ƒ 10s cuß╗æi, hiß╗çu ß╗⌐ng tß║»t m├án h├¼nh) thay thß║┐ cho alert. *(Ghi ch├║: ─É├ú tß╗▒ code ho├án thiß╗çn phß║ºn n├áy).*
++
++- [ ] **14. Fix Bug Chß║┐t ─Éß╗⌐ng N├║t Report (Silent Failure)**
++  - **Vß║Ñn ─æß╗ü:** Khi ß║Ñn Submit Report, giao diß╗çn bß╗ï treo (n├║t loading xoay v─⌐nh viß╗àn), kh├┤ng c├│ bß║Ñt kß╗│ th├┤ng b├ío lß╗ùi n├áo hiß╗çn ra v├á Database c┼⌐ng kh├┤ng ghi nhß║¡n dß╗» liß╗çu.
++  - **Giß║úi ph├íp:** - *Frontend:* Bß╗ìc luß╗ông gß╗ìi API trong `try / catch / finally`. ─É╞░a lß╗çnh `setIsSubmitting(false)` v├áo block `finally` ─æß╗â chß║»c chß║»n 100% UI ─æ╞░ß╗úc mß╗ƒ kh├│a d├╣ gß╗ìi API th├ánh c├┤ng hay xß╗ït.
++    - *Backend:* R├á so├ít `SecurityConfig.java` ─æß╗â ─æß║úm bß║úo API `POST /api/v1/reports` kh├┤ng bß╗ï chß║╖n (403). Mß╗ƒ Console check log xem `ReportController` c├│ v─âng lß╗ùi 500 do sai Entity hay null data kh├┤ng.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [ ] **15. Xß╗¡ l├╜ Timeout H├áng Chß╗¥ (60s Limit)**
++  - **Vß║Ñn ─æß╗ü:** User chß╗¥ trong h├áng ─æß╗úi Redis qu├í l├óu (kh├┤ng c├│ ai online) sß║╜ bß╗ï kß║╣t m├úi ß╗ƒ m├án h├¼nh Loading, g├óy ß╗⌐c chß║┐.
++  - **Giß║úi ph├íp:** - *Frontend:* Trong h├ám `startMatching()`, ch├¿n mß╗Öt lß╗çnh `setTimeout` 60 gi├óy (60000ms). Nß║┐u hß║┐t thß╗¥i gian m├á state `isConnected` vß║½n l├á `false`, tß╗▒ ─æß╗Öng gß╗ìi `cancelMatching()`, hiß╗çn Toast th├┤ng b├ío "Kh├┤ng c├│ ai online, vui l├▓ng quay lß║íi sau".
++    - *Frontend (Cleanup):* Phß║úi chß║»c chß║»n gß╗ìi `clearTimeout` c├íi ─æß╗ông hß╗ô n├áy nß║┐u user match th├ánh c├┤ng tr╞░ß╗¢c 60s hoß║╖c tß╗▒ chß╗º ─æß╗Öng bß║Ñm Cancel sß╗¢m.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **16. ─Éß║¡p bß╗Å Data ß║óo & Ho├án thiß╗çn API Admin Dashboard**
++  - **Vß║Ñn ─æß╗ü:** Giao diß╗çn Admin (`AdminDashboard.jsx`) ─æang thao t├íc tr├¬n mß║úng `reports: []` rß╗ùng (Mock Data). Backend chß╗ë c├│ chß╗⌐c n─âng Gß╗¡i Report m├á ─É├ëO C├ô API ─æß╗â Admin lß║Ñy dß╗» liß╗çu ra xem hoß║╖c thß╗▒c thi lß╗çnh Cß║Ñm (Ban).
++  - **Giß║úi ph├íp:** - *Backend:* Bß╗ò sung v├áo `ReportController.java` c├íc API: `GET /api/v1/reports` (c├│ ph├ón trang) v├á `POST /api/v1/admin/ban/{userId}`.
++    - *Frontend:* Nß╗æi Axios v├áo c├íc API thß║¡t n├áy. X├│a bß╗Å ho├án to├án c├íc logic thao t├íc mß║úng ß║úo trong `useStore.js`.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **17. Gß╗í bß╗Å Con sß╗æ Online Lß╗½a T├¼nh (Fake Online Count)**
++  - **Vß║Ñn ─æß╗ü:** Trong `useStore.js`, h├ám `updateOnlineCount()` ─æang d├╣ng `Math.random()` ─æß╗â tß╗▒ sinh ra sß╗æ l╞░ß╗úng ng╞░ß╗¥i online giß║ú dß╗æi.
++  - **Giß║úi ph├íp:** - *Backend:* Mß╗ƒ mß╗Öt endpoint nhß╗Å (hoß║╖c bß║»n qua WebSocket) ─æß║┐m sß╗æ l╞░ß╗úng Keys trong Redis (V├¡ dß╗Ñ ─æß║┐m c├íc key `QUEUE:*` hoß║╖c Active STOMP Sessions).
++    - *Frontend:* Lß║»ng nghe dß╗» liß╗çu thß║¡t n├áy ─æß╗â render UI, dß║╣p bß╗Å h├ám random.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **18. B─âm nhß╗Å Code M├¼ ├¥ (Refactor Zustand & Components)**
++  - **Vß║Ñn ─æß╗ü:** Vi phß║ím nghi├¬m trß╗ìng quy tß║»c `< 150 d├▓ng` cß╗ºa `AGENTS.md`. `useStore.js` ph├¼nh to 363 d├▓ng (├┤m cß║ú Socket lß║½n Data), `PrivateMessageRow`, `VideoChat`, `AdminDashboard` ─æß╗üu qu├í khß╗ò.
++  - **Giß║úi ph├íp:** - *Frontend:* Chß║╗ `useStore.js` th├ánh c├íc slice nhß╗Å (VD: `createAuthSlice`, `createMatchSlice`).
++    - *Frontend:* Chß║╗ `VideoChat.jsx` th├ánh `VideoOverlays.jsx` (chß╗⌐a Timer) v├á `VideoStreams.jsx`. T├ích t╞░╞íng tß╗▒ cho Admin v├á Inbox.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **19. Dß╗ìn r├íc Hardcode & Chuß║⌐n h├│a i18n**
++  - **Vß║Ñn ─æß╗ü:** C├íc file nh╞░ `AdminDashboard.jsx` code chß║┐t 100% tiß║┐ng Anh ("Admin Portal", "Login as Admin"). Trong khi `useStore.js` lß║íi g├╡ cß╗⌐ng c├íc c├óu `alert` v├á `console.error` bß║▒ng tiß║┐ng Viß╗çt.
++  - **Giß║úi ph├íp:** - *Frontend:* ─Éß║⌐y to├án bß╗Ö ─æß╗æng text n├áy v├áo file `translation.js`. Thay thß║┐ to├án bß╗Ö bß║▒ng c├║ ph├íp `t.KEY_NAME`. X├│a sß╗ò mß╗ìi th├┤ng b├ío `alert()` thuß║ºn t├║y v├á thay bß║▒ng hß╗ç thß╗æng Toast.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **20. V├í lß╗ù hß╗òng bß║úo mß║¡t: Lß╗Ö JWT Token tr├¬n URL**
++  - **Vß║Ñn ─æß╗ü:** Qu├í tr├¼nh OAuth2 Callback (`OAuth2RedirectHandler.jsx`) ─æang hß╗⌐ng token trß╗▒c tiß║┐p tr├¬n thanh ─æß╗ïa chß╗ë URL (`?token=abcd...`). ─Éiß╗üu n├áy l╞░u lß║íi JWT trong Lß╗ïch sß╗¡ duyß╗çt web (Browser History), rß╗ºi ro bß║úo mß║¡t cß╗▒c cao.
++  - **Giß║úi ph├íp:** - *Tß║ím thß╗¥i (Frontend Quick-win):* Ngay sau khi hß╗⌐ng ─æ╞░ß╗úc Token v├á l╞░u v├áo LocalStorage, sß╗¡ dß╗Ñng `window.history.replaceState` ─æß╗â x├│a ngay param `?token=` khß╗Åi thanh URL ─æß╗â ch├╣i dß║Ñu vß║┐t.
++    - *L├óu d├ái (Backend):* Chuyß╗ân sang set HttpOnly Cookie tß╗½ Backend, Frontend gß╗ìi `GET /api/v1/auth/me` ─æß╗â check phi├¬n ─æ─âng nhß║¡p thay v├¼ parse URL.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **21. N├óng cß║Ñp Trß║úi nghiß╗çm Voice Chat (Audio Visualizer)**
++  - **Vß║Ñn ─æß╗ü:** Chß║┐ ─æß╗Ö Voice Chat ß║⌐n danh ─æang qu├í nh├ám ch├ín v├¼ chß╗ë hiß╗çn mß╗ùi Avatar t─⌐nh, ng╞░ß╗¥i d├╣ng kh├┤ng biß║┐t b├¬n kia c├│ thß╗▒c sß╗▒ ─æang n├│i hay mic bß╗ï hß╗Ång.
++  - **Giß║úi ph├íp:** - *Frontend:* T├¡ch hß╗úp Web Audio API (`AudioContext` -> `AnalyserNode`). Ph├ón t├¡ch c╞░ß╗¥ng ─æß╗Ö ├óm thanh tß╗½ Remote Stream ─æß╗â l├ám hiß╗çu ß╗⌐ng s├│ng ├óm (Waveform) nhß║Ñp nh├íy hoß║╖c v├▓ng Glow tß╗Åa ra quanh Avatar mß╗ùi khi ─æß╗æi ph╞░╞íng cß║Ñt giß╗ìng.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **22. Tß╗▒ ─æß╗Öng h├│a Trß╗½ng phß║ít (Trust Score & Auto-Ban)**
++  - **Vß║Ñn ─æß╗ü:** Chß╗¥ Admin chß║íy bß║▒ng c╞ím v├áo ─æß╗ìc Report rß╗ôi bß║Ñm Ban thß╗º c├┤ng th├¼ m├┤i tr╞░ß╗¥ng app sß║╜ n├ít tr╞░ß╗¢c khi kß╗ïp xß╗¡ l├╜ kß║╗ ph├í hoß║íi.
++  - **Giß║úi ph├íp:** - *Backend:* Code mß╗Öt logic ─æß║┐m trong `ReportService`. Nß║┐u 1 `userId` bß╗ï 3 ng╞░ß╗¥i d├╣ng *kh├íc nhau* report trong v├▓ng 1 giß╗¥ -> Tß╗▒ ─æß╗Öng n├⌐m ID ─æ├│ v├áo Redis Blacklist (24h), ─æß╗ông thß╗¥i bß║»n t├¡n hiß╗çu STOMP force-close s├║t v─âng thß║▒ng ─æ├│ ra khß╗Åi ph├▓ng ngay lß║¡p tß╗⌐c.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **23. Sß╗¡a Bug Lß║╖p ID/Tr├╣ng T├¬n trong Bß║úng Friendship (DB Swap Bug)**
++  - **Vß║Ñn ─æß╗ü:** Khi Match th├ánh c├┤ng, logic Backend ─æang insert 2 d├▓ng user_1 v├á user_2 nh╞░ng bß╗ï sai luß╗ông (swap nhß║ºm ID). Hß║¡u quß║ú l├á Database bß╗ï lß║╖p dß╗» liß╗çu, dß║½n ─æß║┐n trong danh s├ích Inbox (Private Message) hiß╗çn ra 2 ng╞░ß╗¥i c├│ c├╣ng mß╗Öt t├¬n/Avatar.
++  - **Giß║úi ph├íp:** - Backend (RoomService / FriendshipService): R├á so├ít lß║íi h├ám tß║ío Friendship. Chß╗ë cß║ºn insert ─æ├║ng 2 record: Record 1 (UserId = A, FriendId = B) v├á Record 2 (UserId = B, FriendId = A). Tr╞░ß╗¢c khi insert, phß║úi th├¬m lß╗çnh check existsByUserIdAndFriendId ─æß╗â tuyß╗çt ─æß╗æi kh├┤ng tß║ío duplicate. Dß╗ìn dß║╣p sß║ích bß║úng Friendship hiß╗çn tß║íi trong DB ─æß╗â test lß║íi tß╗½ ─æß║ºu.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **24. Trß║úm triß╗çt ─æß╗â Lß╗ùi ─Éß╗⌐ng H├¼nh (Freeze) khi ─æß╗æi ph╞░╞íng Next/Out**
++  - **Vß║Ñn ─æß╗ü:** Dß╗▒a v├áo `iceConnectionState` cß╗ºa WebRTC l├á kh├┤ng ─æß╗º nhanh v├á kh├┤ng ─æ├íng tin cß║¡y. Khi User A bß║Ñm Next, User B bß╗ï kß║╣t h├¼nh video, ─æß╗ông hß╗ô ─æß║┐m ng╞░ß╗úc vß║½n chß║íy, kh├┤ng tß╗▒ ─æß╗Öng nhß║úy sang ng╞░ß╗¥i mß╗¢i.
++  - **Giß║úi ph├íp:** - Backend: Khi User A bß║Ñm Next hoß║╖c Out ph├▓ng, Backend ─æang xß╗¡ l├╜ ─æ├│ng ph├▓ng nh╞░ng Bß║«T BUß╗ÿC phß║úi bß║»n th├¬m mß╗Öt sß╗▒ kiß╗çn STOMP (v├¡ dß╗Ñ: `/topic/room/{sessionId}/partner_left`) tß╗¢i User B.
++    - Frontend: Lß║»ng nghe topic n├áy. Vß╗½a nhß║¡n ─æ╞░ß╗úc t├¡n hiß╗çu `partner_left` l├á Lß║¼P Tß╗¿C ├⌐p luß╗ông cleanup: X├│a Stream, Dß╗½ng Timer, gß╗ìi `webRTCClient.close()` v├á k├¡ch hoß║ít `startMatching()` ─æß╗â t├¼m ng╞░ß╗¥i mß╗¢i ngay lß║¡p tß╗⌐c m├á kh├┤ng cß║ºn ─æß╗úi WebRTC chß║┐t.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **25. ─Éß║Ñu nß╗æi API thß║¡t cho N├║t Report trong Ph├▓ng Chat**
++  - **Vß║Ñn ─æß╗ü:** N├║t Tß╗æ c├ío (Report) l├║c ─æang call video/voice/text chß╗ë ─æß╗â l├ám cß║únh, bß║Ñm v├áo ─æ├⌐o c├│ t├íc dß╗Ñng, ch╞░a gß╗ìi API.
++  - **Giß║úi ph├íp:** - Frontend: Lß║Ñy logic gß╗ìi Axios API POST /api/v1/reports (─æ├ú l├ám ngon l├ánh ß╗ƒ Task 14) gß║»n thß║│ng v├áo h├ám onClick cß╗ºa n├║t Report b├¬n trong RoomPage.jsx hoß║╖c VideoChat.jsx. Nhß╗¢ truyß╗ün ─æ├║ng reportedUserId cß╗ºa ng╞░ß╗¥i ─æang chat c├╣ng. Bß║Ñm xong phß║úi hiß╗çn Toast th├ánh c├┤ng v├á ß║⌐n modal.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **26. N├óng cß║Ñp Inbox: Dß╗» liß╗çu thß║¡t, Hß╗ºy kß║┐t bß║ín (Unfriend) & Tß╗æ c├ío k├¿m Chß║╖n (Block)**
++  - **Vß║Ñn ─æß╗ü:** Trong Inbox (Private Message) ─æang cß║ºn ─æß╗ò dß╗» liß╗çu thß║¡t. Thiß║┐u chß╗⌐c n─âng x├│a bß║ín. ─Éß║╖c biß╗çt, nß║┐u chat ri├¬ng m├á bß╗ï x├║c phß║ím, bß║Ñm Report xong phß║úi tß╗▒ ─æß╗Öng Chß║╖n (Block) lu├┤n ─æß╗æi ph╞░╞íng.
++  - **Giß║úi ph├íp:** - Backend: Viß║┐t API DELETE /api/v1/friendships/{friendId} ─æß╗â xß╗¡ l├╜ Unfriend (X├│a cß║ú 2 record cß╗ºa A v├á B). Cß║¡p nhß║¡t API Report ─æß╗â nß║┐u c├│ cß╗¥ isFromInbox = true, tß╗▒ ─æß╗Öng x├│a Friendship v├á ─æ╞░a ID ─æ├│ v├áo Blacklist (Chß║╖n).
++    - Frontend: ─Éß╗ò data thß║¡t v├áo list bß║ín b├¿. Gß║»n API v├áo 2 n├║t mß╗¢i trong menu cß╗ºa PrivateChatModal: "Hß╗ºy kß║┐t bß║ín" v├á "Tß╗æ c├ío & Chß║╖n".
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **27. Phß╗º s├│ng Data thß║¡t (Avatar/Name) & ─Éß╗ông bß╗Ö i18n Timeout**
++  - **Vß║Ñn ─æß╗ü:** Sau khi Match, vß║½n c├▓n mß╗Öt sß╗æ component hiß╗ân thß╗ï t├¬n "Stranger" hoß║╖c ß║únh placeholder r├ích n├ít do ch╞░a map data thß║¡t. Ngo├ái ra, c├óu th├┤ng b├ío "─Éß╗úi 1 ph├║t ─æ├⌐o c├│ ai" l├║c Queue ch╞░a ─æ╞░ß╗úc ─æß╗ông bß╗Ö qua hß╗ç thß╗æng ─Éa ng├┤n ngß╗» (i18n).
++  - **Giß║úi ph├íp:** - *Frontend (Data):* R├á so├ít lß║íi Navbar, Profile, PrivateMessageRow, VideoChat (sau khi match). Lß║Ñy ─æ├║ng th├┤ng tin avatarUrl v├á name tß╗½ API trß║ú vß╗ü ─æß║»p v├áo DOM.
++    - *Frontend (i18n):* X├│a c├óu Text tiß║┐ng Viß╗çt hardcode trong h├ám ─æß║┐m ng╞░ß╗úc 60s cß╗ºa `useStore.js`. Th├¬m key `TIMEOUT_NO_MATCH` v├áo file `translation.js` (cß║ú Tiß║┐ng Viß╗çt v├á Tiß║┐ng Anh), v├á gß╗ìi ra bß║▒ng c├║ ph├íp `t.TIMEOUT_NO_MATCH`.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **28. Responsive Video Tß╗╖ lß╗ç chuß║⌐n & Cß╗⌐u Khung Chat Mobile**
++  - **Vß║Ñn ─æß╗ü:** Khung camera ─æang hiß╗ân thß╗ï m├⌐o m├│, kh├┤ng tß╗▒ ─æß╗Öng co gi├ún tß╗╖ lß╗ç (cß║ºn 16:9 tr├¬n Desktop, 9:16 tr├¬n Mobile). Tß╗ç h╞ín, giao diß╗çn Mobile ─æang bß╗ï giß║Ñu mß║Ñt khung Text Chat (Quick Chat) vß╗æn ─æang hoß║ít ─æß╗Öng b├¼nh th╞░ß╗¥ng tr├¬n Desktop.
++  - **Giß║úi ph├íp:** - *Frontend (Video):* D├╣ng Tailwind CSS xß╗¡ l├╜ linh hoß║ít tr├¬n thß║╗ `<video>`. Bß╗ò sung class `aspect-video` (16:9) cho m├án h├¼nh lß╗¢n (`md:`) v├á `aspect-[9/16]` cho m├án h├¼nh nhß╗Å. ─Éß║úm bß║úo thuß╗Öc t├¡nh `object-cover`.
++    - *Frontend (Mobile Chat):* T├íi cß║Ñu tr├║c lß║íi UI/Grid cß╗ºa `RoomPage.jsx` tr├¬n m├án Mobile. ─Éß║⌐y khung Video nhß╗Å lß║íi mß╗Öt ch├║t ─æß╗â nh├⌐t component `<ChatInput />` v├áo nß╗¡a d╞░ß╗¢i m├án h├¼nh (hoß║╖c l├ám dß║íng Bottom Sheet tr╞░ß╗út l├¬n) ─æß╗â user Mobile g├╡ ph├¡m ─æ╞░ß╗úc trong l├║c ─æang gß╗ìi.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **29. Ho├án thiß╗çn luß╗ông Tin Nhß║»n Ri├¬ng (Private Chat sau Match)**
++
++Vß║Ñn ─æß╗ü: Task 26 ─æ├ú xß╗¡ l├╜ data Inbox, nh╞░ng luß╗ông nhß║»n tin ri├¬ng t╞░ ngay sau khi 2 ng╞░ß╗¥i Match th├ánh c├┤ng (chuyß╗ân tß╗½ ph├▓ng Random sang ph├▓ng Bß║ín b├¿) cß║ºn phß║úi m╞░ß╗út m├á v├á real-time (KH├öNG cß║ºn chuyß╗ân tiß║┐p/b├¬ dß╗» liß╗çu tin nhß║»n tß╗½ ph├▓ng ngß║½u nhi├¬n qua).
++
++Giß║úi ph├íp: - Frontend/Backend: Khi mß╗ƒ PrivateChatModal.jsx, tß╗▒ ─æß╗Öng gß╗ìi API GET /api/v1/messages/{friendId} ─æß╗â load lß╗ïch sß╗¡.
++
++─Éß║úm bß║úo STOMP Subscribe v├áo topic d├ánh ri├¬ng cho user (/user/queue/messages) ─æß╗â gß╗¡i/nhß║¡n tin nhß║»n ri├¬ng t╞░ tß╗⌐c thß╗¥i m├á kh├┤ng cß║ºn reload trang.
++
++Hiß╗ân thß╗ï chuß║⌐n x├íc T├¬n thß║¡t v├á Avatar thß║¡t cß╗ºa ─æß╗æi ph╞░╞íng tr├¬n Header cß╗ºa khung chat.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **30. ─É╞ín giß║ún h├│a X├íc thß╗▒c Admin (Chß╗ë d├╣ng Google OAuth)**
++
++Vß║Ñn ─æß╗ü: Thiß║┐t kß║┐ th├¬m Github OAuth ri├¬ng cho Admin l├á qu├í r╞░ß╗¥m r├á, lß║▒ng nhß║▒ng code.
++
++Giß║úi ph├íp: Giß╗» GitHub OAuth cho luß╗ông User th├┤ng th╞░ß╗¥ng. Ri├¬ng ph├ón quyß╗ün Admin, chß╗ë cho ph├⌐p x├⌐t duyß╗çt dß╗▒a tr├¬n t├ái khoß║ún Google.
++
++Ph├ón quyß╗ün sß║╜ ─æ╞░ß╗úc thß╗▒c hiß╗çn thß╗º c├┤ng: Admin tß╗▒ v├áo Database (MySQL) ─æß╗òi cß╗Öt role cß╗ºa t├ái khoß║ún Google chß╗ë ─æß╗ïnh th├ánh ROLE_ADMIN.
++
++Frontend: Chß╗ë cß║ºn dß╗▒a v├áo userInfo.role === 'ROLE_ADMIN' trß║ú vß╗ü tß╗½ API /me ─æß╗â quyß║┐t ─æß╗ïnh xem c├│ render c├íi n├║t "Admin Dashboard" l├¬n giao diß╗çn hay kh├┤ng. Kh├│a route /admin nß║┐u role kh├┤ng hß╗úp lß╗ç.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **31. Bß╗ït lß╗ù hß╗òng WebSocket bß║▒ng ChannelInterceptor (STOMP Auth)**
++
++Vß║Ñn ─æß╗ü: WebSocket (/ws/) ─æang mß╗ƒ toang cß╗¡a. Kß║╗ gian kh├┤ng cß║ºn ─æ─âng nhß║¡p vß║½n kß║┐t nß╗æi ─æ╞░ß╗úc v├á nghe l├⌐n ─æ╞░ß╗úc c├íc topic nhß║íy cß║úm.
++
++Giß║úi ph├íp: - Backend: Viß║┐t mß╗Öt class implements ChannelInterceptor. Ghi ─æ├¿ h├ám preSend. Bß║»t sß╗▒ kiß╗çn StompCommand.CONNECT, moi c├íi JWT token ra tß╗½ Header (hoß║╖c query param), d├╣ng JwtUtil ─æß╗â giß║úi m├ú. Nß║┐u token hß╗úp lß╗ç th├¼ nß║íp Authentication v├áo StompHeaderAccessor, nß║┐u sai hoß║╖c rß╗ùng th├¼ n├⌐m Exception chß║╖n kß║┐t nß╗æi ngay lß║¡p tß╗⌐c.
++
++Frontend: Sß╗¡a lß║íi h├ám connect cß╗ºa STOMP trong socketClient.js, nhß╗¢ ─æ├¡nh k├¿m JWT Token v├áo header khi gß╗¡i request khß╗ƒi tß║ío Socket.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **32. Chß║╖n Lß╗ù Hß╗òng Giß║ú Mß║ío Admin & C├ón chß╗ënh Quß╗╣ ─æß║ío Ph├ón quyß╗ün**
++
++  - **Vß║Ñn ─æß╗ü:** Lß╗çch quß╗╣ ─æß║ío so vß╗¢i Task 30. Code c┼⌐ tß╗▒ ─æß╗Öng cß║Ñp quyß╗ün Admin dß╗▒a v├áo viß╗çc soi email (hardcode). Viß╗çc n├áy kh├┤ng nhß╗»ng cß║ún trß╗ƒ viß╗çc cß║Ñp quyß╗ün thß╗º c├┤ng trong MySQL m├á c├▓n tß║ío ra lß╗ù hß╗òng: Hacker c├│ thß╗â d├╣ng Github ─æß╗òi email tr├╣ng vß╗¢i email Admin ─æß╗â ─æ─âng nhß║¡p tr├│t lß╗ìt.
++  - **Giß║úi ph├íp:** 
++    - *Backend (OAuth2AuthenticationSuccessHandler):* Gß╗í bß╗Å ho├án to├án logic "tß╗▒ ─æß╗Öng phong t╞░ß╗¢c Admin" bß║▒ng email. Tß║Ñt cß║ú ng╞░ß╗¥i d├╣ng mß╗¢i ─æ─âng nhß║¡p mß║╖c ─æß╗ïnh lu├┤n l├á `USER`. Viß╗çc cß║Ñp quyß╗ün `ADMIN` 100% phß║úi l├ám thß╗º c├┤ng trong database MySQL.
++    - *Chß╗æt chß║╖n bß║úo mß║¡t (Anti-Spoofing):* Code bß╗ò sung ─æiß╗üu kiß╗çn kiß╗âm tra: Nß║┐u t├ái khoß║ún trong MySQL ─æang l├á `ADMIN` nh╞░ng ph╞░╞íng thß╗⌐c ─æ─âng nhß║¡p l├║c ─æ├│ KH├öNG PHß║óI l├á `google` (vd: ─æ─âng nhß║¡p qua Github bß║▒ng email cß╗ºa Admin) -> Bß║»n ngay lß╗ùi `SecurityException` ─æß╗â s├║t v─âng kß║╗ gian.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **33. Bß╗ït Lß╗ù Hß╗òng Giß║ú Mß║ío (Spoofing) & X├íc thß╗▒c STOMP (Security First)**
++
++  - **Vß║Ñn ─æß╗ü:** Hiß╗çn tß║íi Controller ─æang tin t╞░ß╗ƒng m├╣ qu├íng v├áo biß║┐n `senderId` do Frontend gß╗¡i l├¬n trong payload. Th├¬m nß╗»a, cß╗¡a ng├╡ WebSocket ─æang mß╗ƒ toang. Kß║╗ gian ho├án to├án c├│ thß╗â kß║┐t nß╗æi chui, tß╗▒ sß╗¡a `senderId` trong m├ú nguß╗ôn JS ─æß╗â mß║ío danh ng╞░ß╗¥i kh├íc gß╗¡i tin nhß║»n, hoß║╖c nghe l├⌐n topic cß╗ºa ph├▓ng kh├íc.
++  - **Giß║úi ph├íp:** 
++    - *Backend (Logic Server-side):* Tuyß╗çt ─æß╗æi kh├┤ng x├ái `senderId` tß╗½ payload cß╗ºa Client. Tr├¡ch xuß║Ñt ID ng╞░ß╗¥i d├╣ng trß╗▒c tiß║┐p tß╗½ Authentication Principal (dß╗» liß╗çu phi├¬n ─æ─âng nhß║¡p l╞░u an to├án tr├¬n Server).
++    - *Backend (Interceptor):* Sß╗¡ dß╗Ñng `StompChannelInterceptor` chß║╖n ngay cß╗¡a STOMP. B├│c JWT Token tß╗½ header l├║c client xin kß║┐t nß╗æi (Handshake), giß║úi m├ú v├á x├íc thß╗▒c. Kh├┤ng c├│ Token hoß║╖c Token hß║┐t hß║ín -> R├║t c├íp, chß║╖n kß║┐t nß╗æi tß╗⌐c khß║»c.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **34. ─Éß║¡p bß╗Å Base64 - Tß╗æi ╞░u Upload Media File Vß║¡t l├╜ (Fix ERR_CONNECTION_RESET)**
++
++  - **Vß║Ñn ─æß╗ü:** API `/upload` ─æang chuyß╗ân file ß║únh/voice th├ánh chuß╗ùi Base64 khß╗òng lß╗ô, nhß╗ôi v├áo RAM rß╗ôi tß╗æng v├áo MongoDB. Viß╗çc n├áy b├│p nghß║╣t bß╗Ö nhß╗¢ JVM, vi phß║ím giß╗¢i hß║ín 16MB cß╗ºa Mongo v├á g├óy v─âng lß╗ùi `ERR_CONNECTION_RESET` do Tomcat chß║╖n file lß╗¢n.
++  - **Giß║úi ph├íp:** 
++    - *Backend:* Code lß║íi API l╞░u file vß║¡t l├╜ thß║│ng xuß╗æng th╞░ mß╗Ñc `uploads/` cß╗ºa Server (hoß║╖c ─æß║⌐y l├¬n S3 ß║úo). Trß║ú vß╗ü ─æ├║ng 1 c├íi chuß╗ùi URL t─⌐nh ngß║»n gß╗ìn (VD: `http://localhost:8080/uploads/anh1.jpg`).
++    - *Frontend:* ─Éß║úm bß║úo Axios gß╗¡i file ─æ├¡nh k├¿m ─æ├║ng header `multipart/form-data`.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **35. Xß╗¡ l├╜ Lß╗ùi `data.map is not a function` & T├¡ch hß╗úp Ph├ón Trang Tin Nhß║»n**
++
++  - **Vß║Ñn ─æß╗ü:** Khi mß╗ƒ Inbox, UI v─âng lß╗ùi trß║»ng m├án h├¼nh. Nguy├¬n do l├á Spring Boot Backend trß║ú vß╗ü dß╗» liß╗çu kiß╗âu `Page<T>`, nh╞░ng Frontend React lß║íi ─æinh ninh ─æ├│ l├á c├íi mß║úng thuß║ºn n├¬n nhß║»m mß║»t gß╗ìi h├ám `.map()`.
++  - **Giß║úi ph├íp:** 
++    - *Frontend:* Th├¬m logic check an to├án tr╞░ß╗¢c khi render. B├│c t├ích mß║úng data bß║▒ng c├óu lß╗çnh: `const msgList = data?.content || data;` v├á Reverse danh s├ích ─æß╗â giß╗» ─æ├║ng chiß╗üu thß╗¥i gian.
++    - *Backend:* ─Éß║úm bß║úo Repository d├╣ng `Pageable` ─æß╗â truy vß║Ñn lß╗ïch sß╗¡ chat (`DESC`), giß╗¢i hß║ín mß║╖c ─æß╗ïnh 50 tin nhß║»n ─æß╗â chß║╖n t├¼nh trß║íng tß║úi 10.000 tin nhß║»n c├╣ng l├║c l├ám sß║¡p Database.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **36. Ti├¬u diß╗çt T├án d╞░ "Guest" & ß║óo gi├íc ─Éß╗ông hß╗ô (Fake Timer)**
++
++  - **Vß║Ñn ─æß╗ü:** Vi phß║ím luß║¡t "─Éß╗ïnh danh 100%" v├¼ codebase vß║½n c├▓n r├íc `handleGuestAction` v├á `fakeStream` cho Camera. Nghi├¬m trß╗ìng h╞ín, ─æß╗ông hß╗ô ─æß║┐m ng╞░ß╗úc 3 ph├║t ─æang d├╣ng `setTimeout` cß╗Ñc bß╗Ö ß╗ƒ Frontend. Nß║┐u user giß║¡t lag hoß║╖c ─æß╗òi Tab, thß╗¥i gian 2 b├¬n sß║╜ bß╗ï lß╗çch pha ho├án to├án.
++  - **Giß║úi ph├íp:** 
++    - *Frontend (Clean up):* Cß║»t bß╗Å to├án bß╗Ö logic Guest. Ch╞░a ─æ─âng nhß║¡p th├¼ chß║╖n ß╗ƒ cß╗¡a, s├║t vß╗ü Login. Gß╗í bß╗Å `fakeStream`, bß║»t buß╗Öc bß║¡t Camera/Mic.
++    - *Backend/Frontend (Sync Timer):* Chuyß╗ân quyß╗ün "cß║ºm chß╗ïch" thß╗¥i gian vß╗ü cho Server (Single Source of Truth). Server t├¡nh `matchEndTime` rß╗ôi n├⌐m thß║│ng v├áo STOMP Payload l├║c Match Found. Frontend chß╗ë viß╗çc t├¡nh to├ín trß╗½ l├╣i hiß╗ân thß╗ï m├á kh├┤ng bao giß╗¥ bß╗ï ch├¬nh lß╗çch.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **37. B─âm nhß╗Å "Qu├íi vß║¡t" Component (Luß║¡t th├⌐p < 150 d├▓ng)**
++
++  - **Vß║Ñn ─æß╗ü:** Theo b├ío c├ío Audit, c├íc file `VideoChat.jsx`, `PrivateChatModal`, `PrivateMessageRow` ─æß╗üu v╞░ß╗út qu├í 200-250 d├▓ng. Ch├║ng ─æang ├┤m ─æß╗ôm qu├í nhiß╗üu State, DOM, v├á Logic gß╗ìi API, g├óy kh├│ bß║úo tr├¼ v├á dß╗à sinh bug re-render.
++  - **Giß║úi ph├íp:** 
++    - *Frontend:* ─É├ú t├ích to├án bß╗Ö logic state, API, WebRTC v├á luß╗ông chß║íy cß╗ºa ph├▓ng chat v├áo custom hook `useVideoChat.js`. Component `VideoChat.jsx` hiß╗çn tß║íi ─æ├ú giß║úm tß╗½ gß║ºn 250 d├▓ng xuß╗æng chß╗ë c├▓n d╞░ß╗¢i 70 d├▓ng.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **38. Bß╗ït Lß╗ù Hß╗òng Nghe L├⌐n WebSocket (IDOR Topic Authorization)**
++
++Vß║Ñn ─æß╗ü: Hiß╗çn tß║íi ChannelInterceptor mß╗¢i chß╗ë kiß╗âm tra JWT ß╗ƒ b╞░ß╗¢c khß╗ƒi tß║ío kß║┐t nß╗æi (CONNECT). Hacker c├│ thß╗â d├╣ng t├ái khoß║ún hß╗úp lß╗ç ─æß╗â kß║┐t nß╗æi, sau ─æ├│ d├╣ng lß╗çnh stompClient.subscribe chß╗ìc ngo├íy v├áo topic /user/queue/chat-{ID_Cß╗ªA_NG╞»ß╗£I_KH├üC} hoß║╖c topic cß╗ºa ph├▓ng kh├íc ─æß╗â nghe l├⌐n 100% tin nhß║»n ri├¬ng t╞░.
++
++Giß║úi ph├íp: - Backend (StompChannelInterceptor): Ghi ─æ├¿ th├¬m logic bß║»t sß╗▒ kiß╗çn StompCommand.SUBSCRIBE. Khi user ─æ├▓i subscribe v├áo mß╗Öt topic ─æ├¡ch danh (VD: chß╗⌐a friendshipId hoß║╖c userId), Bß║«T BUß╗ÿC phß║úi tr├¡ch xuß║Ñt ID ─æ├│ ra v├á so s├ính vß╗¢i Principal (ID cß╗ºa user ─æang gß╗¡i request). Nß║┐u ─æ├⌐o khß╗¢p -> Qu─âng AccessDeniedException chß║╖n ─æß╗⌐ng lß╗çnh subscribe.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **39. Chß╗æng Thß║úm Hß╗ìa "Double Match" (Race Condition MySQL)**
++
++Vß║Ñn ─æß╗ü: Nß║┐u 2 user bß║Ñm "Thß║ú tim" c├ích nhau 1 mili-gi├óy, Spring Boot ─æß║╗ ra 2 luß╗ông (Thread) chß║íy song song. Cß║ú 2 luß╗ông ─æß╗üu gß╗ìi existsByUserIdAndFriendId thß║Ñy false (v├¼ data ch╞░a kß╗ïp save), dß║½n ─æß║┐n viß╗çc insert 2 lß║ºn, tß║ío ra 4 bß║ún ghi lß║╖p lß║íi trong bß║úng Friendship. G├óy crash UI Inbox.
++
++Giß║úi ph├íp: - Backend (Database): Mß╗ƒ Entity Friendship, gß║»n th├¬m @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"user_1_id", "user_2_id"})}). MySQL sß║╜ tß╗▒ ─æß╗Öng l├ám l├í chß║»n vß║¡t l├╜ ─æß║Ñm v─âng luß╗ông ─æß║┐n sau.
++
++Backend (Logic): Trong RoomService, bß╗ìc khß╗æi lß╗çnh l╞░u DB bß║▒ng mß╗Öt khß╗æi try-catch bß║»t lß╗ùi DataIntegrityViolationException, hoß║╖c xß╗ïn h╞ín l├á d├╣ng redisTemplate.opsForValue().setIfAbsent l├ám Distributed Lock ─æß╗â ├⌐p 2 Thread chß║íy tuß║ºn tß╗▒.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **40. Gß╗í Bom Nß╗ò Chß║¡m MongoDB (Compound Index & Un-indexed Sort)**
++
++Vß║Ñn ─æß╗ü: Khi fetch tin nhß║»n, truy vß║Ñn ─æang gß╗ìi findByFriendshipIdOrderByCreatedAtDesc. MongoDB phß║úi gom hß║┐t tin nhß║»n cß╗ºa ph├▓ng ─æ├│ l├¬n RAM rß╗ôi mß╗¢i Sort. Khi v╞░ß╗út mß╗æc giß╗¢i hß║ín 32MB RAM In-memory Sort, MongoDB sß║╜ n├⌐m lß╗ùi Executor error v├á sß║¡p to├án bß╗Ö API Inbox.
++
++Giß║úi ph├íp: - Backend (ChatMessage.java): X├│a c├íi @Indexed ─æ╞ín lß║╗ c┼⌐ ─æi. Th├¬m @CompoundIndex(def = "{'friendshipId': 1, 'createdAt': -1}") l├¬n tr├¬n ─æß║ºu class Entity ─æß╗â Mongo tß║ío chß╗ë mß╗Ñc k├⌐p, gi├║p query v├á sort trß╗▒c tiß║┐p tr├¬n ß╗ò cß╗⌐ng vß╗¢i tß╗æc ─æß╗Ö b├án thß╗¥ m├á kh├┤ng lß║ím dß╗Ñng RAM.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **41. T├íi cß║Ñu tr├║c V├▓ng ─Éß╗¥i Socket (Chß╗æng Socket Thrashing)**
++
++Vß║Ñn ─æß╗ü: Mß╗ùi lß║ºn user ß║Ñn n├║t "Next" t├¼m ph├▓ng mß╗¢i, Frontend ─æang gß╗ìi socket.disconnect() xong lß║¡p tß╗⌐c gß╗ìi new SockJS(). Thao t├íc ─æß║¡p ─æi x├óy lß║íi ─æ╞░ß╗¥ng ß╗æng TCP li├¬n tß╗Ñc n├áy sß║╜ b├│p nghß║╣t b─âng th├┤ng, l├ám cß║ín kiß╗çt Port cß╗ºa m├íy chß╗º Nginx/Tomcat khi c├│ h├áng ng├án user l╞░ß╗¢t Next.
++
++Giß║úi ph├íp: - Frontend (useStore.js / socketClient.js): Tuyß╗çt ─æß╗æi KH├öNG disconnect socket khi bß║Ñm Next. Giß╗» nguy├¬n 1 kß║┐t nß╗æi STOMP duy nhß║Ñt tß╗½ l├║c Login ─æß║┐n l├║c tß║»t App. Khi bß║Ñm Next, chß╗ë cß║ºn gß╗ìi h├ám .unsubscribe() ─æß╗â tho├ít khß╗Åi topic ph├▓ng c┼⌐, v├á .subscribe() v├áo topic ph├▓ng mß╗¢i.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **42. Khß╗¡ Hardcode & Ti├¬u chuß║⌐n h├│a M├┤i tr╞░ß╗¥ng (Environment Parity)**
++
++Vß║Ñn ─æß╗ü: C├íc URL nh╞░ http://localhost:8080/uploads v├á http://localhost:3000 ─æang bß╗ï g├╡ cß╗⌐ng (hardcode) rß║úi r├íc trong Controller Backend v├á API Client Frontend. Mang code n├áy deploy l├¬n VPS Linux chß║íy Domain thß║¡t th├¼ to├án bß╗Ö ß║únh, Websocket v├á OAuth2 sß║╜ v─âng lß╗ùi 404/Mixed Content.
++
++Giß║úi ph├íp: - Frontend: ─Éß║⌐y to├án bß╗Ö domain v├áo biß║┐n m├┤i tr╞░ß╗¥ng import.meta.env.VITE_API_URL trong file .env.
++
++Backend: ─Éß║⌐y domain v├áo file application.yml hoß║╖c application.properties. D├╣ng @Value("${app.frontend.url}") v├á @Value("${app.backend.url}") ─æß╗â nh├║ng ─æß╗Öng v├áo Controller v├á Security Config.
++  [─É├â HO├ÇN TH├ÇNH]
++
++- [x] **43. X├óy dß╗▒ng L├í Chß║»n Lß╗ùi To├án Cß╗Ñc (Global Exception Handler)**
++
++Vß║Ñn ─æß╗ü: Ch╞░a c├│ ControllerAdvice. Khi Backend v─âng lß╗ùi (do JWT sai, Mongo sß║¡p, hay cß║»m file qu├í to), Spring Boot tß╗▒ ─æß╗Öng khß║íc nguy├¬n cß╗Ñc Stacktrace Java 500 ch├á b├í vß╗ü Frontend. Axios kh├┤ng parse ─æ╞░ß╗úc JSON chuß║⌐n -> Crash UI React, ─æß╗ông thß╗¥i lß╗Ö cß║Ñu tr├║c th╞░ mß╗Ñc Server cho hacker.
++
++Giß║úi ph├íp: - Backend: Tß║ío class GlobalExceptionHandler.java gß║»n @RestControllerAdvice. D├╣ng @ExceptionHandler ─æß╗â bß║»t c├íc lß╗ùi phß╗ò biß║┐n (nh╞░ MaxUploadSizeExceededException, AccessDeniedException, Exception). ─Éß╗ïnh dß║íng lß║íi th├ánh 1 cß╗Ñc JSON ─æß╗ông nhß║Ñt: { "status": "ERROR", "message": "Th├┤ng b├ío th├ón thiß╗çn" } ─æß╗â Frontend dß╗à hiß╗ân thß╗ï Toast.
++  [─É├â HO├ÇN TH├ÇNH]
+diff --git a/backend/pom.xml b/backend/pom.xml
+index c4219de..98d0015 100644
+--- a/backend/pom.xml
++++ b/backend/pom.xml
+@@ -114,6 +114,19 @@
+ 					</excludes>
+ 				</configuration>
+ 			</plugin>
++			<plugin>
++				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-compiler-plugin</artifactId>
++				<configuration>
++					<annotationProcessorPaths>
++						<path>
++							<groupId>org.projectlombok</groupId>
++							<artifactId>lombok</artifactId>
++							<version>1.18.30</version>
++						</path>
++					</annotationProcessorPaths>
++				</configuration>
++			</plugin>
+ 		</plugins>
+ 	</build>
+ </project>
+\ No newline at end of file
+diff --git a/backend/src/main/java/com/mitmit/config/OAuth2AuthenticationSuccessHandler.java b/backend/src/main/java/com/mitmit/config/OAuth2AuthenticationSuccessHandler.java
+index 0262575..176a465 100644
+--- a/backend/src/main/java/com/mitmit/config/OAuth2AuthenticationSuccessHandler.java
++++ b/backend/src/main/java/com/mitmit/config/OAuth2AuthenticationSuccessHandler.java
+@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
+ import jakarta.servlet.http.HttpServletRequest;
+ import jakarta.servlet.http.HttpServletResponse;
+ import lombok.RequiredArgsConstructor;
++import lombok.Value;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.security.core.Authentication;
+ import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+diff --git a/backend/src/main/java/com/mitmit/document/ChatMessage.java b/backend/src/main/java/com/mitmit/document/ChatMessage.java
+index d696b03..5339baf 100644
+--- a/backend/src/main/java/com/mitmit/document/ChatMessage.java
++++ b/backend/src/main/java/com/mitmit/document/ChatMessage.java
+@@ -1,7 +1,7 @@
+ package com.mitmit.document;
+ 
+ import lombok.*;
+-import jakarta.persistence.Id;
++import org.springframework.data.annotation.Id;
+ import org.springframework.data.mongodb.core.index.CompoundIndex;
+ import org.springframework.data.mongodb.core.index.CompoundIndexes;
+ import org.springframework.data.mongodb.core.mapping.Document;
