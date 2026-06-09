@@ -93,6 +93,10 @@ export const createMatchSlice = (set, get) => ({
                     avatarUrl: isUser1 ? data.user2Avatar : data.user1Avatar
                   }
                 });
+                const currentUserInfo = get().userInfo;
+                if (currentUserInfo) {
+                  set({ userInfo: { ...currentUserInfo, matchCount: (currentUserInfo.matchCount || 0) + 1 } });
+                }
                 get().loadFriends();
               } catch (err) {
                 console.error("Lỗi parse data match_success:", err);

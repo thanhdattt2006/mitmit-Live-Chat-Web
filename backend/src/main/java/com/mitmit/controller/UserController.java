@@ -32,6 +32,7 @@ public class UserController {
                 .name(user.getAnonymousName())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole().name())
+                .matchCount(user.getMatchCount())
                 .build();
 
         return ResponseEntity.ok(userDto);

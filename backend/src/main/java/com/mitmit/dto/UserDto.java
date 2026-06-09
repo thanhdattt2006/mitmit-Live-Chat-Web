@@ -12,4 +12,5 @@ public class UserDto {
     private String name;
     private String avatarUrl;
     private String role;
+    private int matchCount;
 }

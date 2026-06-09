@@ -284,3 +284,34 @@ Vấn đề: Chưa có ControllerAdvice. Khi Backend văng lỗi (do JWT sai, Mo
 
 Giải pháp: - Backend: Tạo class GlobalExceptionHandler.java gắn @RestControllerAdvice. Dùng @ExceptionHandler để bắt các lỗi phổ biến (như MaxUploadSizeExceededException, AccessDeniedException, Exception). Định dạng lại thành 1 cục JSON đồng nhất: { "status": "ERROR", "message": "Thông báo thân thiện" } để Frontend dễ hiển thị Toast.
   [ĐÃ HOÀN THÀNH]
+
+- [x] **44. Vòng lặp Khảo sát Trải nghiệm (User Feedback Loop)**
+
+Vấn đề: Chưa đo lường được UX của user. Cần thực thi logic trong tài liệu: Hiện form khảo sát sau 3 lần Match đầu, và mỗi 10 lần Match sau đó.
+
+Giải pháp: - Backend: Bổ sung cột matchCount (int) vào bảng Users. Mỗi lần 2 user ấn "Trái tim" thành công, tăng matchCount lên 1. Trả con số này về API /me.
+
+Frontend: Viết <FeedbackModal />. Trong useEffect, kiểm tra công thức: if (matchCount === 3 || (matchCount > 3 && (matchCount - 3) % 10 === 0)) -> Bật Modal bắt đánh giá 1-5 sao.
+  [ĐÃ HOÀN THÀNH]
+
+[ ] 45. Bộ lọc Từ cấm & "Khóa mõm" Tự động (Auto Text Moderation)
+
+Vấn đề: Cần chặn user chửi bậy hoặc gửi link bẩn. Vi phạm quá 3 lần phải bị ban, hoặc bị report thì khóa mõm ngay lập tức.
+
+Giải pháp: - Backend (Service): Viết một file ProfanityFilter.java dùng Regex để chặn Link và nạp danh sách từ bậy tiếng Việt. Trước khi lưu vào Mongo, đưa msg.content qua hàm quét. Nếu dính -> Hủy gửi, cộng 1 "gậy" (Strike) vào Redis. Nếu Strike > 3 -> Đổi isMuted = true trong MySQL.
+
+Backend (Socket): Trong MessageController, nếu isMuted == true, ném lỗi chặn STOMP.
+
+[ ] 46. AI Quét "Hàng Nóng" (NSFW) trên luồng Video WebRTC
+
+Vấn đề: Để app bị biến thành web đen thì server mày đi tông. Phải quét hình ảnh đồi trụy ngay từ Frontend.
+
+Giải pháp: - Frontend (VideoChat.jsx): Tích hợp thư viện nsfwjs (TensorFlow.js). Cứ mỗi 5 giây, capture 1 frame từ thẻ <video> của đối phương và đưa vào model AI quét. Nếu tỷ lệ Porn hoặc Hentai > 80% -> Gửi request khẩn cấp POST /api/v1/report/nsfw lên server.
+
+Backend: Nhận request NSFW -> Bắn tín hiệu STOMP đóng băng phòng ngay lập tức, tống cổ user vi phạm và khóa IP.
+
+[ ] 47. Tích hợp Hệ thống Cảnh báo Email (Auto Email Notification)
+
+Vấn đề: Khóa tài khoản người ta mà im ỉm thì không chuyên nghiệp. Phải có thư báo cáo.
+
+Giải pháp: - Backend: Thêm spring-boot-starter-mail vào pom.xml. Cấu hình Gmail SMTP. Viết EmailService.java. Khi tài khoản bị Admin ban (hoặc do AI ban), lấy email từ cột email (của OAuth2), bắn một bức thư với tiêu đề "Tài khoản mitmit của bạn đã bị khóa vĩnh viễn" kèm lý do.
