@@ -54,7 +54,7 @@ public class RoomService {
                 if (user1 != null && user2 != null) {
                     user1.setMatchCount(user1.getMatchCount() + 1);
                     user2.setMatchCount(user2.getMatchCount() + 1);
-                    userRepository.saveAll(List.of(user1, user2));
+                    userRepository.saveAll(java.util.Arrays.asList(user1, user2));
 
                     if (!friendshipRepository.existsByUserIdAndFriendId(user1, user2)) {
                         Friendship f1 = Friendship.builder()

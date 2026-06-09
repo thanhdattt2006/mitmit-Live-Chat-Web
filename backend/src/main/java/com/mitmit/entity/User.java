@@ -37,7 +37,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserStatus status; // Tạo thêm 1 Enum UserStatus {ACTIVE, BANNED}
 
-    @Column(nullable = false)
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "int default 0")
     private int matchCount = 0;
 
     private LocalDateTime createdAt;
