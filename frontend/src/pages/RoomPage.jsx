@@ -71,17 +71,14 @@ export default function RoomPage() {
             <div className="px-5 py-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 backdrop-blur-sm z-10 relative shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative shrink-0">
-                  <img src={isMatched ? (remoteUserInfo?.avatarUrl || "https://via.placeholder.com/150") : "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80"} className="w-10 h-10 rounded-full object-cover border border-neutral-700" alt="Stranger" />
+                  <img src={remoteUserInfo?.avatarUrl || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80"} className="w-10 h-10 rounded-full object-cover border border-neutral-700" alt="Stranger" />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#141414] rounded-full"></div>
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-sm truncate">
-                      {isMatched ? (remoteUserInfo?.name || t.STRANGER) : t.STRANGER}
+                      {remoteUserInfo?.name || t.STRANGER}
                     </h3>
-                    <span className="px-1.5 py-0.5 bg-neutral-800 rounded-full text-[10px] text-gray-300 border border-neutral-700 flex items-center gap-1 shrink-0">
-                      21 <span className="text-blue-400 font-bold">♂</span>
-                    </span>
                   </div>
                   <p className="text-xs text-green-400 font-medium truncate">{t.ONLINE_COUNT}</p>
                 </div>

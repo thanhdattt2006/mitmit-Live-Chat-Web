@@ -3,7 +3,7 @@ import { Video as VideoIcon, Mic, MessageCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
-const RemoteStreamVideo = forwardRef(({ strangerImg }, ref) => {
+const RemoteStreamVideo = forwardRef((props, ref) => {
   const { 
     lang, isMatching, isConnected, callMode, remoteStream, isMatched, remoteUserInfo 
   } = useStore();
@@ -12,7 +12,7 @@ const RemoteStreamVideo = forwardRef(({ strangerImg }, ref) => {
   const [volume, setVolume] = useState(0);
 
   const isIdle = !isMatching && !isConnected;
-  const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
   const displayStrangerName = remoteUserInfo?.name || t.STRANGER;
 
   useEffect(() => {

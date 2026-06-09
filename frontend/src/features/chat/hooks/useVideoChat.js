@@ -14,7 +14,6 @@ export function useVideoChat() {
 
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
-  const [strangerImg] = useState('');
   const [timeLeft, setTimeLeft] = useState(180);
 
   const [isLikedByMe, setIsLikedByMe] = useState(false);
@@ -22,7 +21,7 @@ export function useVideoChat() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const isIdle = !isMatching && !isConnected;
-  const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
 
   useEffect(() => {
     if (!isConnected || isMatched || !matchEndTime) return;
@@ -143,7 +142,7 @@ export function useVideoChat() {
   return {
     isMicOn, setIsMicOn,
     isCamOn, setIsCamOn,
-    strangerImg, timeLeft,
+    timeLeft,
     isLikedByMe, showPremiumMatch,
     showReportModal, setShowReportModal,
     isIdle, displayStrangerImg,
