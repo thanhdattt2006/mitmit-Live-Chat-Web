@@ -27,6 +27,7 @@ public class ReportService {
     private final RedisService redisService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatSessionRepository chatSessionRepository;
+    private final EmailService emailService;
 
     @Transactional
     public Report createReport(String reporterId, String reportedId, String reason, String details, Boolean isFromInbox) {
@@ -74,7 +75,12 @@ public class ReportService {
             if (report != null) {
                 report.setStatus(ReportStatus.RESOLVED);
                 reportRepository.save(report);
+                emailService.sendBanNotification(reported.getEmail(), "Admin đã xử lý Report - Lỗi: " + report.getReason());
+            } else {
+                emailService.sendBanNotification(reported.getEmail(), "Vi phạm tiêu chuẩn cộng đồng");
             }
+        } else {
+            emailService.sendBanNotification(reported.getEmail(), "Vi phạm tiêu chuẩn cộng đồng");
         }
     }
 
@@ -102,5 +108,7 @@ public class ReportService {
             com.mitmit.document.ChatSession lastSession = sessions.get(0);
             messagingTemplate.convertAndSend("/topic/room/" + lastSession.getId() + "/force_close", "NSFW_BANNED");
         }
+
+        emailService.sendBanNotification(reported.getEmail(), "Hệ thống AI phát hiện hành vi trình chiếu nội dung nhạy cảm, đồi trụy (NSFW).");
     }
 }

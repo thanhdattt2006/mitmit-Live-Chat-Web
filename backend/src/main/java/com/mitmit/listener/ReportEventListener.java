@@ -6,6 +6,7 @@ import com.mitmit.event.ReportCreatedEvent;
 import com.mitmit.repository.ReportRepository;
 import com.mitmit.repository.UserRepository;
 import com.mitmit.repository.ChatSessionRepository;
+import com.mitmit.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -24,6 +25,7 @@ public class ReportEventListener {
     private final UserRepository userRepository;
     private final ChatSessionRepository chatSessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EmailService emailService;
 
     @Async
     @EventListener
@@ -49,6 +51,8 @@ public class ReportEventListener {
                         com.mitmit.document.ChatSession lastSession = sessions.get(0);
                         messagingTemplate.convertAndSend("/topic/room/" + lastSession.getId() + "/force_close", "BANNED");
                     }
+                    
+                    emailService.sendBanNotification(reported.getEmail(), "Tài khoản bị nhiều người dùng báo cáo (Report) trong thời gian ngắn.");
                 }
             }
         } catch (Exception e) {

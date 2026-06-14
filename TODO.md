@@ -310,8 +310,9 @@ Giải pháp: - Frontend (RemoteStreamVideo.jsx): Tích hợp thư viện nsfwjs
 Backend: Nhận request NSFW -> Bắn tín hiệu STOMP đóng băng phòng ngay lập tức, tống cổ user vi phạm và khóa IP (thông qua Redis blacklist).
   [ĐÃ HOÀN THÀNH]
 
-[ ] 47. Tích hợp Hệ thống Cảnh báo Email (Auto Email Notification)
+- [x] **47. Tích hợp Hệ thống Cảnh báo Email (Auto Email Notification)**
 
 Vấn đề: Khóa tài khoản người ta mà im ỉm thì không chuyên nghiệp. Phải có thư báo cáo.
 
-Giải pháp: - Backend: Thêm spring-boot-starter-mail vào pom.xml. Cấu hình Gmail SMTP. Viết EmailService.java. Khi tài khoản bị Admin ban (hoặc do AI ban), lấy email từ cột email (của OAuth2), bắn một bức thư với tiêu đề "Tài khoản mitmit của bạn đã bị khóa vĩnh viễn" kèm lý do.
+Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu hình Gmail SMTP trong `application.yaml`. Viết `EmailService.java`. Khi tài khoản bị Admin ban, auto-ban do nhận quá nhiều report, hoặc do AI ban, lấy email từ cột email (của OAuth2), bắn một bức thư với tiêu đề "Tài khoản mitmit của bạn đã bị khóa vĩnh viễn" kèm lý do chi tiết.
+  [ĐÃ HOÀN THÀNH]
