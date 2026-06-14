@@ -34,6 +34,16 @@ public class ReportController {
         return ResponseEntity.ok(report);
     }
 
+    @PostMapping("/reports/nsfw")
+    public ResponseEntity<Void> reportNsfw(
+            Authentication authentication,
+            @RequestBody ReportRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getRemoteAddr();
+        reportService.banUserNsfw(request.getReportedId(), ipAddress);
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports")
     public ResponseEntity<Page<ReportResponse>> getReports(

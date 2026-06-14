@@ -2,10 +2,12 @@ import React, { useEffect, useState, forwardRef } from 'react';
 import { Video as VideoIcon, Mic, MessageCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
+import * as nsfwjs from 'nsfwjs';
+import axiosClient from '../../api/axiosClient';
 
 const RemoteStreamVideo = forwardRef((props, ref) => {
   const { 
-    lang, isMatching, isConnected, callMode, remoteStream, isMatched, remoteUserInfo 
+    lang, isMatching, isConnected, callMode, remoteStream, isMatched, remoteUserInfo, remoteUserId 
   } = useStore();
   const t = translations[lang];
   const [isBlurred, setIsBlurred] = useState(true);
@@ -75,6 +77,46 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
       if (audioContext && audioContext.state !== 'closed') audioContext.close();
     };
   }, [remoteStream, callMode, isIdle]);
+
+  useEffect(() => {
+    let intervalId;
+    let model;
+
+    const loadModelAndStartAnalysis = async () => {
+      try {
+        model = await nsfwjs.load();
+        
+        intervalId = setInterval(async () => {
+          if (callMode === 'video' && ref && ref.current && remoteStream && !isIdle && !isMatching && remoteUserId) {
+            try {
+              const predictions = await model.classify(ref.current);
+              const pornProb = predictions.find(p => p.className === 'Porn')?.probability || 0;
+              const hentaiProb = predictions.find(p => p.className === 'Hentai')?.probability || 0;
+              
+              if (pornProb > 0.8 || hentaiProb > 0.8) {
+                console.warn("NSFW Content detected. Auto-reporting...");
+                await axiosClient.post('/api/v1/reports/nsfw', {
+                  reportedId: remoteUserId
+                });
+              }
+            } catch (err) {
+              // Ignore classify errors (e.g., video not ready)
+            }
+          }
+        }, 5000);
+      } catch (err) {
+        console.error("Failed to load NSFW model", err);
+      }
+    };
+
+    if (callMode === 'video' && !isIdle && !isMatching && remoteStream) {
+      loadModelAndStartAnalysis();
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [callMode, isIdle, isMatching, remoteStream, ref, remoteUserId]);
 
   const renderModeIcon = () => {
     if (callMode === 'video') return <VideoIcon className="w-8 h-8 text-gray-500" />;

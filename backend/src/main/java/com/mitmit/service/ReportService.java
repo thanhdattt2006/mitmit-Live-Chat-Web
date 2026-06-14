@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.mitmit.repository.ChatSessionRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,8 @@ public class ReportService {
     private final ApplicationEventPublisher eventPublisher;
     private final FriendshipService friendshipService;
     private final RedisService redisService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ChatSessionRepository chatSessionRepository;
 
     @Transactional
     public Report createReport(String reporterId, String reportedId, String reason, String details, Boolean isFromInbox) {
@@ -80,5 +84,23 @@ public class ReportService {
                 .orElseThrow(() -> new RuntimeException("Report not found"));
         report.setStatus(ReportStatus.DISMISSED);
         reportRepository.save(report);
+    }
+
+    @Transactional
+    public void banUserNsfw(String reportedId, String ipAddress) {
+        User reported = userRepository.findById(reportedId)
+                .orElseThrow(() -> new RuntimeException("Reported user not found"));
+        reported.setStatus(UserStatus.BANNED);
+        userRepository.save(reported);
+
+        if (ipAddress != null && !ipAddress.isEmpty()) {
+            redisService.addToSetWithExpire("blacklist:ip", ipAddress, 5256000);
+        }
+
+        java.util.List<com.mitmit.document.ChatSession> sessions = chatSessionRepository.findByUser1IdOrUser2IdOrderByStartedAtDesc(reportedId, reportedId);
+        if (!sessions.isEmpty()) {
+            com.mitmit.document.ChatSession lastSession = sessions.get(0);
+            messagingTemplate.convertAndSend("/topic/room/" + lastSession.getId() + "/force_close", "NSFW_BANNED");
+        }
     }
 }

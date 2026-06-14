@@ -301,13 +301,14 @@ Vấn đề: Cần chặn user chửi bậy hoặc gửi link bẩn. Vi phạm q
 Giải pháp tối ưu: Thay vì đợi xử lý ở Controller hay chặn thủ công, tạo `ProfanityFilterService` hỗ trợ Regex quét link và danh sách từ bậy. Nếu vi phạm, cộng gậy (Strike) vào Redis (TTL 24h). Khi Strike >= 3, tự động cập nhật `isMuted = true` trong MySQL cho Entity User và bắn tín hiệu STOMP báo lỗi hệ thống. Kiểm tra `isMuted` và nội dung nhạy cảm được tích hợp thẳng vào `MessageController` (cho Inbox) và `SignalingController` (cho Room Chat). Cách tiếp cận này hiệu quả vì nó bao quát tất cả các trường hợp nhắn tin (phòng ngẫu nhiên và phòng chat bạn bè), và lưu trữ dữ liệu phạt tập trung.
   [ĐÃ HOÀN THÀNH]
 
-[ ] 46. AI Quét "Hàng Nóng" (NSFW) trên luồng Video WebRTC
+- [x] **46. AI Quét "Hàng Nóng" (NSFW) trên luồng Video WebRTC**
 
 Vấn đề: Để app bị biến thành web đen thì server mày đi tông. Phải quét hình ảnh đồi trụy ngay từ Frontend.
 
-Giải pháp: - Frontend (VideoChat.jsx): Tích hợp thư viện nsfwjs (TensorFlow.js). Cứ mỗi 5 giây, capture 1 frame từ thẻ <video> của đối phương và đưa vào model AI quét. Nếu tỷ lệ Porn hoặc Hentai > 80% -> Gửi request khẩn cấp POST /api/v1/report/nsfw lên server.
+Giải pháp: - Frontend (RemoteStreamVideo.jsx): Tích hợp thư viện nsfwjs (TensorFlow.js). Cứ mỗi 5 giây, capture 1 frame từ thẻ `<video>` của đối phương và đưa vào model AI quét. Nếu tỷ lệ Porn hoặc Hentai > 80% -> Gửi request khẩn cấp POST /api/v1/reports/nsfw lên server.
 
-Backend: Nhận request NSFW -> Bắn tín hiệu STOMP đóng băng phòng ngay lập tức, tống cổ user vi phạm và khóa IP.
+Backend: Nhận request NSFW -> Bắn tín hiệu STOMP đóng băng phòng ngay lập tức, tống cổ user vi phạm và khóa IP (thông qua Redis blacklist).
+  [ĐÃ HOÀN THÀNH]
 
 [ ] 47. Tích hợp Hệ thống Cảnh báo Email (Auto Email Notification)
 
