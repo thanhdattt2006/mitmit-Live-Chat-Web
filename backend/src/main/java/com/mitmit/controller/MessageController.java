@@ -5,6 +5,9 @@ import com.mitmit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import com.mitmit.service.ProfanityFilterService;
+import com.mitmit.repository.UserRepository;
+import com.mitmit.entity.User;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,8 @@ import java.util.List;
 public class MessageController {
 
     private final MessageService messageService;
+    private final ProfanityFilterService profanityFilterService;
+    private final UserRepository userRepository;
 
     @GetMapping("/{friendshipId}")
     public ResponseEntity<org.springframework.data.domain.Page<ChatMessage>> getMessages(
@@ -33,6 +38,18 @@ public class MessageController {
             throw new SecurityException("Unauthorized STOMP connection");
         }
         String senderId = authentication.getName();
+        User user = userRepository.findById(senderId).orElse(null);
+        if (user != null && user.isMuted()) {
+            throw new SecurityException("Bạn đã bị cấm chat do vi phạm tiêu chuẩn cộng đồng.");
+        }
+        
+        if (messageRequest.getType() == null || messageRequest.getType().equals("TEXT")) {
+            if (profanityFilterService.containsProfanityOrLink(messageRequest.getContent())) {
+                profanityFilterService.processViolation(senderId);
+                throw new IllegalArgumentException("Tin nhắn chứa từ ngữ vi phạm hoặc liên kết không được phép.");
+            }
+        }
+
         messageService.sendMessage(senderId, messageRequest);
     }
 
@@ -64,6 +81,18 @@ public class MessageController {
             throw new SecurityException("Unauthorized HTTP request");
         }
         String senderId = authentication.getName();
+        User user = userRepository.findById(senderId).orElse(null);
+        if (user != null && user.isMuted()) {
+            throw new SecurityException("Bạn đã bị cấm chat do vi phạm tiêu chuẩn cộng đồng.");
+        }
+
+        if (messageRequest.getType() == null || messageRequest.getType().equals("TEXT")) {
+            if (profanityFilterService.containsProfanityOrLink(messageRequest.getContent())) {
+                profanityFilterService.processViolation(senderId);
+                throw new IllegalArgumentException("Tin nhắn chứa từ ngữ vi phạm hoặc liên kết không được phép.");
+            }
+        }
+
         return ResponseEntity.ok(messageService.sendMessage(senderId, messageRequest));
     }
 

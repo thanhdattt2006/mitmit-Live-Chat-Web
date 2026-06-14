@@ -41,6 +41,10 @@ public class User {
     @Column(nullable = false, columnDefinition = "int default 0")
     private int matchCount = 0;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isMuted = false;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
