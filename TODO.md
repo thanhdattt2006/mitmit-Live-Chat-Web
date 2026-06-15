@@ -316,3 +316,8 @@ Vấn đề: Khóa tài khoản người ta mà im ỉm thì không chuyên nghi
 
 Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu hình Gmail SMTP trong `application.yaml`. Viết `EmailService.java`. Khi tài khoản bị Admin ban, auto-ban do nhận quá nhiều report, hoặc do AI ban, lấy email từ cột email (của OAuth2), bắn một bức thư với tiêu đề "Tài khoản mitmit của bạn đã bị khóa vĩnh viễn" kèm lý do chi tiết.
   [ĐÃ HOÀN THÀNH]
+
+- [x] **48. Giải cứu Database Connection (Tách Email khỏi Transactional)**
+  - **Vấn đề:** Gửi email trong block @Transactional của banUserNsfw hoặc banUser là hành vi tự sát. SMTP delay sẽ khóa chết MySQL Connection Pool, đánh sập toàn bộ API.
+  - **Giải pháp:** - Backend (EmailService.java): Phải gắn annotation @Async lên đầu cái phương thức gửi mail (VD: sendBanNotification). Chắc chắn rằng class cấu hình đã có @EnableAsync. Gọi hàm này sau khi DB đã lưu xong. Luồng chính (lưu Mongo/MySQL) sẽ return ngay lập tức, việc gửi mail kệ cho thread background nó lo.
+  [ĐÃ HOÀN THÀNH]

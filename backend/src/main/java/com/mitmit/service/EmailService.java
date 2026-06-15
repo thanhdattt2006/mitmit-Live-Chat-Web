@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -17,6 +18,7 @@ public class EmailService {
     @Value("${spring.mail.username:mitmit.noreply@gmail.com}")
     private String fromEmail;
 
+    @Async
     public void sendBanNotification(String toEmail, String reason) {
         if (toEmail == null || toEmail.isEmpty()) {
             log.warn("Cannot send ban notification. Email is empty.");
