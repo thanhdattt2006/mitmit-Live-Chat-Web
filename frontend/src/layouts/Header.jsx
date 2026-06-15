@@ -43,8 +43,8 @@ export default function Header() {
         
         {/* Left: Logo */}
         <div className="flex items-center gap-2 sm:gap-3 cursor-pointer w-auto min-w-fit shrink-0">
-          <div className="w-8 h-8 bg-white text-neutral-900 rounded-lg flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            <Video className="w-5 h-5" />
+          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+            <img src="/logo.png" alt="Mitmit Logo" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
           <h1 className="font-semibold text-xl tracking-tight hidden sm:block shrink-0">
             {t.LOGO_TITLE}<span className="font-light text-gray-400">{t.LOGO_SUB}</span>

@@ -25,6 +25,9 @@ public class Feedback {
     @Column(name = "rating", nullable = false)
     private int rating;
 
+    @Column(name = "comment", columnDefinition = "TEXT")
+    private String comment;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

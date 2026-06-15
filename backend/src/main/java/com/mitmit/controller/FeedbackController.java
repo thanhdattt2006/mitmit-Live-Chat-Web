@@ -17,9 +17,10 @@ public class FeedbackController {
     private final FeedbackRepository feedbackRepository;
 
     @PostMapping
-    public ResponseEntity<?> submitFeedback(Authentication authentication, @RequestBody Map<String, Integer> payload) {
+    public ResponseEntity<?> submitFeedback(Authentication authentication, @RequestBody Map<String, Object> payload) {
         String userId = authentication.getName();
-        Integer rating = payload.get("rating");
+        Integer rating = payload.get("rating") != null ? Integer.parseInt(payload.get("rating").toString()) : null;
+        String comment = payload.get("comment") != null ? payload.get("comment").toString() : null;
         
         if (rating == null || rating < 1 || rating > 5) {
             return ResponseEntity.badRequest().body("Rating must be between 1 and 5");
@@ -28,6 +29,7 @@ public class FeedbackController {
         Feedback feedback = Feedback.builder()
                 .userId(userId)
                 .rating(rating)
+                .comment(comment)
                 .build();
 
         feedbackRepository.save(feedback);

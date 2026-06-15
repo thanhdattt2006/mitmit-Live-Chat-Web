@@ -9,6 +9,7 @@ export default function FeedbackModal() {
   const { userInfo, lang } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = translations[lang] || translations['vi'];
@@ -36,7 +37,7 @@ export default function FeedbackModal() {
     
     setIsSubmitting(true);
     try {
-      await axiosClient.post('/api/v1/feedbacks', { rating });
+      await axiosClient.post('/api/v1/feedbacks', { rating, comment });
       toast.success('Cảm ơn bạn đã đánh giá!');
       setIsOpen(false);
     } catch (error) {
@@ -67,7 +68,7 @@ export default function FeedbackModal() {
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <div className="flex items-center justify-center gap-2 mb-6">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -86,6 +87,17 @@ export default function FeedbackModal() {
               />
             </button>
           ))}
+        </div>
+
+        <div className="mb-6">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Bạn muốn nhắn nhủ điều gì? (Không bắt buộc)"
+            className="w-full bg-neutral-800 border border-neutral-700 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
+            rows="3"
+            maxLength="500"
+          ></textarea>
         </div>
 
         <button
