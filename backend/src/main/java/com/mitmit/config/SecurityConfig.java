@@ -25,7 +25,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // Dùng chung với CorsConfig đã cấu hình
             .csrf(csrf -> csrf.disable()) // Tắt CSRF để Postman/Axios gọi POST không bị chặn
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/oauth2/**", "/login/**", "/ws/**", "/api/v1/auth/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/**", "/ws/**", "/api/v1/auth/**", "/uploads/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
