@@ -102,6 +102,21 @@ public class RoomService {
         }
     }
 
+    public void handleSuddenDisconnect(String userId) {
+        List<ChatSession> sessions = chatSessionRepository.findByUser1IdOrUser2IdOrderByStartedAtDesc(userId, userId);
+        if (!sessions.isEmpty()) {
+            ChatSession lastSession = sessions.get(0);
+            if (lastSession.getEndedAt() == null && !lastSession.isMatched()) {
+                lastSession.setEndedAt(LocalDateTime.now());
+                chatSessionRepository.save(lastSession);
+                
+                Map<String, String> payload = new HashMap<>();
+                payload.put("reason", "PARTNER_LEFT");
+                messagingTemplate.convertAndSend("/topic/room/" + lastSession.getId() + "/partner_left", payload);
+            }
+        }
+    }
+
     @Scheduled(fixedDelay = 5000)
     public void processForceClose() {
         LocalDateTime cutoff = LocalDateTime.now().minusSeconds(180); // 3 minutes

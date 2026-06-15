@@ -153,7 +153,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
           className={`absolute inset-0 w-full h-full object-cover ${(!isMatching && remoteStream) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
           style={{ 
             filter: (isBlurred && !isMatched) ? 'blur(20px)' : 'blur(0px)',
-            transition: 'filter 1.5s ease-in-out, opacity 0.5s ease'
+            transition: 'filter 0.5s ease-in-out, opacity 0.5s ease'
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none"></div>

@@ -1,6 +1,7 @@
 package com.mitmit.listener;
 
 import com.mitmit.service.MatchmakingService;
+import com.mitmit.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class WebSocketEventListener {
 
     private final MatchmakingService matchmakingService;
+    private final RoomService roomService;
     private final com.mitmit.service.RedisService redisService;
     private static final String ONLINE_USERS_KEY = "online_users";
 
@@ -44,6 +46,7 @@ public class WebSocketEventListener {
                 log.info("User disconnected: {}, removing from all matchmaking queues", userId);
                 matchmakingService.leaveAllQueues(userId);
                 redisService.removeFromSet(ONLINE_USERS_KEY, userId);
+                roomService.handleSuddenDisconnect(userId);
             }
         }
     }

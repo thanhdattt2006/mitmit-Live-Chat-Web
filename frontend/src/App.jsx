@@ -6,6 +6,7 @@ import RoomPage from './pages/RoomPage';
 import AdminDashboard from './pages/AdminDashboard';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import FeedbackModal from './components/common/FeedbackModal';
+import { Toaster } from 'react-hot-toast';
 
 function AppContent() {
   const { updateOnlineCount } = useStore();
@@ -38,6 +39,7 @@ function AppContent() {
         </Routes>
       </main>
       <FeedbackModal />
+      <Toaster position="top-center" toastOptions={{ style: { background: '#333', color: '#fff' } }} />
     </div>
   );
 }

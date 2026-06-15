@@ -2,6 +2,7 @@ import axiosClient from '../../api/axiosClient';
 import socketService from '../../api/socketClient';
 import webRTCClient from '../../api/webRTCClient';
 import { translations } from '../../utils/translation';
+import toast from 'react-hot-toast';
 
 export const createMatchSlice = (set, get) => ({
   callMode: 'video',
@@ -35,16 +36,7 @@ export const createMatchSlice = (set, get) => ({
            state.cancelMatching();
            const lang = state.lang || 'vi';
            const t = translations[lang] || translations['vi'];
-           
-           const toast = document.createElement('div');
-           toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-neutral-800 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2 border border-neutral-700';
-           toast.innerHTML = `<span>${t.TIMEOUT_NO_MATCH || "Timeout, no match"}</span>`;
-           document.body.appendChild(toast);
-           setTimeout(() => {
-             toast.style.opacity = '0';
-             toast.style.transition = 'opacity 0.3s ease';
-             setTimeout(() => toast.remove(), 300);
-           }, 3000);
+           toast.error(t.TIMEOUT_NO_MATCH || "Timeout, no match");
        }
     }, 60000);
 
@@ -66,10 +58,14 @@ export const createMatchSlice = (set, get) => ({
            if (matchTimeoutId) clearTimeout(matchTimeoutId);
 
            const remoteUserId = matchData.user1Id === userId ? matchData.user2Id : matchData.user1Id;
+           const remoteUserName = matchData.user1Id === userId ? matchData.user2Name : matchData.user1Name;
+           const remoteUserAvatar = matchData.user1Id === userId ? matchData.user2Avatar : matchData.user1Avatar;
+           
            set({
              isMatching: false,
              isConnected: true,
              remoteUserId,
+             remoteUserInfo: { name: remoteUserName || '', avatarUrl: remoteUserAvatar || '' },
              sessionId: matchData.sessionId,
              matchEndTime: matchData.endTime
            });
@@ -128,19 +124,11 @@ export const createMatchSlice = (set, get) => ({
               }
               const lang = state.lang || 'vi';
               const t = window.translations ? window.translations[lang] : { FORCE_CLOSE_ALERT: "Hết thời gian! Phán quyết không thành công" };
-              alert(t.FORCE_CLOSE_ALERT || "Hết thời gian! Phán quyết không thành công");
+              toast.error(t.FORCE_CLOSE_ALERT || "Hết thời gian! Phán quyết không thành công", { duration: 4000 });
             });
 
             const sub4 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/partner_left`, (message) => {
-              const state = get();
-              // Lập tức cleanup
-              webRTCClient.close();
-              const { matchTimeoutId } = state;
-              if (matchTimeoutId) clearTimeout(matchTimeoutId);
-              
-              if (state.startMatching) {
-                state.startMatching();
-              }
+              set({ partnerDisconnectedTrigger: Date.now() });
             });
 
             set({ roomSubscriptions: [sub1, sub2, sub3, sub4] });
@@ -179,7 +167,7 @@ export const createMatchSlice = (set, get) => ({
       set({ isMatching: false });
       const lang = get().lang || 'vi';
       const t = window.translations ? window.translations[lang] : { ERROR_MATCHING: "Lỗi ghép phòng: " };
-      alert((t.ERROR_MATCHING || 'Matching Error: ') + (error.response?.data?.message || error.message));
+      toast.error((t.ERROR_MATCHING || 'Matching Error: ') + (error.response?.data?.message || error.message));
     }
   },
   

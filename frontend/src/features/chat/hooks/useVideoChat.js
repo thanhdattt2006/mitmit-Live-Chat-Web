@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import useStore from '../../../store/useStore';
 import { translations } from '../../../utils/translation';
+import toast from 'react-hot-toast';
 
 export function useVideoChat() {
   const { 
@@ -29,9 +30,6 @@ export function useVideoChat() {
     const updateTimer = () => {
       const remaining = Math.max(0, Math.floor((matchEndTime - Date.now()) / 1000));
       setTimeLeft(remaining);
-      if (remaining <= 0) {
-        handleStartNext();
-      }
     };
     
     updateTimer();
@@ -74,7 +72,7 @@ export function useVideoChat() {
           setLocalStream(stream);
         } catch (err) {
           console.warn("Camera/Mic access denied or error:", err);
-          alert(t.CAMERA_MIC_REQUIRED || "You must allow Camera/Mic to continue.");
+          toast.error(t.CAMERA_MIC_REQUIRED || "You must allow Camera/Mic to continue.");
           return;
         }
       }
