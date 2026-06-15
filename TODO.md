@@ -321,3 +321,31 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Vấn đề:** Gửi email trong block @Transactional của banUserNsfw hoặc banUser là hành vi tự sát. SMTP delay sẽ khóa chết MySQL Connection Pool, đánh sập toàn bộ API.
   - **Giải pháp:** - Backend (EmailService.java): Phải gắn annotation @Async lên đầu cái phương thức gửi mail (VD: sendBanNotification). Chắc chắn rằng class cấu hình đã có @EnableAsync. Gọi hàm này sau khi DB đã lưu xong. Luồng chính (lưu Mongo/MySQL) sẽ return ngay lập tức, việc gửi mail kệ cho thread background nó lo.
   [ĐÃ HOÀN THÀNH]
+
+- [ ] **49. Tích hợp TURN Server cho WebRTC (Chống sập Video)**
+  - **Vấn đề:** Ở Local, WebRTC chạy STUN mượt. Lên Production, 30% user dùng mạng 4G/Cty (Symmetric NAT) sẽ không thể gọi Video (màn hình đen).
+  - **Giải pháp:** Tích hợp cấu hình TURN Server (vd: Twilio, Metered, Coturn) vào `RTCPeerConnection` trong `webRTCClient.js`.
+
+- [ ] **50. Đổi Kiến trúc Upload sang Cloud (AWS S3 / Cloudinary)**
+  - **Vấn đề:** Lưu file vật lý vào `uploads/` trên VPS sẽ gây mất dữ liệu 100% nếu triển khai Load Balancer hoặc Docker container restart.
+  - **Giải pháp:** Chuyển API `/upload` sang việc upload trực tiếp lên Cloudinary hoặc S3, trả về URL tĩnh của CDN. Xóa bỏ thư mục `uploads/` trên máy chủ.
+
+- [ ] **51. Cấu hình Graceful Shutdown & Log Rotation**
+  - **Vấn đề:** Deploy/Restart server sẽ chặt đứt ngang các transaction DB. Log để tràn lan sẽ làm đầy ổ cứng sập VPS.
+  - **Giải pháp:** Bật `server.shutdown=graceful` trong `application.yml`. Bổ sung file `logback-spring.xml` để tự động cắt log theo ngày.
+
+- [ ] **52. Xóa Dấu Vết JWT trên URL (Oauth2 Security)**
+  - **Vấn đề:** OAuth2 đang trả token qua URL `?token=...`. Dù Frontend có xóa đi thì Token vẫn nằm vĩnh viễn trong file Access Log của Nginx.
+  - **Giải pháp:** Đổi phương thức trả Token qua HttpOnly Cookie tại `OAuth2AuthenticationSuccessHandler`.
+
+- [ ] **53. Hoàn thiện Admin Dashboard (Đọc Feedback & Appeal)**
+  - **Vấn đề:** User đã bị thu thập Feedback nhưng Admin chưa có chỗ xem. User bị khóa mõm/khóa acc không có chỗ kháng cáo (Appeal).
+  - **Giải pháp:** Tạo giao diện và API cho Admin đọc Feedback. Cung cấp API un-ban (Ân xá) nếu user gửi khiếu nại qua Email hợp lý.
+
+- [ ] **54. Tối ưu Frontend: Lazy Load AI NSFW & Bóp Băng Thông WebRTC**
+  - **Vấn đề:** Bundle quá nặng do `nsfwjs` làm load trang chậm 10s. WebRTC không giới hạn bitrate đốt sạch 4G của user.
+  - **Giải pháp:** Dùng `React.lazy` hoặc Dynamic Import cho AI NSFW. Cấu hình giới hạn SDP Bitrate cho WebRTC (Max 500kbps video).
+
+- [ ] **55. Cấu hình Heartbeat cho WebSocket & Reconnect UI**
+  - **Vấn đề:** Nginx/Cloudflare tự động ngắt cáp WebSocket sau 60s không hoạt động. User mất mạng không biết là bị rớt.
+  - **Giải pháp:** Bật tính năng Heartbeat Ping/Pong trong Spring Boot STOMP và cấu hình `reconnectDelay` bên `stompjs` của Frontend.
