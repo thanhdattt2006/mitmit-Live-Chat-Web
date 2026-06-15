@@ -12,7 +12,7 @@ import { Toaster } from 'react-hot-toast';
 function AppContent() {
   const { updateOnlineCount } = useStore();
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const showHeader = location.pathname === '/';
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -31,8 +31,8 @@ function AppContent() {
         className="absolute inset-0 pointer-events-none opacity-20 z-0" 
         style={{ backgroundImage: 'url("/bg-pattern.png")', backgroundRepeat: 'repeat', backgroundSize: '200px' }}
       ></div>
-      {!isAdminRoute && <Header />}
-      <main className={`flex-1 min-h-0 flex w-full ${isAdminRoute ? '' : 'p-2 sm:p-4'} gap-4 overflow-clip relative`}>
+      {showHeader && <Header />}
+      <main className={`flex-1 min-h-0 flex w-full ${showHeader ? 'p-2 sm:p-4' : ''} gap-4 overflow-clip relative`}>
         <Routes>
           <Route path="/" element={<RoomPage />} />
           <Route 
