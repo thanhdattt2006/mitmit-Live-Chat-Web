@@ -22,7 +22,7 @@ export function useVideoChat() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const isIdle = !isMatching && !isConnected;
-  const displayStrangerImg = remoteUserInfo?.avatarUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || '/stranger.png';
 
   useEffect(() => {
     if (!isConnected || isMatched || !matchEndTime) return;

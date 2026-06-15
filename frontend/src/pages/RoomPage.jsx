@@ -9,11 +9,12 @@ import MatchStatusOverlay from '../features/chat/MatchStatusOverlay';
 import { translations } from '../utils/translation';
 import { MoreHorizontal, AlertTriangle } from 'lucide-react';
 import ReportModal from '../components/common/ReportModal';
+import toast from 'react-hot-toast';
 
 export default function RoomPage() {
   const { 
     lang, callMode, isConnected, remoteUserInfo, remoteUserId, startMatching, stopCall, clearMessages,
-    isLoggedIn, setLoginModalOpen, setMatching, isMatched
+    isLoggedIn, setLoginModalOpen, setMatching, isMatched, partnerDisconnectedTrigger
   } = useStore();
   const t = translations[lang];
 
@@ -36,6 +37,17 @@ export default function RoomPage() {
       setLoginModalOpen(true);
     }
   }, [isLoggedIn, setLoginModalOpen]);
+
+  useEffect(() => {
+    if (callMode === 'text' && partnerDisconnectedTrigger && isConnected) {
+      if (!isMatched) {
+        handleStartNextText();
+      } else {
+        toast('Đối phương đã rời khỏi cuộc trò chuyện', { icon: '👋' });
+        handleStopText();
+      }
+    }
+  }, [partnerDisconnectedTrigger, callMode, isConnected, isMatched]);
 
   const handleStartNextText = () => {
     try {
@@ -71,7 +83,12 @@ export default function RoomPage() {
             <div className="px-5 py-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-900/50 backdrop-blur-sm z-10 relative shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative shrink-0">
-                  <img src={remoteUserInfo?.avatarUrl || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80"} className="w-10 h-10 rounded-full object-cover border border-neutral-700" alt="Stranger" />
+                  <img 
+                    src={remoteUserInfo?.avatarUrl || "/stranger.png"} 
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/stranger.png"; }}
+                    className="w-10 h-10 rounded-full object-cover border border-neutral-700 bg-neutral-800" 
+                    alt="Stranger" 
+                  />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#141414] rounded-full"></div>
                 </div>
                 <div className="min-w-0">

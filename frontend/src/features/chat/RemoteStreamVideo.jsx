@@ -14,7 +14,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
   const [volume, setVolume] = useState(0);
 
   const isIdle = !isMatching && !isConnected;
-  const displayStrangerImg = remoteUserInfo?.avatarUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80';
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || '/stranger.png';
   const displayStrangerName = remoteUserInfo?.name || t.STRANGER;
 
   useEffect(() => {
@@ -143,6 +143,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
       <>
         <img 
           src={displayStrangerImg} 
+          onError={(e) => { e.target.onerror = null; e.target.src = "/stranger.png"; }}
           alt="Stranger" 
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(isMatching || remoteStream) ? 'opacity-0' : 'opacity-100'}`} 
         />
@@ -167,7 +168,12 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
        <div className="relative flex flex-col items-center">
          <div className="absolute inset-0 bg-blue-500/20 rounded-full transition-transform duration-75 ease-out" style={{ transform: `scale(${1 + volume / 100})`, opacity: volume > 5 ? 0.8 : 0 }}></div>
          <div className="absolute inset-0 bg-blue-500/10 rounded-full transition-transform duration-150 ease-out" style={{ transform: `scale(${1 + volume / 50})`, opacity: volume > 5 ? 0.5 : 0 }}></div>
-         <img src={displayStrangerImg} alt="Stranger" className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl" />
+         <img 
+           src={displayStrangerImg} 
+           onError={(e) => { e.target.onerror = null; e.target.src = "/stranger.png"; }}
+           alt="Stranger" 
+           className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl bg-neutral-900" 
+         />
          <div className="relative z-10 mt-6 flex items-center gap-2">
            <p className="font-semibold text-lg text-white truncate">{displayStrangerName}</p>
          </div>

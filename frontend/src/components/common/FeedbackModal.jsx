@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import useStore from '../../store/useStore';
 import { Star, X } from 'lucide-react';
 import { translations } from '../../utils/translation';
+import axiosClient from '../../api/axiosClient';
+import toast from 'react-hot-toast';
 
 export default function FeedbackModal() {
   const { userInfo, lang } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const t = translations[lang] || translations['vi'];
 
   useEffect(() => {
@@ -27,22 +30,21 @@ export default function FeedbackModal() {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (rating === 0) return;
+    if (rating === 0 || isSubmitting) return;
     
-    // Mock submit - close modal and show toast
-    setIsOpen(false);
-    
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[200] bg-neutral-800 text-white px-6 py-3 rounded-full shadow-2xl font-medium animate-slide-up flex items-center gap-2 border border-neutral-700';
-    toast.innerHTML = `<span>Cảm ơn bạn đã đánh giá!</span>`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    setIsSubmitting(true);
+    try {
+      await axiosClient.post('/api/v1/feedbacks', { rating });
+      toast.success('Cảm ơn bạn đã đánh giá!');
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Lỗi gửi đánh giá:', error);
+      toast.error('Có lỗi xảy ra, vui lòng thử lại');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -88,10 +90,10 @@ export default function FeedbackModal() {
 
         <button
           onClick={handleSubmit}
-          disabled={rating === 0}
-          className="w-full py-3.5 bg-white text-black font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors active:scale-[0.98]"
+          disabled={rating === 0 || isSubmitting}
+          className="w-full py-3.5 bg-white text-black font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
-          Gửi đánh giá
+          {isSubmitting ? <span className="animate-pulse">Đang gửi...</span> : 'Gửi đánh giá'}
         </button>
       </div>
     </div>
