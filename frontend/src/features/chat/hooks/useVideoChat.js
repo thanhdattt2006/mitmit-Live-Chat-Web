@@ -87,8 +87,13 @@ export function useVideoChat() {
   };
 
   useEffect(() => {
-    if (partnerDisconnectedTrigger && isConnected && !isMatched) {
-      handleStartNext();
+    if (partnerDisconnectedTrigger && isConnected) {
+      if (!isMatched) {
+        handleStartNext();
+      } else {
+        toast('Đối phương đã rời khỏi cuộc trò chuyện', { icon: '👋' });
+        handleStop();
+      }
     }
   }, [partnerDisconnectedTrigger]);
 

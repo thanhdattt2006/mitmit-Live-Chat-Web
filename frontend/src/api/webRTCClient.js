@@ -7,6 +7,7 @@ class WebRTCClient {
     this.onTrackCallback = null;
     this.currentUserId = null;
     this.targetUserId = null; // Store to send ICE candidates later
+    this.pendingCandidates = [];
     this.config = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -119,6 +120,8 @@ class WebRTCClient {
       if (!this.peerConnection) return;
 
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      this.processPendingCandidates();
+
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(answer);
 
@@ -139,6 +142,7 @@ class WebRTCClient {
     try {
       if (!this.peerConnection) return;
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      this.processPendingCandidates();
       console.log('WebRTC: Answer received and set');
     } catch (error) {
       console.error('WebRTC: Error handling receive answer:', error);
@@ -149,11 +153,30 @@ class WebRTCClient {
   async handleReceiveIceCandidate(candidate) {
     try {
       if (this.peerConnection && candidate) {
-        await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        console.log('WebRTC: ICE candidate added');
+        if (this.peerConnection.remoteDescription) {
+          await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('WebRTC: ICE candidate added');
+        } else {
+          this.pendingCandidates.push(candidate);
+          console.log('WebRTC: ICE candidate queued');
+        }
       }
     } catch (error) {
       console.error('WebRTC: Error adding ICE candidate:', error);
+    }
+  }
+
+  async processPendingCandidates() {
+    if (this.peerConnection && this.peerConnection.remoteDescription) {
+      while (this.pendingCandidates.length > 0) {
+        const candidate = this.pendingCandidates.shift();
+        try {
+          await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('WebRTC: Queued ICE candidate added');
+        } catch (e) {
+          console.error('WebRTC: Error adding queued ICE candidate', e);
+        }
+      }
     }
   }
   
@@ -169,6 +192,7 @@ class WebRTCClient {
       }
       this.onTrackCallback = null;
       this.targetUserId = null;
+      this.pendingCandidates = [];
       console.log('WebRTC: Connection closed and resources cleaned up');
   }
 }
