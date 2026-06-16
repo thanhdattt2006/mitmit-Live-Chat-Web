@@ -91,10 +91,12 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
           if (callMode === 'video' && ref && ref.current && remoteStream && !isIdle && !isMatching && remoteUserId) {
             try {
               const predictions = await model.classify(ref.current);
+              console.log("NSFW Probabilities:", predictions);
+              
               const pornProb = predictions.find(p => p.className === 'Porn')?.probability || 0;
               const hentaiProb = predictions.find(p => p.className === 'Hentai')?.probability || 0;
               
-              if (pornProb > 0.8 || hentaiProb > 0.8) {
+              if (pornProb > 0.85 || hentaiProb > 0.85) {
                 console.error("NSFW Content detected. Auto-reporting...");
                 await axiosClient.post('/api/v1/reports/nsfw', {
                   reportedId: remoteUserId
