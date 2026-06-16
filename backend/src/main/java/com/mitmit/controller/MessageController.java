@@ -65,7 +65,7 @@ public class MessageController {
             // Trả về URL để frontend có thể hiển thị
             String backendUrl = System.getenv("APP_BACKEND_URL");
             if (backendUrl == null || backendUrl.isEmpty()) {
-                backendUrl = "http://localhost:8080";
+                backendUrl = ""; // Use relative path if no backend URL is set
             }
             return ResponseEntity.ok(backendUrl + "/uploads/" + filename);
         } catch (Exception e) {

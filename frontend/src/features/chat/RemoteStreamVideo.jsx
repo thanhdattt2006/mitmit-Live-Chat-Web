@@ -42,7 +42,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
         if (audioContext.state === 'suspended') {
-            audioContext.resume().catch(e => console.warn("Cannot resume audio context:", e));
+            audioContext.resume().catch(e => console.error("Cannot resume audio context:", e));
         }
 
         analyzer = audioContext.createAnalyser();
@@ -95,7 +95,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
               const hentaiProb = predictions.find(p => p.className === 'Hentai')?.probability || 0;
               
               if (pornProb > 0.8 || hentaiProb > 0.8) {
-                console.warn("NSFW Content detected. Auto-reporting...");
+                console.error("NSFW Content detected. Auto-reporting...");
                 await axiosClient.post('/api/v1/reports/nsfw', {
                   reportedId: remoteUserId
                 });

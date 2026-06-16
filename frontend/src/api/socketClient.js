@@ -26,20 +26,17 @@ class SocketService {
         },
         reconnectDelay: 5000,
         onConnect: () => {
-          console.log('STOMP Connected');
           this.stompClient.subscribe(`/topic/match/${userId}`, (message) => {
             if (message.body) {
               try {
                 const data = JSON.parse(message.body);
                 if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice') {
-                  console.log('Received WebRTC signal:', data.type);
                   if (this.onSignalReceived) this.onSignalReceived(data);
                 } else if (data.type === 'REFRESH_FRIENDS') {
                   import('../store/useStore').then((store) => {
                     store.default.getState().loadFriends();
                   });
                 } else if (data.sessionId) {
-                  console.log('Received match:', data);
                   if (this.onMatchSuccess) this.onMatchSuccess(data);
                 }
               } catch (err) {
@@ -69,7 +66,6 @@ class SocketService {
     if (this.stompClient) {
       this.stompClient.deactivate();
       this.stompClient = null;
-      console.log('Disconnected from STOMP');
     }
   }
 

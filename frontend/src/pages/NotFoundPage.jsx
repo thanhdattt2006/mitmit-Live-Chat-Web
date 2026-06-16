@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
 import { translations } from '../utils/translation';
@@ -6,9 +5,6 @@ import notFoundImg from '../assets/404-not-found.png';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
-  const { lang } = useStore();
-  const t = translations[lang] || translations['vi'];
-
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-transparent relative z-10 w-full h-full text-center px-4">
       <div className="max-w-md w-full animate-fade-in flex flex-col items-center">

@@ -117,7 +117,7 @@ export const createMatchSlice = (set, get) => ({
               }
             });
 
-            const sub3 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/force_close`, (message) => {
+            const sub3 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/force_close`, () => {
               const state = get();
               if (state.stopCall) {
                 state.stopCall(); 
@@ -127,7 +127,7 @@ export const createMatchSlice = (set, get) => ({
               toast.error(t.FORCE_CLOSE_ALERT || "Hết thời gian! Phán quyết không thành công", { duration: 4000 });
             });
 
-            const sub4 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/partner_left`, (message) => {
+            const sub4 = socketService.stompClient.subscribe(`/topic/room/${matchData.sessionId}/partner_left`, () => {
               set({ partnerDisconnectedTrigger: Date.now() });
             });
 

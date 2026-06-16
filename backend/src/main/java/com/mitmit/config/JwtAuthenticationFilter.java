@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 @Component
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -44,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (Exception e) {
-            System.out.println("Invalid token: " + e.getMessage());
+            log.warn("Invalid token: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
 

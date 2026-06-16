@@ -1,4 +1,4 @@
-export const createUiSlice = (set, get) => ({
+export const createUiSlice = (set) => ({
   lang: 'en',
   setLang: (lang) => set({ lang }),
   

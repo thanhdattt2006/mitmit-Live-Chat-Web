@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import useStore from '../store/useStore';
 import VideoChat from '../features/chat/VideoChat';
 import MessageList from '../features/chat/MessageList';
@@ -39,6 +38,26 @@ export default function RoomPage() {
     }
   }, [isLoggedIn, setLoginModalOpen]);
 
+  const handleStartNextText = useCallback(() => {
+    try {
+      clearMessages();
+      startMatching();
+    } catch (error) {
+      console.error('Error starting next text chat:', error);
+      setMatching(false);
+    }
+  }, [clearMessages, startMatching, setMatching]);
+
+  const handleStopText = useCallback(() => {
+    try {
+      stopCall();
+      clearMessages();
+    } catch (error) {
+      console.error('Error stopping text chat:', error);
+      setMatching(false);
+    }
+  }, [stopCall, clearMessages, setMatching]);
+
   useEffect(() => {
     if (callMode === 'text' && partnerDisconnectedTrigger && isConnected) {
       if (!isMatched) {
@@ -48,27 +67,7 @@ export default function RoomPage() {
         handleStopText();
       }
     }
-  }, [partnerDisconnectedTrigger, callMode, isConnected, isMatched]);
-
-  const handleStartNextText = () => {
-    try {
-      clearMessages();
-      startMatching();
-    } catch (error) {
-      console.error('Error starting next text chat:', error);
-      setMatching(false);
-    }
-  };
-
-  const handleStopText = () => {
-    try {
-      stopCall();
-      clearMessages();
-    } catch (error) {
-      console.error('Error stopping text chat:', error);
-      setMatching(false);
-    }
-  };
+  }, [partnerDisconnectedTrigger, callMode, isConnected, isMatched, handleStartNextText, handleStopText]);
 
   if (!isLoggedIn) {
     return <div className="flex-1 bg-black w-full h-full flex items-center justify-center"></div>;

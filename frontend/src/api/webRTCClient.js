@@ -45,7 +45,6 @@ class WebRTCClient {
 
       this.peerConnection.oniceconnectionstatechange = () => {
         if (this.peerConnection.iceConnectionState === 'disconnected' || this.peerConnection.iceConnectionState === 'failed') {
-          console.log('WebRTC: Partner disconnected');
           if (onDisconnectCallback) onDisconnectCallback();
         }
       };
@@ -59,7 +58,6 @@ class WebRTCClient {
             type: 'ice',
             data: event.candidate
           });
-          console.log('WebRTC: ICE candidate sent');
         }
       };
 
@@ -67,11 +65,9 @@ class WebRTCClient {
       this.peerConnection.ontrack = (event) => {
         if (this.onTrackCallback && event.streams && event.streams[0]) {
           this.onTrackCallback(event.streams[0]);
-          console.log('WebRTC: Remote track received');
         }
       };
 
-      console.log('WebRTC: RTCPeerConnection initialized');
     } catch (error) {
       console.error('WebRTC: Error initializing RTCPeerConnection:', error);
     }
@@ -95,7 +91,6 @@ class WebRTCClient {
             sender.setParameters(parameters).catch(e => console.error("Failed to set bitrate limit:", e));
           }
         });
-        console.log('WebRTC: Local stream added with bandwidth limit');
       }
     } catch (error) {
       console.error('WebRTC: Error adding local stream:', error);
@@ -117,7 +112,6 @@ class WebRTCClient {
         type: 'offer',
         data: offer
       });
-      console.log('WebRTC: Offer created and sent');
     } catch (error) {
       console.error('WebRTC: Error creating offer:', error);
     }
@@ -141,7 +135,6 @@ class WebRTCClient {
         type: 'answer',
         data: answer
       });
-      console.log('WebRTC: Offer handled and Answer sent');
     } catch (error) {
       console.error('WebRTC: Error handling receive offer:', error);
     }
@@ -153,7 +146,6 @@ class WebRTCClient {
       if (!this.peerConnection) return;
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
       this.processPendingCandidates();
-      console.log('WebRTC: Answer received and set');
     } catch (error) {
       console.error('WebRTC: Error handling receive answer:', error);
     }
@@ -165,10 +157,8 @@ class WebRTCClient {
       if (this.peerConnection && candidate) {
         if (this.peerConnection.remoteDescription) {
           await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-          console.log('WebRTC: ICE candidate added');
         } else {
           this.pendingCandidates.push(candidate);
-          console.log('WebRTC: ICE candidate queued');
         }
       }
     } catch (error) {
@@ -182,7 +172,6 @@ class WebRTCClient {
         const candidate = this.pendingCandidates.shift();
         try {
           await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-          console.log('WebRTC: Queued ICE candidate added');
         } catch (e) {
           console.error('WebRTC: Error adding queued ICE candidate', e);
         }
@@ -203,7 +192,6 @@ class WebRTCClient {
       this.onTrackCallback = null;
       this.targetUserId = null;
       this.pendingCandidates = [];
-      console.log('WebRTC: Connection closed and resources cleaned up');
   }
 }
 

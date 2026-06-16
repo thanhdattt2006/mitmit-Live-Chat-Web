@@ -48,7 +48,7 @@ export default function SettingsModal({ isOpen, onClose }) {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         setLocalStream(stream);
       } catch (err) {
-        console.warn("Lỗi khi chuyển đổi thiết bị:", err);
+        console.error("Lỗi khi chuyển đổi thiết bị:", err);
       }
     }
   };

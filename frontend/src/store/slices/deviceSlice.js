@@ -1,4 +1,4 @@
-export const createDeviceSlice = (set, get) => ({
+export const createDeviceSlice = (set) => ({
   localStream: null,
   remoteStream: null,
   setLocalStream: (stream) => set({ localStream: stream }),
@@ -26,7 +26,7 @@ export const createDeviceSlice = (set, get) => ({
 
       tempStream.getTracks().forEach(t => t.stop());
     } catch (error) {
-      console.warn("Lỗi lấy thiết bị Camera/Mic:", error);
+      console.error("Lỗi lấy thiết bị Camera/Mic:", error);
     }
   },
 });

@@ -72,7 +72,7 @@ export function useVideoChat() {
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
           setLocalStream(stream);
         } catch (err) {
-          console.warn("Camera/Mic access denied or error:", err);
+          console.error("Camera/Mic access denied or error:", err);
           toast.error(t.CAMERA_MIC_REQUIRED || "You must allow Camera/Mic to continue.");
           return;
         }

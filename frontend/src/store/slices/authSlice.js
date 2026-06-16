@@ -1,6 +1,6 @@
 import axiosClient from '../../api/axiosClient';
 
-export const createAuthSlice = (set, get) => ({
+export const createAuthSlice = (set) => ({
   isLoggedIn: false,
   token: null,
   userInfo: null,

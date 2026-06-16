@@ -147,7 +147,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       if (stompClientRef.current?.connected) {
         stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
       } else {
-        console.warn("STOMP connection not ready, message not sent");
+        console.error("STOMP connection not ready, message not sent");
       }
 
       setText('');

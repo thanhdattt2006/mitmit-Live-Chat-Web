@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class MatchmakingService {
 
     private final RedisService redisService;
@@ -115,7 +116,7 @@ public class MatchmakingService {
                 });
 
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Lỗi matchmaking: ", e);
                 break;
             }
         }
