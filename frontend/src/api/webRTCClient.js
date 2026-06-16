@@ -14,23 +14,23 @@ class WebRTCClient {
         { urls: "stun:stun.relay.metered.ca:80" },
         {
           urls: "turn:global.relay.metered.ca:80",
-          username: "1d14a28e26cd1e005c235354",
-          credential: "2WfEEJ8dYOHJ0eNt",
+          username: import.meta.env.VITE_TURN_USERNAME,
+          credential: import.meta.env.VITE_TURN_CREDENTIAL,
         },
         {
           urls: "turn:global.relay.metered.ca:80?transport=tcp",
-          username: "1d14a28e26cd1e005c235354",
-          credential: "2WfEEJ8dYOHJ0eNt",
+          username: import.meta.env.VITE_TURN_USERNAME,
+          credential: import.meta.env.VITE_TURN_CREDENTIAL,
         },
         {
           urls: "turn:global.relay.metered.ca:443",
-          username: "1d14a28e26cd1e005c235354",
-          credential: "2WfEEJ8dYOHJ0eNt",
+          username: import.meta.env.VITE_TURN_USERNAME,
+          credential: import.meta.env.VITE_TURN_CREDENTIAL,
         },
         {
           urls: "turns:global.relay.metered.ca:443?transport=tcp",
-          username: "1d14a28e26cd1e005c235354",
-          credential: "2WfEEJ8dYOHJ0eNt",
+          username: import.meta.env.VITE_TURN_USERNAME,
+          credential: import.meta.env.VITE_TURN_CREDENTIAL,
         }
       ]
     };

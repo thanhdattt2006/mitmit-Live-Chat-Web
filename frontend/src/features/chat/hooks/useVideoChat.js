@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import useStore from '../../../store/useStore';
 import { translations } from '../../../utils/translation';
 import toast from 'react-hot-toast';
+import strangerImg from '../../../assets/stranger.png';
 
 export function useVideoChat() {
   const { 
@@ -22,7 +23,7 @@ export function useVideoChat() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const isIdle = !isMatching && !isConnected;
-  const displayStrangerImg = remoteUserInfo?.avatarUrl || '/stranger.png';
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg;
 
   useEffect(() => {
     if (!isConnected || isMatched || !matchEndTime) return;

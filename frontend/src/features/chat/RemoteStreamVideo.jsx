@@ -4,6 +4,7 @@ import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import * as nsfwjs from 'nsfwjs';
 import axiosClient from '../../api/axiosClient';
+import strangerImg from '../../assets/stranger.png';
 
 const RemoteStreamVideo = forwardRef((props, ref) => {
   const { 
@@ -14,7 +15,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
   const [volume, setVolume] = useState(0);
 
   const isIdle = !isMatching && !isConnected;
-  const displayStrangerImg = remoteUserInfo?.avatarUrl || '/stranger.png';
+  const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg;
   const displayStrangerName = remoteUserInfo?.name || t.STRANGER;
 
   useEffect(() => {
@@ -143,7 +144,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
       <>
         <img 
           src={displayStrangerImg} 
-          onError={(e) => { e.target.onerror = null; e.target.src = "/stranger.png"; }}
+          onError={(e) => { e.target.onerror = null; e.target.src = strangerImg; }}
           alt="Stranger" 
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${(isMatching || remoteStream) ? 'opacity-0' : 'opacity-100'}`} 
         />
@@ -170,7 +171,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
          <div className="absolute inset-0 bg-blue-500/10 rounded-full transition-transform duration-150 ease-out" style={{ transform: `scale(${1 + volume / 50})`, opacity: volume > 5 ? 0.5 : 0 }}></div>
          <img 
            src={displayStrangerImg} 
-           onError={(e) => { e.target.onerror = null; e.target.src = "/stranger.png"; }}
+           onError={(e) => { e.target.onerror = null; e.target.src = strangerImg; }}
            alt="Stranger" 
            className="relative z-10 w-32 h-32 rounded-full object-cover border-4 border-neutral-800 shadow-2xl bg-neutral-900" 
          />

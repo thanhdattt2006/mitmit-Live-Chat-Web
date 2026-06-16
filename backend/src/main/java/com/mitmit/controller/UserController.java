@@ -37,4 +37,10 @@ public class UserController {
 
         return ResponseEntity.ok(userDto);
     }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<java.util.List<User>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
 }

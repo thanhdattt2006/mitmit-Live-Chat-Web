@@ -77,6 +77,13 @@ public class ReportController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/unban/{userId}")
+    public ResponseEntity<Void> unbanUser(@PathVariable String userId) {
+        reportService.unbanUser(userId);
+        return ResponseEntity.ok().build();
+    }
+
     @Data
     public static class ReportRequest {
         private String reportedId;

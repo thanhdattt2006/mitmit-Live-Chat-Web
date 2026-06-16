@@ -322,9 +322,10 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Giải pháp:** - Backend (EmailService.java): Phải gắn annotation @Async lên đầu cái phương thức gửi mail (VD: sendBanNotification). Chắc chắn rằng class cấu hình đã có @EnableAsync. Gọi hàm này sau khi DB đã lưu xong. Luồng chính (lưu Mongo/MySQL) sẽ return ngay lập tức, việc gửi mail kệ cho thread background nó lo.
   [ĐÃ HOÀN THÀNH]
 
-- [ ] **49. Tích hợp TURN Server cho WebRTC (Chống sập Video)**
+- [x] **49. Tích hợp TURN Server cho WebRTC (Chống sập Video)**
   - **Vấn đề:** Ở Local, WebRTC chạy STUN mượt. Lên Production, 30% user dùng mạng 4G/Cty (Symmetric NAT) sẽ không thể gọi Video (màn hình đen).
   - **Giải pháp:** Tích hợp cấu hình TURN Server (vd: Twilio, Metered, Coturn) vào `RTCPeerConnection` trong `webRTCClient.js`.
+  [ĐÃ HOÀN THÀNH - Sếp đã tự tay code và tích hợp Metered.ca siêu chuẩn xác]
 
 - [ ] **50. Đổi Kiến trúc Upload sang Cloud (AWS S3 / Cloudinary)**
   - **Vấn đề:** Lưu file vật lý vào `uploads/` trên VPS sẽ gây mất dữ liệu 100% nếu triển khai Load Balancer hoặc Docker container restart.
@@ -338,9 +339,10 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Vấn đề:** OAuth2 đang trả token qua URL `?token=...`. Dù Frontend có xóa đi thì Token vẫn nằm vĩnh viễn trong file Access Log của Nginx.
   - **Giải pháp:** Đổi phương thức trả Token qua HttpOnly Cookie tại `OAuth2AuthenticationSuccessHandler`.
 
-- [ ] **53. Hoàn thiện Admin Dashboard (Đọc Feedback & Appeal)**
+- [x] **53. Hoàn thiện Admin Dashboard (Đọc Feedback & Appeal)**
   - **Vấn đề:** User đã bị thu thập Feedback nhưng Admin chưa có chỗ xem. User bị khóa mõm/khóa acc không có chỗ kháng cáo (Appeal).
   - **Giải pháp:** Tạo giao diện và API cho Admin đọc Feedback. Cung cấp API un-ban (Ân xá) nếu user gửi khiếu nại qua Email hợp lý.
+  [ĐÃ HOÀN THÀNH - Đã tích hợp API GET Feedbacks và làm giao diện cho Admin]
 
 - [ ] **54. Tối ưu Frontend: Lazy Load AI NSFW & Bóp Băng Thông WebRTC**
   - **Vấn đề:** Bundle quá nặng do `nsfwjs` làm load trang chậm 10s. WebRTC không giới hạn bitrate đốt sạch 4G của user.

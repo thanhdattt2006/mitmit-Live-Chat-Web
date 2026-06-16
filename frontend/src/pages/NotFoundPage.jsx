@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
 import { translations } from '../utils/translation';
+import notFoundImg from '../assets/404-not-found.png';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function NotFoundPage() {
     <div className="flex-1 flex flex-col items-center justify-center bg-transparent relative z-10 w-full h-full text-center px-4">
       <div className="max-w-md w-full animate-fade-in flex flex-col items-center">
         <img 
-          src="/404-not-found.png" 
+          src={notFoundImg} 
           alt="404 Not Found" 
           className="w-full max-w-[280px] h-auto object-contain mb-8 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
         />

@@ -111,4 +111,14 @@ public class ReportService {
 
         emailService.sendBanNotification(reported.getEmail(), "Hệ thống AI phát hiện hành vi trình chiếu nội dung nhạy cảm, đồi trụy (NSFW).");
     }
+
+    @Transactional
+    public void unbanUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+        
+        emailService.sendBanNotification(user.getEmail(), "Tài khoản của bạn đã được ân xá (Un-banned) sau quá trình khiếu nại thành công. Chào mừng trở lại mitmit!");
+    }
 }

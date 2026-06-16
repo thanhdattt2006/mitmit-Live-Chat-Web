@@ -9,6 +9,7 @@ import PrivateChatModal from '../features/inbox/PrivateChatModal';
 import InboxDrawer from '../features/inbox/InboxDrawer';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
+import logoImg from '../assets/logo.png';
 
 import CallModeTabs from './header/CallModeTabs';
 import LanguageDropdown from './header/LanguageDropdown';
@@ -44,7 +45,7 @@ export default function Header() {
         {/* Left: Logo */}
         <div className="flex items-center gap-2 sm:gap-3 cursor-pointer w-auto min-w-fit shrink-0">
           <div className="w-8 h-8 flex items-center justify-center shrink-0">
-            <img src="/logo.png" alt="Mitmit Logo" className="w-full h-full object-contain drop-shadow-lg" />
+            <img src={logoImg} alt="Mitmit Logo" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
           <h1 className="font-semibold text-xl tracking-tight hidden sm:block shrink-0">
             {t.LOGO_TITLE}<span className="font-light text-gray-400">{t.LOGO_SUB}</span>

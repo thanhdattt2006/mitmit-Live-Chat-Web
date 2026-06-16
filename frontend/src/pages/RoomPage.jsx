@@ -10,6 +10,7 @@ import { translations } from '../utils/translation';
 import { MoreHorizontal, AlertTriangle } from 'lucide-react';
 import ReportModal from '../components/common/ReportModal';
 import toast from 'react-hot-toast';
+import strangerImg from '../assets/stranger.png';
 
 export default function RoomPage() {
   const { 
@@ -84,8 +85,8 @@ export default function RoomPage() {
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative shrink-0">
                   <img 
-                    src={remoteUserInfo?.avatarUrl || "/stranger.png"} 
-                    onError={(e) => { e.target.onerror = null; e.target.src = "/stranger.png"; }}
+                    src={remoteUserInfo?.avatarUrl || strangerImg} 
+                    onError={(e) => { e.target.onerror = null; e.target.src = strangerImg; }}
                     className="w-10 h-10 rounded-full object-cover border border-neutral-700 bg-neutral-800" 
                     alt="Stranger" 
                   />
