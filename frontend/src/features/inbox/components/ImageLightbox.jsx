@@ -7,7 +7,7 @@ export default function ImageLightbox({ imageUrl, onClose }) {
 
   return createPortal(
     <div 
-      className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
+      className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
       onClick={onClose}
     >
       <button 

@@ -1,5 +1,4 @@
-import React from 'react';
-import VoicePlayer from '../../components/common/VoicePlayer';
+import VoicePlayer from '../../../components/common/VoicePlayer';
 
 export default function PrivateMessageBubble({ msg, friend, t, onViewImage }) {
   return (
@@ -31,15 +30,16 @@ export default function PrivateMessageBubble({ msg, friend, t, onViewImage }) {
         <img
           src={msg.imageUrl}
           alt="Sent image"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             if (!msg.isUploading && onViewImage) {
               onViewImage(msg.imageUrl);
             }
           }}
           className={`max-w-[200px] sm:max-w-[250px] rounded-xl object-cover shadow-md ${
-            msg.isUploading ? '' : 'cursor-pointer hover:opacity-90 transition-opacity'
+            msg.isUploading ? '' : 'cursor-pointer hover:opacity-90 transition-opacity hover:scale-[1.02]'
           }`}
-          style={!msg.isUploading ? { cursor: 'pointer' } : {}}
+          style={{ cursor: msg.isUploading ? 'default' : 'pointer', pointerEvents: 'auto' }}
         />
       ) : (
         msg.text

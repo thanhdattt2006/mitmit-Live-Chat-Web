@@ -58,7 +58,7 @@ export default function usePrivateMessages(friend, isOpen) {
               if (newMsg.friendshipId === friend.friendshipId) {
                 setMessages(prev => {
                   if (prev.some(m => m.id === newMsg.id)) {
-                    return prev.map(m => m.id === newMsg.id ? { ...m, reaction: newMsg.reaction } : m);
+                    return prev.map(m => m.id === newMsg.id ? { ...m, reaction: newMsg.reaction || m.reaction } : m);
                   }
                   
                   let replyToObj = null;
