@@ -2,8 +2,9 @@ import React, { useEffect, useState, forwardRef } from 'react';
 import { Video as VideoIcon, Mic, MessageCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
-import axiosClient from '../../api/axiosClient';
 import strangerImg from '../../assets/stranger.png';
+import { useAudioVolume } from './hooks/useAudioVolume';
+import { useNSFWAnalyzer } from './hooks/useNSFWAnalyzer';
 
 const RemoteStreamVideo = forwardRef((props, ref) => {
   const { 
@@ -11,11 +12,13 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
   } = useStore();
   const t = translations[lang];
   const [isBlurred, setIsBlurred] = useState(true);
-  const [volume, setVolume] = useState(0);
 
   const isIdle = !isMatching && !isConnected;
   const displayStrangerImg = remoteUserInfo?.avatarUrl || strangerImg;
   const displayStrangerName = remoteUserInfo?.name || t.STRANGER;
+
+  const volume = useAudioVolume(remoteStream, callMode, isIdle);
+  useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching, remoteUserId);
 
   useEffect(() => {
     let blurTimeout;
@@ -30,96 +33,6 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
       if (blurTimeout) clearTimeout(blurTimeout);
     };
   }, [isIdle, callMode, isMatching, remoteStream, ref]);
-
-  useEffect(() => {
-    let audioContext;
-    let analyzer;
-    let source;
-    let animationFrame;
-
-    if (remoteStream && remoteStream.getAudioTracks().length > 0 && callMode === 'voice' && !isIdle) {
-      try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        if (audioContext.state === 'suspended') {
-            audioContext.resume().catch(e => console.error("Cannot resume audio context:", e));
-        }
-
-        analyzer = audioContext.createAnalyser();
-        analyzer.fftSize = 256;
-        
-        source = audioContext.createMediaStreamSource(new MediaStream([remoteStream.getAudioTracks()[0]]));
-        source.connect(analyzer);
-        
-        const dataArray = new Uint8Array(analyzer.frequencyBinCount);
-        
-        const updateVolume = () => {
-          analyzer.getByteFrequencyData(dataArray);
-          let sum = 0;
-          for(let i = 0; i < dataArray.length; i++) {
-            sum += dataArray[i];
-          }
-          const avg = sum / dataArray.length;
-          setVolume(avg);
-          animationFrame = requestAnimationFrame(updateVolume);
-        };
-        
-        updateVolume();
-      } catch (err) {
-        console.error("Audio API Error:", err);
-      }
-    }
-    
-    return () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-      if (source) source.disconnect();
-      if (analyzer) analyzer.disconnect();
-      if (audioContext && audioContext.state !== 'closed') audioContext.close();
-    };
-  }, [remoteStream, callMode, isIdle]);
-
-  useEffect(() => {
-    let intervalId;
-    let model;
-
-    const loadModelAndStartAnalysis = async () => {
-      try {
-        const nsfwjs = await import('nsfwjs');
-        model = await nsfwjs.load();
-        
-        intervalId = setInterval(async () => {
-          if (callMode === 'video' && ref && ref.current && remoteStream && !isIdle && !isMatching && remoteUserId) {
-            try {
-              const predictions = await model.classify(ref.current);
-              console.log("NSFW Probabilities:", predictions);
-              
-              const pornProb = predictions.find(p => p.className === 'Porn')?.probability || 0;
-              const hentaiProb = predictions.find(p => p.className === 'Hentai')?.probability || 0;
-              
-              if (pornProb > 0.85 || hentaiProb > 0.85) {
-                console.error("NSFW Content detected. Auto-reporting...");
-                await axiosClient.post('/api/v1/reports/nsfw', {
-                  reportedId: remoteUserId
-                });
-              }
-            } catch (err) {
-              // Ignore classify errors (e.g., video not ready)
-            }
-          }
-        }, 5000);
-      } catch (err) {
-        console.error("Failed to load NSFW model", err);
-      }
-    };
-
-    if (callMode === 'video' && !isIdle && !isMatching && remoteStream) {
-      loadModelAndStartAnalysis();
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [callMode, isIdle, isMatching, remoteStream, ref, remoteUserId]);
 
   const renderModeIcon = () => {
     if (callMode === 'video') return <VideoIcon className="w-8 h-8 text-gray-500" />;

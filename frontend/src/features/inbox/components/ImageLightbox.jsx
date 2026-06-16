@@ -1,10 +1,11 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export default function ImageLightbox({ imageUrl, onClose }) {
   if (!imageUrl) return null;
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
       onClick={onClose}
@@ -21,6 +22,7 @@ export default function ImageLightbox({ imageUrl, onClose }) {
         className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       />
-    </div>
+    </div>,
+    document.body
   );
 }
