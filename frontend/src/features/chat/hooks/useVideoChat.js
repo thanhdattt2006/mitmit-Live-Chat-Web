@@ -92,7 +92,7 @@ export function useVideoChat() {
       if (!isMatched) {
         handleStartNext();
       } else {
-        toast('Đối phương đã rời khỏi cuộc trò chuyện', { icon: '👋' });
+        toast(t.STRANGER_LEFT, { icon: '👋' });
         handleStop();
       }
     }

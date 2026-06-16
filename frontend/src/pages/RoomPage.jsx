@@ -63,7 +63,7 @@ export default function RoomPage() {
       if (!isMatched) {
         handleStartNextText();
       } else {
-        toast('Đối phương đã rời khỏi cuộc trò chuyện', { icon: '👋' });
+        toast(t.STRANGER_LEFT, { icon: '👋' });
         handleStopText();
       }
     }

@@ -119,7 +119,21 @@ export const translations = {
     NO_REPORTS: 'System is clean, no reports!',
     NO_FEEDBACKS: 'No feedbacks yet!',
     NO_USERS: 'No users found!',
-    NO_CONTENT: 'No content'
+    NO_CONTENT: 'No content',
+    ERROR_VOICE_SEND: 'Failed to send voice message',
+    ERROR_IMAGE_SEND: 'Failed to send image',
+    ERROR_IMAGE_SIZE: 'Image too large, maximum 5MB',
+    SENDING: 'Sending...',
+    STRANGER_LEFT: 'Stranger has left the chat',
+    LOGIN_FAILED: 'Login failed: ',
+    AUTHENTICATING: 'Authenticating...',
+    FEEDBACK_SUCCESS: 'Thank you for your feedback!',
+    ERROR_OCCURRED: 'An error occurred, please try again',
+    HOW_DO_YOU_FEEL: 'How do you feel?',
+    FEEDBACK_PROMPT_1: 'You have had ',
+    FEEDBACK_PROMPT_2: ' successful chats! Please rate your experience.',
+    FEEDBACK_PLACEHOLDER: 'What would you like to share? (Optional)',
+    SUBMIT_FEEDBACK: 'Submit Feedback'
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -241,6 +255,20 @@ export const translations = {
     NO_REPORTS: 'Hệ thống đang sạch sẽ, không có tố cáo nào!',
     NO_FEEDBACKS: 'Chưa có phản hồi nào!',
     NO_USERS: 'Không tìm thấy người dùng!',
-    NO_CONTENT: 'Không có nội dung'
+    NO_CONTENT: 'Không có nội dung',
+    ERROR_VOICE_SEND: 'Gửi âm thanh thất bại',
+    ERROR_IMAGE_SEND: 'Gửi ảnh thất bại',
+    ERROR_IMAGE_SIZE: 'Ảnh quá lớn, tối đa 5MB',
+    SENDING: 'Đang gửi...',
+    STRANGER_LEFT: 'Đối phương đã rời khỏi cuộc trò chuyện',
+    LOGIN_FAILED: 'Đăng nhập thất bại: ',
+    AUTHENTICATING: 'Đang xác thực thông tin...',
+    FEEDBACK_SUCCESS: 'Cảm ơn bạn đã đánh giá!',
+    ERROR_OCCURRED: 'Có lỗi xảy ra, vui lòng thử lại',
+    HOW_DO_YOU_FEEL: 'Bạn cảm thấy thế nào?',
+    FEEDBACK_PROMPT_1: 'Bạn đã có ',
+    FEEDBACK_PROMPT_2: ' cuộc trò chuyện thành công! Hãy đánh giá trải nghiệm của bạn trên hệ thống nhé.',
+    FEEDBACK_PLACEHOLDER: 'Bạn muốn nhắn nhủ điều gì? (Không bắt buộc)',
+    SUBMIT_FEEDBACK: 'Gửi đánh giá'
   }
 };

@@ -12,7 +12,7 @@ export default function FeedbackModal() {
   const [comment, setComment] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const t = translations[lang] || translations['vi'];
+  const t = translations[lang] || translations['en'];
 
   useEffect(() => {
     if (!userInfo) return;
@@ -38,11 +38,11 @@ export default function FeedbackModal() {
     setIsSubmitting(true);
     try {
       await axiosClient.post('/api/v1/feedbacks', { rating, comment });
-      toast.success('Cảm ơn bạn đã đánh giá!');
+      toast.success(t.FEEDBACK_SUCCESS);
       setIsOpen(false);
     } catch (error) {
       console.error('Lỗi gửi đánh giá:', error);
-      toast.error('Có lỗi xảy ra, vui lòng thử lại');
+      toast.error(t.ERROR_OCCURRED);
     } finally {
       setIsSubmitting(false);
     }
@@ -62,9 +62,9 @@ export default function FeedbackModal() {
           <div className="w-16 h-16 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/20">
             <Star className="w-8 h-8 text-white fill-white" />
           </div>
-          <h2 className="text-xl font-bold mb-2">Bạn cảm thấy thế nào?</h2>
+          <h2 className="text-xl font-bold mb-2">{t.HOW_DO_YOU_FEEL}</h2>
           <p className="text-sm text-gray-400">
-            Bạn đã có {userInfo?.matchCount || 0} cuộc trò chuyện thành công! Hãy đánh giá trải nghiệm của bạn trên hệ thống nhé.
+            {t.FEEDBACK_PROMPT_1}{userInfo?.matchCount || 0}{t.FEEDBACK_PROMPT_2}
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function FeedbackModal() {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Bạn muốn nhắn nhủ điều gì? (Không bắt buộc)"
+            placeholder={t.FEEDBACK_PLACEHOLDER}
             className="w-full bg-neutral-800 border border-neutral-700 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
             rows="3"
             maxLength="500"
@@ -105,7 +105,7 @@ export default function FeedbackModal() {
           disabled={rating === 0 || isSubmitting}
           className="w-full py-3.5 bg-white text-black font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
-          {isSubmitting ? <span className="animate-pulse">Đang gửi...</span> : 'Gửi đánh giá'}
+          {isSubmitting ? <span className="animate-pulse">{t.SENDING}</span> : t.SUBMIT_FEEDBACK}
         </button>
       </div>
     </div>

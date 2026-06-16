@@ -1,9 +1,13 @@
 import toast from 'react-hot-toast';
 import axiosClient from '../../../api/axiosClient';
 import useStore from '../../../store/useStore';
+import { translations } from '../../../utils/translation';
 
 export default function useOptimisticUpload(friend, replyingTo, setReplyingTo, stompClientRef) {
   const uploadMedia = async (file, type) => {
+    const { lang } = useStore.getState();
+    const t = translations[lang];
+
     // 1. NGAY LẬP TỨC TẠO LOCAL URL VÀ GẮN LÊN UI
     const localUrl = URL.createObjectURL(file);
     const tempId = 'temp_' + Date.now();
@@ -48,7 +52,7 @@ export default function useOptimisticUpload(friend, replyingTo, setReplyingTo, s
       useStore.getState().removeTemporaryMessage(tempId);
     } catch (error) {
       console.error(`Lỗi gửi ${type}:`, error);
-      toast.error(`Gửi ${type === 'VOICE' ? 'âm thanh' : 'ảnh'} thất bại`);
+      toast.error(type === 'VOICE' ? t.ERROR_VOICE_SEND : t.ERROR_IMAGE_SEND);
       useStore.getState().removeTemporaryMessage(tempId);
     } finally {
       URL.revokeObjectURL(localUrl);

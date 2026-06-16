@@ -53,7 +53,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
     if (file) {
       if (!file.type.startsWith('image/')) return;
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Ảnh quá lớn, tối đa 5MB");
+        toast.error(t.ERROR_IMAGE_SIZE);
         e.target.value = '';
         return;
       }
