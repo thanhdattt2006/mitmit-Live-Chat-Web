@@ -58,6 +58,20 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const localUrl = URL.createObjectURL(audioBlob);
+        const tempId = 'temp_' + Date.now();
+        
+        const tempMsg = {
+          id: tempId,
+          isUploading: true,
+          type: 'VOICE',
+          audioUrl: localUrl,
+          isMine: true,
+          replyTo: replyingTo || null
+        };
+        useStore.getState().addTemporaryMessage(tempMsg);
+        setReplyingTo(null);
+
         try {
           const formData = new FormData();
           formData.append('file', audioBlob, 'audio.webm');
@@ -72,7 +86,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
             friendshipId: friend.friendshipId,
             content: audioUrl,
             type: 'VOICE',
-            replyToId: replyingTo?.id || null,
+            replyToId: tempMsg.replyTo?.id || null,
             senderId: useStore.getState().userInfo?.id,
             isUnsent: false
           };
@@ -81,9 +95,13 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
             stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
           }
           
-          setReplyingTo(null);
+          useStore.getState().removeTemporaryMessage(tempId);
         } catch (error) {
           console.error("Lỗi gửi voice:", error);
+          toast.error("Gửi âm thanh thất bại");
+          useStore.getState().removeTemporaryMessage(tempId);
+        } finally {
+          URL.revokeObjectURL(localUrl);
         }
         stream.getTracks().forEach(track => track.stop());
       };
@@ -122,6 +140,21 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         e.target.value = '';
         return;
       }
+      const localUrl = URL.createObjectURL(file);
+      const tempId = 'temp_' + Date.now();
+      
+      const tempMsg = {
+        id: tempId,
+        isUploading: true,
+        type: 'IMAGE',
+        imageUrl: localUrl,
+        isMine: true,
+        replyTo: replyingTo || null
+      };
+      
+      useStore.getState().addTemporaryMessage(tempMsg);
+      setReplyingTo(null);
+
       try {
         const formData = new FormData();
         formData.append('file', file);
@@ -136,7 +169,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
           friendshipId: friend.friendshipId,
           content: imageUrl,
           type: 'IMAGE',
-          replyToId: replyingTo?.id || null,
+          replyToId: tempMsg.replyTo?.id || null,
           senderId: useStore.getState().userInfo?.id,
           isUnsent: false
         };
@@ -145,9 +178,13 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
           stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
         }
         
-        setReplyingTo(null);
+        useStore.getState().removeTemporaryMessage(tempId);
       } catch (error) {
         console.error("Lỗi gửi ảnh:", error);
+        toast.error("Gửi ảnh thất bại");
+        useStore.getState().removeTemporaryMessage(tempId);
+      } finally {
+        URL.revokeObjectURL(localUrl);
       }
       e.target.value = '';
     }
