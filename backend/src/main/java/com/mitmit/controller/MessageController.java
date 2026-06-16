@@ -2,6 +2,7 @@ package com.mitmit.controller;
 
 import com.mitmit.document.ChatMessage;
 import com.mitmit.service.MessageService;
+import com.mitmit.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ public class MessageController {
     private final MessageService messageService;
     private final ProfanityFilterService profanityFilterService;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
     @GetMapping("/{friendshipId}")
     public ResponseEntity<org.springframework.data.domain.Page<ChatMessage>> getMessages(
@@ -53,23 +55,13 @@ public class MessageController {
         messageService.sendMessage(senderId, messageRequest);
     }
 
-    private static final String UPLOAD_DIR = "uploads/";
-
     @PostMapping("/upload")
     public ResponseEntity<String> uploadMedia(@RequestParam("file") MultipartFile file) {
         try {
-            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(UPLOAD_DIR));
-            String filename = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            java.nio.file.Path filePath = java.nio.file.Paths.get(UPLOAD_DIR + filename);
-            java.nio.file.Files.write(filePath, file.getBytes());
-            // Trả về URL để frontend có thể hiển thị
-            String backendUrl = System.getenv("APP_BACKEND_URL");
-            if (backendUrl == null || backendUrl.isEmpty()) {
-                backendUrl = ""; // Use relative path if no backend URL is set
-            }
-            return ResponseEntity.ok(backendUrl + "/uploads/" + filename);
+            String secureUrl = cloudinaryService.uploadFile(file);
+            return ResponseEntity.ok(secureUrl);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Upload failed");
+            return ResponseEntity.status(500).body("Upload failed: " + e.getMessage());
         }
     }
 
