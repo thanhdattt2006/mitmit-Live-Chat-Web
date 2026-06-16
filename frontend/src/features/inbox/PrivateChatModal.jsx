@@ -24,6 +24,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const [activeReactionId, setActiveReactionId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
+  const [viewingImage, setViewingImage] = useState(null);
   const stompClientRef = useRef(null);
 
   useEffect(() => {
@@ -213,6 +214,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
               handleReact={handleReact}
               handleUnsend={handleUnsend}
               setReplyingTo={setReplyingTo}
+              onViewImage={setViewingImage}
             />
           );
         })}
@@ -245,6 +247,26 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
       {toastMsg && (
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-neutral-800 text-white text-xs px-4 py-2 rounded-full shadow-xl animate-fade-in z-[110]">
           {toastMsg}
+        </div>
+      )}
+
+      {viewingImage && (
+        <div 
+          className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
+          onClick={() => setViewingImage(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-neutral-800/50 hover:bg-neutral-700/80 rounded-full text-white transition-colors"
+            onClick={() => setViewingImage(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img 
+            src={viewingImage} 
+            alt="Zoomed image" 
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

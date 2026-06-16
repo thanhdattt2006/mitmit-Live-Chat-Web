@@ -29,6 +29,7 @@ export default function PrivateMessageRow({
   handleReact,
   handleUnsend,
   setReplyingTo,
+  onViewImage,
 }) {
   const isMenuOpen = activeMenuId === msg.id;
   const isReactionOpen = activeReactionId === msg.id;
@@ -225,7 +226,14 @@ export default function PrivateMessageRow({
             <img
               src={msg.imageUrl}
               alt="Sent image"
-              className="max-w-[200px] sm:max-w-[250px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity shadow-md"
+              onClick={() => {
+                if (!msg.isUploading && onViewImage) {
+                  onViewImage(msg.imageUrl);
+                }
+              }}
+              className={`max-w-[200px] sm:max-w-[250px] rounded-xl object-cover shadow-md ${
+                msg.isUploading ? '' : 'cursor-pointer hover:opacity-90 transition-opacity'
+              }`}
             />
           ) : (
             msg.text
