@@ -2,7 +2,6 @@ import React, { useEffect, useState, forwardRef } from 'react';
 import { Video as VideoIcon, Mic, MessageCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
-import * as nsfwjs from 'nsfwjs';
 import axiosClient from '../../api/axiosClient';
 import strangerImg from '../../assets/stranger.png';
 
@@ -85,6 +84,7 @@ const RemoteStreamVideo = forwardRef((props, ref) => {
 
     const loadModelAndStartAnalysis = async () => {
       try {
+        const nsfwjs = await import('nsfwjs');
         model = await nsfwjs.load();
         
         intervalId = setInterval(async () => {

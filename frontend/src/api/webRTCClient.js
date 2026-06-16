@@ -83,9 +83,19 @@ class WebRTCClient {
       if (this.peerConnection && stream) {
         this.localStream = stream;
         stream.getTracks().forEach((track) => {
-          this.peerConnection.addTrack(track, stream);
+          const sender = this.peerConnection.addTrack(track, stream);
+          
+          // Limit video bitrate to 500kbps (SD quality) to save mobile data
+          if (track.kind === 'video') {
+            const parameters = sender.getParameters();
+            if (!parameters.encodings) {
+              parameters.encodings = [{}];
+            }
+            parameters.encodings[0].maxBitrate = 500000; // 500 kbps
+            sender.setParameters(parameters).catch(e => console.error("Failed to set bitrate limit:", e));
+          }
         });
-        console.log('WebRTC: Local stream added');
+        console.log('WebRTC: Local stream added with bandwidth limit');
       }
     } catch (error) {
       console.error('WebRTC: Error adding local stream:', error);

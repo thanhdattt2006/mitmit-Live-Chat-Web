@@ -344,9 +344,10 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Giải pháp:** Tạo giao diện và API cho Admin đọc Feedback. Cung cấp API un-ban (Ân xá) nếu user gửi khiếu nại qua Email hợp lý.
   [ĐÃ HOÀN THÀNH - Đã tích hợp API GET Feedbacks và làm giao diện cho Admin]
 
-- [ ] **54. Tối ưu Frontend: Lazy Load AI NSFW & Bóp Băng Thông WebRTC**
+- [x] **54. Tối ưu Frontend: Lazy Load AI NSFW & Bóp Băng Thông WebRTC**
   - **Vấn đề:** Bundle quá nặng do `nsfwjs` làm load trang chậm 10s. WebRTC không giới hạn bitrate đốt sạch 4G của user.
-  - **Giải pháp:** Dùng `React.lazy` hoặc Dynamic Import cho AI NSFW. Cấu hình giới hạn SDP Bitrate cho WebRTC (Max 500kbps video).
+  - **Giải pháp:** Cấu hình Vite chunking/lazy-load cho model. Thiết lập WebRTC Video Bandwidth Limit (SD/HD).
+  [ĐÃ HOÀN THÀNH - Đã sử dụng Dynamic Import cho nsfwjs và cấu hình RTCRtpSender maxBitrate = 500kbps]
 
 - [ ] **55. Cấu hình Heartbeat cho WebSocket & Reconnect UI**
   - **Vấn đề:** Nginx/Cloudflare tự động ngắt cáp WebSocket sau 60s không hoạt động. User mất mạng không biết là bị rớt.
