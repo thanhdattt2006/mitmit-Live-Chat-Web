@@ -4,6 +4,7 @@ import EmojiPicker from 'emoji-picker-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import axiosClient from '../../api/axiosClient';
+import toast from 'react-hot-toast';
 
 export default function PrivateChatInput({ text, setText, handleSend, replyingTo, setReplyingTo, friend, setMessages, stompClientRef }) {
   const { lang } = useStore();
@@ -17,6 +18,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const recordingTimeoutRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -88,12 +90,19 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
 
       mediaRecorder.start();
       setIsRecording(true);
+      
+      recordingTimeoutRef.current = setTimeout(() => {
+        stopRecording();
+      }, 60000);
     } catch (error) {
       console.error('Error accessing microphone:', error);
     }
   };
 
   const stopRecording = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+    }
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -108,6 +117,11 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) return;
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Ảnh quá lớn, tối đa 5MB");
+        e.target.value = '';
+        return;
+      }
       try {
         const formData = new FormData();
         formData.append('file', file);

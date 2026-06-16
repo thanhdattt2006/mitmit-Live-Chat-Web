@@ -330,6 +330,7 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
 - [ ] **50. Đổi Kiến trúc Upload sang Cloud (AWS S3 / Cloudinary)**
   - **Vấn đề:** Lưu file vật lý vào `uploads/` trên VPS sẽ gây mất dữ liệu 100% nếu triển khai Load Balancer hoặc Docker container restart.
   - **Giải pháp:** Chuyển API `/upload` sang việc upload trực tiếp lên Cloudinary hoặc S3, trả về URL tĩnh của CDN. Xóa bỏ thư mục `uploads/` trên máy chủ.
+  [ĐÃ HOÀN THÀNH]
 
 - [ ] **51. Cấu hình Graceful Shutdown & Log Rotation**
   - **Vấn đề:** Deploy/Restart server sẽ chặt đứt ngang các transaction DB. Log để tràn lan sẽ làm đầy ổ cứng sập VPS.
