@@ -3,28 +3,31 @@ import { Send, Smile, Mic, X, Image as ImageIcon } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
-import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
+import useVoiceRecord from './hooks/useVoiceRecord';
+import useOptimisticUpload from './hooks/useOptimisticUpload';
 
-export default function PrivateChatInput({ text, setText, handleSend, replyingTo, setReplyingTo, friend, setMessages, stompClientRef }) {
+export default function PrivateChatInput({ text, setText, handleSend, replyingTo, setReplyingTo, friend, stompClientRef }) {
   const { lang } = useStore();
   const t = translations[lang];
 
   const [showEmoji, setShowEmoji] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   
   const textareaRef = useRef(null);
   const emojiRef = useRef(null);
   const fileInputRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const recordingTimeoutRef = useRef(null);
+
+  const { uploadMedia } = useOptimisticUpload(friend, replyingTo, setReplyingTo, stompClientRef);
+
+  const handleVoiceComplete = (audioBlob) => {
+    uploadMedia(audioBlob, 'VOICE');
+  };
+
+  const { isRecording, startRecording, stopRecording } = useVoiceRecord(handleVoiceComplete);
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
-        setShowEmoji(false);
-      }
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) setShowEmoji(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -45,93 +48,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
     }
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const localUrl = URL.createObjectURL(audioBlob);
-        const tempId = 'temp_' + Date.now();
-        
-        const tempMsg = {
-          id: tempId,
-          isUploading: true,
-          type: 'VOICE',
-          audioUrl: localUrl,
-          isMine: true,
-          replyTo: replyingTo || null
-        };
-        useStore.getState().addTemporaryMessage(tempMsg);
-        setReplyingTo(null);
-
-        try {
-          const formData = new FormData();
-          formData.append('file', audioBlob, 'audio.webm');
-          
-          const response = await axiosClient.post('/api/v1/messages/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-          
-          const audioUrl = response?.data || response;
-          
-          const payload = {
-            friendshipId: friend.friendshipId,
-            content: audioUrl,
-            type: 'VOICE',
-            replyToId: tempMsg.replyTo?.id || null,
-            senderId: useStore.getState().userInfo?.id,
-            isUnsent: false
-          };
-          
-          if (stompClientRef.current?.connected) {
-            stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
-          }
-          
-          useStore.getState().removeTemporaryMessage(tempId);
-        } catch (error) {
-          console.error("Lỗi gửi voice:", error);
-          toast.error("Gửi âm thanh thất bại");
-          useStore.getState().removeTemporaryMessage(tempId);
-        } finally {
-          URL.revokeObjectURL(localUrl);
-        }
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      
-      recordingTimeoutRef.current = setTimeout(() => {
-        stopRecording();
-      }, 60000);
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-    }
-  };
-
-  const stopRecording = () => {
-    if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
-    }
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) return;
@@ -140,52 +57,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         e.target.value = '';
         return;
       }
-      const localUrl = URL.createObjectURL(file);
-      const tempId = 'temp_' + Date.now();
-      
-      const tempMsg = {
-        id: tempId,
-        isUploading: true,
-        type: 'IMAGE',
-        imageUrl: localUrl,
-        isMine: true,
-        replyTo: replyingTo || null
-      };
-      
-      useStore.getState().addTemporaryMessage(tempMsg);
-      setReplyingTo(null);
-
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await axiosClient.post('/api/v1/messages/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        
-        const imageUrl = response?.data || response;
-        
-        const payload = {
-          friendshipId: friend.friendshipId,
-          content: imageUrl,
-          type: 'IMAGE',
-          replyToId: tempMsg.replyTo?.id || null,
-          senderId: useStore.getState().userInfo?.id,
-          isUnsent: false
-        };
-        
-        if (stompClientRef.current?.connected) {
-          stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
-        }
-        
-        useStore.getState().removeTemporaryMessage(tempId);
-      } catch (error) {
-        console.error("Lỗi gửi ảnh:", error);
-        toast.error("Gửi ảnh thất bại");
-        useStore.getState().removeTemporaryMessage(tempId);
-      } finally {
-        URL.revokeObjectURL(localUrl);
-      }
+      uploadMedia(file, 'IMAGE');
       e.target.value = '';
     }
   };
@@ -205,31 +77,25 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
       )}
       <form onSubmit={handleSend} className="flex items-center gap-2 relative">
         <div className="shrink-0 w-9 h-9 flex items-center justify-center">
-          <button type="button" onClick={handleImageClick} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90" title="Send Image">
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90">
             <ImageIcon className="w-5 h-5" />
           </button>
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/png, image/jpeg, image/gif, image/webp" className="hidden" />
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
         </div>
 
         <div className="flex-1 flex items-center bg-neutral-800/60 border border-neutral-700/30 focus-within:border-blue-500/40 rounded-2xl transition-all duration-200 min-h-[40px] px-1">
           <textarea 
-            value={text}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            ref={textareaRef}
-            rows={1}
-            maxLength={500}
-            style={{ maxHeight: '100px', scrollbarWidth: 'none' }}
+            value={text} onChange={handleInput} onKeyDown={handleKeyDown} ref={textareaRef} rows={1} maxLength={500} style={{ maxHeight: '100px', scrollbarWidth: 'none' }}
             className="flex-1 bg-transparent py-2 pl-2 pr-2 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden leading-relaxed block" 
             placeholder={t.CHAT_PLACEHOLDER}
           />
           <div ref={emojiRef} className="relative shrink-0 mr-1">
-            <button type="button" onClick={() => setShowEmoji((prev) => !prev)} className={`p-1.5 rounded-full transition-all active:scale-90 ${showEmoji ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'}`}>
+            <button type="button" onClick={() => setShowEmoji(p => !p)} className={`p-1.5 rounded-full transition-all active:scale-90 ${showEmoji ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'}`}>
               <Smile className="w-5 h-5" />
             </button>
             {showEmoji && (
               <div className="absolute bottom-full right-0 mb-3 z-50 scale-90 origin-bottom-right">
-                <EmojiPicker onEmojiClick={(emojiData) => setText(prev => prev + emojiData.emoji)} theme="dark" width={280} height={320} lazyLoadEmojis={true} />
+                <EmojiPicker onEmojiClick={(d) => setText(p => p + d.emoji)} theme="dark" width={280} height={320} lazyLoadEmojis={true} />
               </div>
             )}
           </div>
@@ -241,9 +107,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
               <Send className="w-4 h-4 ml-0.5 fill-current" />
             </button>
           ) : (
-            <button 
-              type="button" 
-              onMouseDown={startRecording} onMouseUp={stopRecording} onMouseLeave={stopRecording} onTouchStart={startRecording} onTouchEnd={stopRecording}
+            <button type="button" onMouseDown={startRecording} onMouseUp={stopRecording} onMouseLeave={stopRecording} onTouchStart={startRecording} onTouchEnd={stopRecording}
               className={`w-full h-full rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
             >
               <Mic className="w-4.5 h-4.5 fill-current" />

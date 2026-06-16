@@ -1,7 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 import ReportModal from '../../components/common/ReportModal';
@@ -9,13 +6,14 @@ import SystemMessage from './SystemMessage';
 import PrivateMessageRow from './PrivateMessageRow';
 import PrivateChatHeader from './PrivateChatHeader';
 import PrivateChatInput from './PrivateChatInput';
+import ImageLightbox from './components/ImageLightbox';
+import usePrivateMessages from './hooks/usePrivateMessages';
 import axiosClient from '../../api/axiosClient';
 
 export default function PrivateChatModal({ isOpen, onClose, friend }) {
-  const { lang, removeFriend, setInboxOpen, userInfo } = useStore();
+  const { lang, removeFriend, setInboxOpen, messages, setMessages } = useStore();
   const t = translations[lang];
   
-  const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const bottomRef = useRef(null);
 
@@ -25,105 +23,12 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   const [toastMsg, setToastMsg] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [viewingImage, setViewingImage] = useState(null);
-  const stompClientRef = useRef(null);
+
+  const { stompClientRef } = usePrivateMessages(friend, isOpen);
 
   useEffect(() => {
     setShowReportModal(false);
   }, [friend]);
-
-  useEffect(() => {
-    if (isOpen && friend) {
-      axiosClient.get('/api/v1/messages/' + friend.friendshipId)
-      .then(response => {
-        const data = response?.data || response;
-        const msgList = Array.isArray(data) ? data : (data?.content || []);
-        const sortedMsgList = [...msgList].reverse();
-        const mappedMessages = sortedMsgList.map(msg => {
-          const msgType = msg.type ? msg.type.toUpperCase() : 'TEXT';
-          let replyToObj = null;
-          if (msg.replyToId) {
-             const parent = sortedMsgList.find(m => m.id === msg.replyToId);
-             if (parent) {
-                const parentType = parent.type ? parent.type.toUpperCase() : 'TEXT';
-                replyToObj = {
-                   id: parent.id,
-                   type: parentType,
-                   text: parentType === 'TEXT' ? parent.content : (parentType === 'IMAGE' ? 'Image' : 'Voice'),
-                   isMine: parent.senderId === userInfo?.id
-                };
-             }
-          }
-          return {
-            id: msg.id,
-            text: msgType === 'TEXT' ? msg.content : undefined,
-            imageUrl: msgType === 'IMAGE' ? msg.content : undefined,
-            audioUrl: msgType === 'VOICE' ? msg.content : undefined,
-            isMine: msg.senderId === userInfo?.id,
-            reaction: msg.reaction,
-            replyTo: replyToObj,
-            type: msgType
-          };
-        });
-        setMessages(mappedMessages);
-      }).catch(err => {
-        console.error("Lỗi fetch private messages:", err);
-      });
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-      const socketUrl = `${apiUrl}/ws`;
-      const token = localStorage.getItem('mitmit_jwt_token');
-      const stompClient = new Client({
-        webSocketFactory: () => new SockJS(socketUrl),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-        onConnect: () => {
-          stompClientRef.current = stompClient;
-          stompClient.subscribe(`/queue/chat-${userInfo?.id}`, (msg) => {
-            try {
-              const newMsg = JSON.parse(msg.body);
-              if (newMsg.friendshipId === friend.friendshipId) {
-                setMessages(prev => {
-                  // Cập nhật reaction nếu tin nhắn đã tồn tại
-                  if (prev.some(m => m.id === newMsg.id)) {
-                    return prev.map(m => m.id === newMsg.id ? { ...m, reaction: newMsg.reaction } : m);
-                  }
-                  
-                  let replyToObj = null;
-                  if (newMsg.replyToId) {
-                     const parent = prev.find(m => m.id === newMsg.replyToId);
-                     if (parent) {
-                        replyToObj = {
-                           id: parent.id,
-                           type: parent.type,
-                           text: parent.text || 'Media',
-                           isMine: parent.isMine
-                        };
-                     }
-                  }
-                  return [...prev, {
-                    id: newMsg.id,
-                    text: newMsg.type === 'TEXT' ? newMsg.content : undefined,
-                    imageUrl: newMsg.type === 'IMAGE' ? newMsg.content : undefined,
-                    audioUrl: newMsg.type === 'VOICE' ? newMsg.content : undefined,
-                    isMine: newMsg.senderId === userInfo?.id,
-                    reaction: newMsg.reaction,
-                    replyTo: replyToObj,
-                    type: newMsg.type
-                  }];
-                });
-              }
-            } catch (err) {
-              console.error('Lỗi parse real-time message:', err);
-            }
-          });
-        }
-      });
-      stompClient.activate();
-
-      return () => {
-        stompClient.deactivate();
-      };
-    }
-  }, [isOpen, friend, userInfo?.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -147,8 +52,6 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
       if (stompClientRef.current?.connected) {
         stompClientRef.current.publish({ destination: '/app/chat.private', body: JSON.stringify(payload) });
-      } else {
-        console.error("STOMP connection not ready, message not sent");
       }
 
       setText('');
@@ -176,7 +79,6 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   };
   
   const handleReact = async (id, emoji) => {
-    // Optimistic UI update
     setMessages(prev => prev.map(m => m.id === id ? { ...m, reaction: emoji } : m));
     setActiveReactionId(null);
     try {
@@ -196,9 +98,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
 
       <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 flex flex-col gap-3 scroll-smooth" onClick={() => { setActiveMenuId(null); setActiveReactionId(null); }}>
         {messages?.map((msg) => {
-          if (msg.type === 'system') {
-            return <SystemMessage key={msg.id} text={msg.text} />;
-          }
+          if (msg.type === 'system') return <SystemMessage key={msg.id} text={msg.text} />;
 
           return (
             <PrivateMessageRow 
@@ -228,7 +128,6 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         replyingTo={replyingTo}
         setReplyingTo={setReplyingTo}
         friend={friend}
-        setMessages={setMessages}
         stompClientRef={stompClientRef}
       />
 
@@ -250,25 +149,7 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
         </div>
       )}
 
-      {viewingImage && (
-        <div 
-          className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
-          onClick={() => setViewingImage(null)}
-        >
-          <button 
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-neutral-800/50 hover:bg-neutral-700/80 rounded-full text-white transition-colors"
-            onClick={() => setViewingImage(null)}
-          >
-            <X className="w-6 h-6" />
-          </button>
-          <img 
-            src={viewingImage} 
-            alt="Zoomed image" 
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
+      <ImageLightbox imageUrl={viewingImage} onClose={() => setViewingImage(null)} />
     </div>
   );
 }
