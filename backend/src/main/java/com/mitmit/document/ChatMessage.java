@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.HashMap;
 
 @Getter
 @Setter
@@ -26,7 +28,8 @@ public class ChatMessage {
     private String type; // TEXT hoặc VOICE hoặc IMAGE
     private String content;
     private String replyToId;
-    private String reaction;
+    @Builder.Default
+    private Map<String, String> reactions = new HashMap<>();
     private Boolean isUnsent = false;
     private LocalDateTime createdAt;
 }

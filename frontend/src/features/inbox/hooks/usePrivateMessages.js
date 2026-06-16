@@ -36,7 +36,7 @@ export default function usePrivateMessages(friend, isOpen) {
             imageUrl: msgType === 'IMAGE' ? msg.content : undefined,
             audioUrl: msgType === 'VOICE' ? msg.content : undefined,
             isMine: msg.senderId === userInfo?.id,
-            reaction: msg.reaction,
+            reactions: msg.reactions || {},
             replyTo: replyToObj,
             type: msgType
           };
@@ -58,7 +58,10 @@ export default function usePrivateMessages(friend, isOpen) {
               if (newMsg.friendshipId === friend.friendshipId) {
                 setMessages(prev => {
                   if (prev.some(m => m.id === newMsg.id)) {
-                    return prev.map(m => m.id === newMsg.id ? { ...m, reaction: newMsg.reaction || m.reaction } : m);
+                    return prev.map(m => m.id === newMsg.id ? { 
+                      ...m, 
+                      reactions: newMsg.reactions || m.reactions || {}
+                    } : m);
                   }
                   
                   let replyToObj = null;
@@ -79,7 +82,7 @@ export default function usePrivateMessages(friend, isOpen) {
                     imageUrl: newMsg.type === 'IMAGE' ? newMsg.content : undefined,
                     audioUrl: newMsg.type === 'VOICE' ? newMsg.content : undefined,
                     isMine: newMsg.senderId === userInfo?.id,
-                    reaction: newMsg.reaction,
+                    reactions: newMsg.reactions || {},
                     replyTo: replyToObj,
                     type: newMsg.type
                   }];

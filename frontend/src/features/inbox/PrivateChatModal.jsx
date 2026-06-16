@@ -79,7 +79,8 @@ export default function PrivateChatModal({ isOpen, onClose, friend }) {
   };
   
   const handleReact = async (id, emoji) => {
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, reaction: emoji } : m));
+    const myId = useStore.getState().userInfo?.id;
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, reactions: { ...(m.reactions || {}), [myId]: emoji } } : m));
     setActiveReactionId(null);
     try {
       await axiosClient.put(`/api/v1/messages/${id}/reaction?reaction=${encodeURIComponent(emoji)}`);

@@ -96,7 +96,10 @@ public class MessageController {
     }
 
     @PutMapping("/{id}/reaction")
-    public ResponseEntity<ChatMessage> reactToMessage(@PathVariable String id, @RequestParam String reaction) {
-        return ResponseEntity.ok(messageService.reactToMessage(id, reaction));
+    public ResponseEntity<ChatMessage> reactToMessage(Authentication authentication, @PathVariable String id, @RequestParam String reaction) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new SecurityException("Unauthorized");
+        }
+        return ResponseEntity.ok(messageService.reactToMessage(id, reaction, authentication.getName()));
     }
 }

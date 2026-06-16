@@ -45,9 +45,13 @@ export default function PrivateMessageBubble({ msg, friend, t, onViewImage }) {
         msg.text
       )}
 
-      {msg.reaction && (
-        <div className="absolute -bottom-3 -right-1 bg-neutral-800 border border-neutral-700 rounded-full px-1.5 py-0.5 text-[11px] shadow-md z-10 animate-slide-up cursor-pointer hover:scale-110 transition-transform">
-          {msg.reaction}
+      {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+        <div className="absolute -bottom-3 -right-1 flex -space-x-1 z-10 animate-slide-up">
+          {Object.entries(msg.reactions).map(([userId, emoji], idx) => (
+            <div key={userId} className={`bg-neutral-800 border border-neutral-700 rounded-full px-1.5 py-0.5 text-[11px] shadow-md cursor-pointer hover:scale-110 transition-transform ${idx > 0 ? 'relative' : ''}`} style={{ zIndex: 10 - idx }}>
+              {emoji}
+            </div>
+          ))}
         </div>
       )}
 

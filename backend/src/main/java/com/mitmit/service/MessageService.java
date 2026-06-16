@@ -40,7 +40,7 @@ public class MessageService {
                 .type(messageRequest.getType() != null ? messageRequest.getType() : "TEXT")
                 .content(messageRequest.getContent())
                 .replyToId(messageRequest.getReplyToId())
-                .reaction(messageRequest.getReaction())
+                .reactions(messageRequest.getReactions())
                 .isUnsent(false)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -64,7 +64,7 @@ public class MessageService {
                         .type(savedMessage.getType())
                         .content(savedMessage.getContent())
                         .replyToId(savedMessage.getReplyToId())
-                        .reaction(savedMessage.getReaction())
+                        .reactions(savedMessage.getReactions())
                         .isUnsent(savedMessage.getIsUnsent())
                         .createdAt(savedMessage.getCreatedAt())
                         .build();
@@ -82,10 +82,15 @@ public class MessageService {
     }
 
     @Transactional
-    public ChatMessage reactToMessage(String id, String reaction) {
+    public ChatMessage reactToMessage(String id, String reaction, String userId) {
         ChatMessage msg = chatMessageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
-        msg.setReaction(reaction);
+        
+        if (msg.getReactions() == null) {
+            msg.setReactions(new java.util.HashMap<>());
+        }
+        msg.getReactions().put(userId, reaction);
+        
         ChatMessage saved = chatMessageRepository.save(msg);
         
         // Broadcast reaction update
@@ -104,7 +109,7 @@ public class MessageService {
                         .type(saved.getType())
                         .content(saved.getContent())
                         .replyToId(saved.getReplyToId())
-                        .reaction(saved.getReaction())
+                        .reactions(saved.getReactions())
                         .isUnsent(saved.getIsUnsent())
                         .createdAt(saved.getCreatedAt())
                         .build();
