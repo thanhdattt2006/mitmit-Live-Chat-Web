@@ -74,8 +74,8 @@ public class MessageController {
             String secureUrl = cloudinaryService.uploadFile(file);
             return ResponseEntity.ok(secureUrl);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Upload failed: " + e.getMessage());
+            log.error("Lỗi khi tải file Media: ", e);
+            return ResponseEntity.badRequest().body("Failed to upload file");
         }
     }
 

@@ -20,7 +20,8 @@ export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching,
           if (callMode === 'video' && ref && ref.current && remoteStream && !isIdle && !isMatching && remoteUserId) {
             try {
               const predictions = await model.classify(ref.current);
-              console.log("NSFW Probabilities:", predictions);
+              
+              if (predictions && predictions.length > 0) {
               
               const pornProb = predictions.find(p => p.className === 'Porn')?.probability || 0;
               const hentaiProb = predictions.find(p => p.className === 'Hentai')?.probability || 0;

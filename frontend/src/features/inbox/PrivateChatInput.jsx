@@ -12,6 +12,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
   const t = translations[lang];
 
   const [showEmoji, setShowEmoji] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   
   const textareaRef = useRef(null);
   const emojiRef = useRef(null);
@@ -19,8 +20,13 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
 
   const { uploadMedia } = useOptimisticUpload(friend, replyingTo, setReplyingTo, stompClientRef);
 
-  const handleVoiceComplete = (audioBlob) => {
-    uploadMedia(audioBlob, 'VOICE');
+  const handleVoiceComplete = async (audioBlob) => {
+    setIsUploadingFile(true);
+    try {
+      await uploadMedia(audioBlob, 'VOICE');
+    } finally {
+      setIsUploadingFile(false);
+    }
   };
 
   const { isRecording, startRecording, stopRecording } = useVoiceRecord(handleVoiceComplete);
@@ -48,7 +54,7 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) return;
@@ -57,7 +63,12 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         e.target.value = '';
         return;
       }
-      uploadMedia(file, 'IMAGE');
+      setIsUploadingFile(true);
+      try {
+        await uploadMedia(file, 'IMAGE');
+      } finally {
+        setIsUploadingFile(false);
+      }
       e.target.value = '';
     }
   };
@@ -76,17 +87,18 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
         </div>
       )}
       <form onSubmit={handleSend} className="flex items-center gap-2 relative">
-        <div className="shrink-0 w-9 h-9 flex items-center justify-center">
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90">
-            <ImageIcon className="w-5 h-5" />
+        <div className="shrink-0 w-11 h-11 flex items-center justify-center">
+          <button type="button" disabled={isUploadingFile} onClick={() => fileInputRef.current?.click()} className="p-2.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed">
+            <ImageIcon className="w-6 h-6" />
           </button>
           <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
         </div>
 
-        <div className="flex-1 flex items-center bg-neutral-800/60 border border-neutral-700/30 focus-within:border-blue-500/40 rounded-2xl transition-all duration-200 min-h-[40px] px-1">
+        <div className="flex-1 flex items-center bg-neutral-800/60 border border-neutral-700/30 focus-within:border-blue-500/40 rounded-3xl transition-all duration-200 min-h-[44px] px-1">
           <textarea 
             value={text} onChange={handleInput} onKeyDown={handleKeyDown} ref={textareaRef} rows={1} maxLength={500} style={{ maxHeight: '100px', scrollbarWidth: 'none' }}
-            className="flex-1 bg-transparent py-2 pl-2 pr-2 text-sm outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden leading-relaxed block" 
+            disabled={isUploadingFile}
+            className="flex-1 bg-transparent py-3 pl-3 pr-2 text-[15px] outline-none resize-none overflow-y-auto text-white placeholder-gray-500 [&::-webkit-scrollbar]:hidden leading-relaxed block disabled:opacity-50" 
             placeholder={t.CHAT_PLACEHOLDER}
           />
           <div ref={emojiRef} className="relative shrink-0 mr-1">
@@ -101,16 +113,16 @@ export default function PrivateChatInput({ text, setText, handleSend, replyingTo
           </div>
         </div>
         
-        <div className="shrink-0 w-9 h-9 flex items-center justify-center">
+        <div className="shrink-0 w-11 h-11 flex items-center justify-center">
           {text.trim() ? (
-            <button type="submit" className="w-full h-full bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm">
-              <Send className="w-4 h-4 ml-0.5 fill-current" />
+            <button type="submit" disabled={isUploadingFile} className="w-full h-full bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 active:scale-95 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <Send className="w-5 h-5 ml-0.5 fill-current" />
             </button>
           ) : (
-            <button type="button" onMouseDown={startRecording} onMouseUp={stopRecording} onMouseLeave={stopRecording} onTouchStart={startRecording} onTouchEnd={stopRecording}
-              className={`w-full h-full rounded-full flex items-center justify-center transition-all shadow-sm ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
+            <button type="button" disabled={isUploadingFile} onMouseDown={startRecording} onMouseUp={stopRecording} onMouseLeave={stopRecording} onTouchStart={startRecording} onTouchEnd={stopRecording}
+              className={`w-full h-full rounded-full flex items-center justify-center transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isRecording ? 'bg-red-500 animate-pulse text-white scale-110' : 'bg-neutral-800 text-gray-400 hover:text-white hover:bg-neutral-700 active:scale-95'}`}
             >
-              <Mic className="w-4.5 h-4.5 fill-current" />
+              <Mic className="w-5 h-5 fill-current" />
             </button>
           )}
         </div>
