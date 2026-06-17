@@ -24,18 +24,28 @@ public class StompChannelInterceptor implements ChannelInterceptor {
 
         if (accessor != null) {
             if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                String token = accessor.getFirstNativeHeader("Authorization");
-                if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
-                    token = token.substring(7);
-                    if (jwtUtil.validateToken(token)) {
-                        String userId = jwtUtil.extractUserId(token);
-                        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, null);
-                        accessor.setUser(auth);
-                    } else {
-                        throw new IllegalArgumentException("Invalid JWT token");
+                String token = null;
+
+                // 1. Lấy token từ Session Attributes (do HandshakeInterceptor nạp từ HttpOnly Cookie)
+                java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+                if (sessionAttributes != null && sessionAttributes.containsKey("jwt_token")) {
+                    token = (String) sessionAttributes.get("jwt_token");
+                }
+
+                // 2. Fallback: Lấy từ Header Native (Cho Postman)
+                if (token == null) {
+                    token = accessor.getFirstNativeHeader("Authorization");
+                    if (org.springframework.util.StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+                        token = token.substring(7);
                     }
+                }
+
+                if (org.springframework.util.StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
+                    String userId = jwtUtil.extractUserId(token);
+                    Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, null);
+                    accessor.setUser(auth);
                 } else {
-                    throw new IllegalArgumentException("Missing JWT token");
+                    throw new IllegalArgumentException("Invalid or missing JWT token");
                 }
             } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
                 String destination = accessor.getDestination();

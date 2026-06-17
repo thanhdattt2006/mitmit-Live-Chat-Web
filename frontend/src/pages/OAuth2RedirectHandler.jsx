@@ -12,19 +12,17 @@ export default function OAuth2RedirectHandler() {
   const t = translations[lang];
 
   useEffect(() => {
-    const token = searchParams.get('token');
     const error = searchParams.get('error');
 
-    if (token) {
-      // Xóa token khỏi URL của cả Browser và React Router state
-      navigate(location.pathname, { replace: true });
-      loginWithToken(token);
-      navigate('/', { replace: true });
-    } else if (error) {
+    if (error) {
       alert(t.LOGIN_FAILED + error);
       navigate('/', { replace: true });
+    } else {
+      navigate(location.pathname, { replace: true });
+      loginWithToken();
+      navigate('/', { replace: true });
     }
-  }, [searchParams, navigate, loginWithToken, location.pathname]);
+  }, [searchParams, navigate, loginWithToken, location.pathname, t]);
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-white">

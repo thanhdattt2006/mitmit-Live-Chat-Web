@@ -18,12 +18,8 @@ class SocketService {
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
       const socketUrl = `${apiUrl}/ws`;
-      const token = localStorage.getItem('mitmit_jwt_token');
       this.stompClient = new Client({
         webSocketFactory: () => new SockJS(socketUrl),
-        connectHeaders: {
-          Authorization: `Bearer ${token}`
-        },
         heartbeatIncoming: 10000,
         heartbeatOutgoing: 10000,
         reconnectDelay: 5000,

@@ -9,9 +9,8 @@ export const createAuthSlice = (set) => ({
   setLoginModalOpen: (open) => set({ isLoginModalOpen: open }),
   setUserInfo: (userInfo) => set({ userInfo }),
 
-  loginWithToken: async (token) => {
-    localStorage.setItem('mitmit_jwt_token', token);
-    set({ isLoggedIn: true, token: token });
+  loginWithToken: async () => {
+    set({ isLoggedIn: true });
 
     try {
       const response = await axiosClient.get('/api/v1/users/me');
@@ -31,7 +30,7 @@ export const createAuthSlice = (set) => ({
   },
 
   logout: () => set((state) => {
-    localStorage.removeItem('mitmit_jwt_token');
+    axiosClient.post('/api/v1/auth/logout').catch(console.error);
     if (state.localStream) {
       state.localStream.getTracks().forEach(track => track.stop());
     }

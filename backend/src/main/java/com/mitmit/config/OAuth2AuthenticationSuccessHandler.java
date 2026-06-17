@@ -115,7 +115,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
             // 4. Generate JWT Token & Redirect
             String token = jwtUtil.generateToken(user.getId());
-            response.sendRedirect(frontendUrl + "/oauth2/redirect?token=" + token);
+            
+            // BẢO MẬT: Đẩy Token vào HttpOnly Cookie thay vì quăng lên URL
+            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwt_token", token);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(30 * 24 * 60 * 60); // 30 ngày
+            response.addCookie(cookie);
+
+            response.sendRedirect(frontendUrl + "/oauth2/redirect");
 
         } catch (Exception e) {
             log.error("Error occurred during OAuth2 authentication success handler", e);

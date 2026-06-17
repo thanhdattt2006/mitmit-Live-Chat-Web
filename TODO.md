@@ -337,9 +337,10 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Giải pháp:** Bật `server.shutdown=graceful` trong `application.yml`. Bổ sung file `logback-spring.xml` để tự động cắt log theo ngày.
   [ĐÃ HOÀN THÀNH]
 
-- [ ] **52. Xóa Dấu Vết JWT trên URL (Oauth2 Security)**
+- [x] **52. Xóa Dấu Vết JWT trên URL (Oauth2 Security)**
   - **Vấn đề:** OAuth2 đang trả token qua URL `?token=...`. Dù Frontend có xóa đi thì Token vẫn nằm vĩnh viễn trong file Access Log của Nginx.
   - **Giải pháp:** Đổi phương thức trả Token qua HttpOnly Cookie tại `OAuth2AuthenticationSuccessHandler`.
+  [ĐÃ HOÀN THÀNH]
 
 - [x] **53. Hoàn thiện Admin Dashboard (Đọc Feedback & Appeal)**
   - **Vấn đề:** User đã bị thu thập Feedback nhưng Admin chưa có chỗ xem. User bị khóa mõm/khóa acc không có chỗ kháng cáo (Appeal).

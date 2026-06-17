@@ -5,23 +5,8 @@ const axiosClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // withCredentials: true, // Uncomment if you need to send cookies across domains
+  withCredentials: true,
 });
-
-// Add a request interceptor
-axiosClient.interceptors.request.use(
-  function (config) {
-    const token = localStorage.getItem('mitmit_jwt_token'); // Lấy token từ kho
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // Kẹp vào header
-    }
-    return config;
-  },
-  function (error) {
-    // Do something with request error
-    return Promise.reject(error);
-  }
-);
 
 // Add a response interceptor
 axiosClient.interceptors.response.use(
