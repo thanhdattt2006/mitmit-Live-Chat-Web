@@ -368,3 +368,18 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Vấn đề:** Component unmount trước khi AI model load xong sinh ra lặp background vô hạn.
   - **Giải pháp:** Dùng `useRef` lưu trạng thái `isMounted` và xử lý clear interval triệt để.
   [ĐÃ HOÀN THÀNH]
+
+- [x] **59. Vá Vòng lặp Vô cực đốt CPU (MatchmakingService)**
+  - **Vấn đề:** Hàm `@Scheduled` kéo Redis liên tục dù không có đủ 2 người, gây lãng phí CPU.
+  - **Giải pháp:** Thêm `getQueueSize(queueKey) < 2` để chặn lệnh lấy dữ liệu vô ích.
+  [ĐÃ HOÀN THÀNH]
+
+- [x] **60. Cấu hình Thread Pool riêng biệt (AsyncConfig)**
+  - **Vấn đề:** Các task nặng dùng chung `ForkJoinPool` gây nghẽn cổ chai (Thread Starvation).
+  - **Giải pháp:** Tạo `ThreadPoolTaskExecutor` (core 10, max 50) chuyên dụng cho `MatchmakingService`.
+  [ĐÃ HOÀN THÀNH]
+
+- [x] **61. Chống Spam / Rate Limiting cơ bản (MessageController)**
+  - **Vấn đề:** Dễ bị DDoS STOMP làm sập Database nếu gửi liên tục.
+  - **Giải pháp:** Dùng `increment` của Redis set TTL 1 giây, nếu `count > 5` thì chặn ngay tin nhắn (Drop Message).
+  [ĐÃ HOÀN THÀNH]

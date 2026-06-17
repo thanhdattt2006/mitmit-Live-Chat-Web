@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class MatchmakingService {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final Executor matchmakingExecutor;
 
     private static final String QUEUE_PREFIX = "queue:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
@@ -50,6 +52,11 @@ public class MatchmakingService {
 
     private void tryMatch(String callType) {
         String queueKey = QUEUE_PREFIX + callType;
+
+        if (redisService.getQueueSize(queueKey) < 2) {
+            return;
+        }
+
         List<String> requeueUsers = new ArrayList<>();
 
         while (true) {
@@ -113,7 +120,7 @@ public class MatchmakingService {
 
                     messagingTemplate.convertAndSend("/topic/match/" + user1Id, (Object) payload);
                     messagingTemplate.convertAndSend("/topic/match/" + user2Id, (Object) payload);
-                });
+                }, matchmakingExecutor);
 
             } catch (Exception e) {
                 log.error("Lỗi matchmaking: ", e);

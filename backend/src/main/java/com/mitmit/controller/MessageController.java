@@ -13,6 +13,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.util.concurrent.TimeUnit;
 
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class MessageController {
     private final ProfanityFilterService profanityFilterService;
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("/{friendshipId}")
     public ResponseEntity<org.springframework.data.domain.Page<ChatMessage>> getMessages(
@@ -40,6 +43,16 @@ public class MessageController {
             throw new SecurityException("Unauthorized STOMP connection");
         }
         String senderId = authentication.getName();
+
+        String rateLimitKey = "rate_limit:chat:" + senderId;
+        Long count = redisTemplate.opsForValue().increment(rateLimitKey);
+        if (count != null && count == 1) {
+            redisTemplate.expire(rateLimitKey, 1, TimeUnit.SECONDS);
+        }
+        if (count != null && count > 5) {
+            return;
+        }
+
         User user = userRepository.findById(senderId).orElse(null);
         if (user != null && user.isMuted()) {
             throw new SecurityException("Bạn đã bị cấm chat do vi phạm tiêu chuẩn cộng đồng.");

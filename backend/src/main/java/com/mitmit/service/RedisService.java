@@ -24,6 +24,11 @@ public class RedisService {
         redisTemplate.opsForList().remove(queueName, 0, value);
     }
 
+    public long getQueueSize(String queueName) {
+        Long size = redisTemplate.opsForList().size(queueName);
+        return size != null ? size : 0;
+    }
+
     public void addToSet(String key, String value) {
         redisTemplate.opsForSet().add(key, value);
     }
