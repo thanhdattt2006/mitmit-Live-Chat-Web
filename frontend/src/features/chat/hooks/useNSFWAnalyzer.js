@@ -32,6 +32,7 @@ export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching,
                   reportedId: remoteUserId
                 });
               }
+              }
             } catch (err) {
               // Ignore classify errors
             }
