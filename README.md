@@ -13,98 +13,10 @@ A modern, real-time communication platform combining the random pairing of OmeTV
 
 Nền tảng giao tiếp thời gian thực hiện đại, kết hợp cơ chế ghép cặp ngẫu nhiên của OmeTV và cơ chế Matching của các ứng dụng hẹn hò.
 
----
-
-## 🌎 Ngôn ngữ / Languages
-- [Tiếng Việt (Vietnamese)](#tiếng-việt-vietnamese)
-- [English](#english)
-
----
-
-# Tiếng Việt (Vietnamese)
-
-## 1. Tổng Quan Dự Án
-**mitmit** là nền tảng giao tiếp trực tuyến thời gian thực (Real-time Communication) cho phép người dùng kết nối ngẫu nhiên thông qua Video, Voice và Text. Điểm đột phá của hệ thống là cơ chế **"Blind Date 3 Phút"**:
-- **Ẩn danh & Giới hạn:** Các cuộc trò chuyện ban đầu bị giới hạn thời gian (180 giây) và ẩn danh một phần để tạo sự thú vị.
-- **Quyết định (The Match Decision):** Trong 3 phút đếm ngược, cả hai bên phải nhấn vào nút "Trái tim" (Match) để bày tỏ sự đồng thuận.
-- **Mở khóa tình bạn (Friendship Unlocked):** Nếu cả hai cùng Match, giới hạn 3 phút sẽ biến mất, hệ thống tự động kết bạn và mở khóa cuộc trò chuyện riêng tư (Private Inbox) không giới hạn.
-- **Ngắt kết nối tự động:** Nếu hết 3 phút mà không đủ 2 lượt Match, hệ thống tự động đóng phòng và đưa người dùng trở lại hàng chờ.
-- **Yêu cầu định danh:** Ứng dụng yêu cầu bắt buộc đăng nhập (OAuth2 Google/GitHub) để duy trì sự an toàn và văn minh của cộng đồng.
-
----
-
-## 2. Luồng Người Dùng Cốt Lõi (Core Workflow)
-
-```mermaid
-flowchart TD
-    A[Đăng nhập OAuth2 Google/GitHub] --> B[Chọn Chế độ: Video / Voice / Text]
-    B --> C[Vào hàng đợi Queue trong Redis]
-    C --> D{Tìm thấy cặp đấu?}
-    D -- Không --> C
-    D -- Có --> E[Khởi tạo Phòng & Đếm ngược 3 phút]
-    E --> F[Kết nối WebRTC Video/Voice hoặc Text Chat]
-    F --> G{Cả hai cùng ấn MATCH?}
-    G -- Đúng --> H[Kết Bạn Thành Công - Unlocked]
-    G -- Sai hoặc Hết 3 Phút --> I[Đóng phòng & Quay lại hàng đợi]
-    H --> J[Mở khóa Inbox Riêng Tư lâu dài]
-```
-
----
-
-## 3. Các Tính Năng Chi Tiết
-
-### 3.1. Xác Thực & Định Danh (Auth & Identity)
-- **OAuth2 Login:** Đăng nhập an toàn qua tài khoản Google hoặc GitHub.
-- Không hỗ trợ tài khoản Khách (Guest) nhằm ngăn chặn hành vi quấy rối ẩn danh vô trách nhiệm.
-
-### 3.2. Phòng Ghép Ngẫu Nhiên (Random Chat Room)
-- **3 Chế độ giao tiếp độc lập:** Video Chat (WebRTC), Voice Chat (WebRTC Audio Only), và Text Chat.
-- **Live Chat đa nhiệm:** Trong phòng Video/Voice có tích hợp khung chat text song song. Tin nhắn trong phòng tạm thời được lưu trữ siêu tốc trong Redis và tự động hủy khi phòng đóng.
-- **Đồng hồ đếm ngược:** Đếm ngược 3 phút (180s) được đồng bộ hóa thời gian thực giữa hai client qua WebSocket.
-
-### 3.3. Hộp Thư Trò Chuyện Riêng Tư (Private Messaging)
-- **Inbox bạn bè:** Chỉ hiển thị những người dùng đã Match thành công.
-- **Tin nhắn đa phương tiện:** Hỗ trợ văn bản, gửi hình ảnh, và ghi âm tin nhắn thoại (Voice note).
-- **Tương tác nâng cao:** Thả Emoji reaction, thu hồi tin nhắn (Unsend) từ cả hai phía, hủy kết bạn (Unfriend) hoặc chặn (Block) đối phương.
-
-### 3.4. Hệ Thống Khảo Sát Trải Nghiệm (User Feedback Loop)
-- **Đo lường mức độ hài lòng:** Tự động kích hoạt biểu mẫu đánh giá ngay sau khi người dùng đạt số lượng Match thành công nhất định.
-- **Chu kỳ hiển thị:** Lần đầu tiên sau **3 lượt Match**, và lặp lại định kỳ sau mỗi **10 lượt Match** tiếp theo (lượt thứ 13, 23, 33...).
-- Thu thập dữ liệu khảo sát (1-5 sao), tag lỗi (lag, delay, người dùng xấu) và ý kiến tự do để cải thiện thuật toán.
-
-### 3.5. Kiểm Duyệt Nội Dung & Chống Spam
-- **Bộ lọc từ cấm tự động:** Lọc tin nhắn thô tục và link spam/phishing thông qua Regex và Blacklist từ vựng. Tin nhắn vi phạm sẽ bị che khuất thành `***` hoặc từ chối gửi.
-- **Hệ thống Cảnh cáo (Strike):** Nếu vi phạm gửi từ cấm/link quá 3 lần, tài khoản sẽ bị gắn cờ cảnh báo (Flag) lên Admin Dashboard để xử lý thủ công.
-- **Auto-Mute:** Khi bị đối phương report với lý do quấy rối/spam, hệ thống sẽ kích hoạt trạng thái `isMuted` ngay lập tức, tước quyền gửi tin nhắn tạm thời của người vi phạm.
-
-### 3.6. Chính Sách Không Khoan Nhượng (Zero-Tolerance Policy)
-- Nghiêm cấm tuyệt đối các nội dung khỏa thân, hành vi tình dục (NSFW) hoặc bạo lực qua luồng Video/Image.
-- **AI Kiểm duyệt:** Tích hợp mô hình ML quét khung hình Video thời gian thực ở phía Frontend.
-- **Trừng phạt lập tức:** Nếu phát hiện vi phạm hoặc bị report hợp lệ, Backend sẽ lập tức ngắt WebRTC, sút người dùng khỏi phòng, cấm vĩnh viễn tài khoản (Account Ban) & dải IP thiết bị (IP Ban), đồng thời gửi email thông báo kỷ luật.
-
----
-
-## 4. Kiến Trúc Công Nghệ
-
-### ⚡ Backend (Spring Boot)
-- **Java 21** & **Spring Boot 4.0.6**.
-- **Spring Security & OAuth2 Client:** Quản lý phiên đăng nhập và định danh.
-- **Spring Web / WebSocket:** Xử lý REST API và WebSocket/STOMP signaling.
-- **Lombok:** Tự động tạo mã boilerplate (Getter, Setter, Builder). AVOID `@Data` trên các thực thể JPA để tránh lỗi đệ quy vô hạn.
-- **JWT (Json Web Token):** Sử dụng `jjwt-api 0.12.5` để ký và xác thực Token.
-
-### 🎨 Frontend (React + Vite)
-- **Vite 8.0** & **React 19.2**.
-- **Tailwind CSS 4.2:** Thiết kế giao diện thuần Dark Mode hiện đại, trực quan và linh hoạt.
-- **Zustand 5.0:** Quản lý state toàn cục nhẹ nhàng, hiệu quả thông qua các slice chuyên biệt (`authSlice`, `matchSlice`, `friendSlice`, v.v.).
-- **SockJS & @stomp/stompjs:** Giao tiếp WebSocket thời gian thực (không dùng Socket.io).
-- **WebRTC Native APIs:** Truyền phát hình ảnh và âm thanh P2P trực tiếp giữa hai trình duyệt.
-- **Lucide React & Emoji Picker:** Bộ icon đẹp mắt và trình chọn emoji tiện dụng.
-
-### 🗄️ Cơ Sở Dữ Liệu & Cache
-- **MySQL:** Lưu trữ dữ liệu quan hệ có cấu trúc bền vững (Users, Friendships, Reports, Blocks). Sử dụng UUID (`VARCHAR(36)`) cho Identity Tables.
-- **MongoDB:** Lưu trữ dữ liệu tài liệu (Chat Session, Chat History, Private Messages, Feedback).
-- **Redis:** Làm hàng chờ kết nối ghép cặp (Queue matchmaking), lưu trữ tạm thời tin nhắn trong phòng ngẫu nhiên và quản lý danh sách đen tạm thời (temporary blacklist).
+<div align="center">
+  <h3>🌍 Languages / Ngôn ngữ</h3>
+  <a href="#english">🇺🇸 <b>EN</b> (English)</a> | <a href="#tiếng-việt-vietnamese">🇻🇳 <b>VI</b> (Tiếng Việt)</a>
+</div>
 
 ---
 
@@ -171,14 +83,16 @@ flowchart TD
 
 ---
 
-## 4. Technical Architecture
+## 4. Technical Architecture & Resilience
 
 ### ⚡ Backend (Spring Boot)
 - **Java 21** & **Spring Boot 4.0.6**.
 - **Spring Security & OAuth2 Client:** Secures endpoints and handles logins.
-- **Spring Web & Spring WebSocket:** REST API routing and STOMP signaling.
-- **Lombok:** Standard boilerplate reduction. Note: AVOID `@Data` on JPA entities to prevent infinite recursion.
-- **JWT (Json Web Token):** Built-in stateless session validation using `jjwt-api 0.12.5`.
+- **Invisible JWT Authentication:** JWT tokens are strictly stored in `HttpOnly` Cookies to prevent XSS and URL leakage.
+- **Spring Web & Spring WebSocket:** REST API routing and STOMP signaling (configured with Heartbeats for persistent connections).
+- **Graceful Shutdown:** 30s timeout configured to protect database transactions during deployments.
+- **Log Rotation:** SLF4J integrated with `logback-spring.xml` (RollingFileAppender max 10MB/file, 30 days retention) for clean production logs.
+- **Lombok:** Standard boilerplate reduction. AVOID `@Data` on JPA entities to prevent infinite recursion.
 
 ### 🎨 Frontend (React + Vite)
 - **Vite 8.0** & **React 19.2**.
@@ -190,7 +104,95 @@ flowchart TD
 ### 🗄️ Database & Cache Layers
 - **MySQL:** Stores relational tables (Users, Friendships, Reports, Blocks). Primary keys use UUID (`VARCHAR(36)`).
 - **MongoDB:** Stores document data (Chat Sessions, Chat History, Private Messages, User Feedback).
-- **Redis:** Fast queue operations for matchmaking, room message cache, and temporary blacklists.
+- **Redis (Anti-DDoS & Queue):** Fast queue operations for matchmaking. Scheduled loops strictly check queue size (`size < 2`) before executing to prevent CPU exhaustion. Also handles room message cache and temporary blacklists.
+
+---
+
+# Tiếng Việt (Vietnamese)
+
+## 1. Tổng Quan Dự Án
+**mitmit** là nền tảng giao tiếp trực tuyến thời gian thực (Real-time Communication) cho phép người dùng kết nối ngẫu nhiên thông qua Video, Voice và Text. Điểm đột phá của hệ thống là cơ chế **"Blind Date 3 Phút"**:
+- **Ẩn danh & Giới hạn:** Các cuộc trò chuyện ban đầu bị giới hạn thời gian (180 giây) và ẩn danh một phần để tạo sự thú vị.
+- **Quyết định (The Match Decision):** Trong 3 phút đếm ngược, cả hai bên phải nhấn vào nút "Trái tim" (Match) để bày tỏ sự đồng thuận.
+- **Mở khóa tình bạn (Friendship Unlocked):** Nếu cả hai cùng Match, giới hạn 3 phút sẽ biến mất, hệ thống tự động kết bạn và mở khóa cuộc trò chuyện riêng tư (Private Inbox) không giới hạn.
+- **Ngắt kết nối tự động:** Nếu hết 3 phút mà không đủ 2 lượt Match, hệ thống tự động đóng phòng và đưa người dùng trở lại hàng chờ.
+- **Yêu cầu định danh:** Ứng dụng yêu cầu bắt buộc đăng nhập (OAuth2 Google/GitHub) để duy trì sự an toàn và văn minh của cộng đồng.
+
+---
+
+## 2. Luồng Người Dùng Cốt Lõi (Core Workflow)
+
+```mermaid
+flowchart TD
+    A[Đăng nhập OAuth2 Google/GitHub] --> B[Chọn Chế độ: Video / Voice / Text]
+    B --> C[Vào hàng đợi Queue trong Redis]
+    C --> D{Tìm thấy cặp đấu?}
+    D -- Không --> C
+    D -- Có --> E[Khởi tạo Phòng & Đếm ngược 3 phút]
+    E --> F[Kết nối WebRTC Video/Voice hoặc Text Chat]
+    F --> G{Cả hai cùng ấn MATCH?}
+    G -- Đúng --> H[Kết Bạn Thành Công - Unlocked]
+    G -- Sai hoặc Hết 3 Phút --> I[Đóng phòng & Quay lại hàng đợi]
+    H --> J[Mở khóa Inbox Riêng Tư lâu dài]
+```
+
+---
+
+## 3. Các Tính Năng Chi Tiết
+
+### 3.1. Xác Thực & Định Danh (Auth & Identity)
+- **OAuth2 Login:** Đăng nhập an toàn qua tài khoản Google hoặc GitHub.
+- Không hỗ trợ tài khoản Khách (Guest) nhằm ngăn chặn hành vi quấy rối ẩn danh vô trách nhiệm.
+
+### 3.2. Phòng Ghép Ngẫu Nhiên (Random Chat Room)
+- **3 Chế độ giao tiếp độc lập:** Video Chat (WebRTC), Voice Chat (WebRTC Audio Only), và Text Chat.
+- **Live Chat đa nhiệm:** Trong phòng Video/Voice có tích hợp khung chat text song song. Tin nhắn trong phòng tạm thời được lưu trữ siêu tốc trong Redis và tự động hủy khi phòng đóng.
+- **Đồng hồ đếm ngược:** Đếm ngược 3 phút (180s) được đồng bộ hóa thời gian thực giữa hai client qua WebSocket.
+
+### 3.3. Hộp Thư Trò Chuyện Riêng Tư (Private Messaging)
+- **Inbox bạn bè:** Chỉ hiển thị những người dùng đã Match thành công.
+- **Tin nhắn đa phương tiện:** Hỗ trợ văn bản, gửi hình ảnh, và ghi âm tin nhắn thoại (Voice note).
+- **Tương tác nâng cao:** Thả Emoji reaction, thu hồi tin nhắn (Unsend) từ cả hai phía, hủy kết bạn (Unfriend) hoặc chặn (Block) đối phương.
+
+### 3.4. Hệ Thống Khảo Sát Trải Nghiệm (User Feedback Loop)
+- **Đo lường mức độ hài lòng:** Tự động kích hoạt biểu mẫu đánh giá ngay sau khi người dùng đạt số lượng Match thành công nhất định.
+- **Chu kỳ hiển thị:** Lần đầu tiên sau **3 lượt Match**, và lặp lại định kỳ sau mỗi **10 lượt Match** tiếp theo (lượt thứ 13, 23, 33...).
+- Thu thập dữ liệu khảo sát (1-5 sao), tag lỗi (lag, delay, người dùng xấu) và ý kiến tự do để cải thiện thuật toán.
+
+### 3.5. Kiểm Duyệt Nội Dung & Chống Spam
+- **Bộ lọc từ cấm tự động:** Lọc tin nhắn thô tục và link spam/phishing thông qua Regex và Blacklist từ vựng. Tin nhắn vi phạm sẽ bị che khuất thành `***` hoặc từ chối gửi.
+- **Hệ thống Cảnh cáo (Strike):** Nếu vi phạm gửi từ cấm/link quá 3 lần, tài khoản sẽ bị gắn cờ cảnh báo (Flag) lên Admin Dashboard để xử lý thủ công.
+- **Auto-Mute:** Khi bị đối phương report với lý do quấy rối/spam, hệ thống sẽ kích hoạt trạng thái `isMuted` ngay lập tức, tước quyền gửi tin nhắn tạm thời của người vi phạm.
+
+### 3.6. Chính Sách Không Khoan Nhượng (Zero-Tolerance Policy)
+- Nghiêm cấm tuyệt đối các nội dung khỏa thân, hành vi tình dục (NSFW) hoặc bạo lực qua luồng Video/Image.
+- **AI Kiểm duyệt:** Tích hợp mô hình ML quét khung hình Video thời gian thực ở phía Frontend.
+- **Trừng phạt lập tức:** Nếu phát hiện vi phạm hoặc bị report hợp lệ, Backend sẽ lập tức ngắt WebRTC, sút người dùng khỏi phòng, cấm vĩnh viễn tài khoản (Account Ban) & dải IP thiết bị (IP Ban), đồng thời gửi email thông báo kỷ luật.
+
+---
+
+## 4. Kiến Trúc Công Nghệ & Độ Bền Bỉ
+
+### ⚡ Backend (Spring Boot)
+- **Java 21** & **Spring Boot 4.0.6**.
+- **Spring Security & OAuth2 Client:** Quản lý phiên đăng nhập và định danh.
+- **Xác thực JWT Tàng hình:** Token được lưu tuyệt đối an toàn trong `HttpOnly` Cookie, chống XSS và rò rỉ qua URL.
+- **Spring Web / WebSocket:** Xử lý REST API và WebSocket/STOMP (cấu hình Heartbeat giữ nhịp liên tục).
+- **Graceful Shutdown:** Độ trễ 30s được thiết lập để server tắt an toàn, bảo vệ Database khi deploy.
+- **Log Rotation:** Tích hợp SLF4J với `logback-spring.xml` (Cắt file log tự động 10MB/file, giữ 30 ngày) giúp dọn dẹp log rác trên Production.
+- **Lombok:** Tự động tạo mã boilerplate. Tránh dùng `@Data` trên các thực thể JPA để ngăn lỗi đệ quy vô hạn.
+
+### 🎨 Frontend (React + Vite)
+- **Vite 8.0** & **React 19.2**.
+- **Tailwind CSS 4.2:** Thiết kế giao diện thuần Dark Mode hiện đại, trực quan và linh hoạt.
+- **Zustand 5.0:** Quản lý state toàn cục nhẹ nhàng, hiệu quả thông qua các slice chuyên biệt.
+- **SockJS & @stomp/stompjs:** Giao tiếp WebSocket thời gian thực (không dùng Socket.io).
+- **WebRTC Native APIs:** Truyền phát hình ảnh và âm thanh P2P trực tiếp giữa hai trình duyệt.
+
+### 🗄️ Cơ Sở Dữ Liệu & Cache
+- **MySQL:** Lưu trữ dữ liệu quan hệ có cấu trúc bền vững (Users, Friendships, Reports, Blocks). Sử dụng UUID (`VARCHAR(36)`) cho Identity Tables.
+- **MongoDB:** Lưu trữ dữ liệu tài liệu (Chat Session, Chat History, Private Messages, Feedback).
+- **Redis (Chống DDoS & Queue):** Làm hàng chờ kết nối. Trước khi chạy các Scheduled Tasks nặng, hệ thống có chốt chặn kiểm tra hàng chờ (`size < 2`) để chống vắt kiệt CPU. Quản lý danh sách đen tạm thời.
 
 ---
 
