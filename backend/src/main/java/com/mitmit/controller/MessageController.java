@@ -21,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class MessageController {
 
     private final MessageService messageService;
@@ -57,7 +58,7 @@ public class MessageController {
         if (user != null && user.isMuted()) {
             throw new SecurityException("Bạn đã bị cấm chat do vi phạm tiêu chuẩn cộng đồng.");
         }
-        
+
         if (messageRequest.getType() == null || messageRequest.getType().equals("TEXT")) {
             if (profanityFilterService.containsProfanityOrLink(messageRequest.getContent())) {
                 profanityFilterService.processViolation(senderId);
@@ -109,7 +110,8 @@ public class MessageController {
     }
 
     @PutMapping("/{id}/reaction")
-    public ResponseEntity<ChatMessage> reactToMessage(Authentication authentication, @PathVariable String id, @RequestParam String reaction) {
+    public ResponseEntity<ChatMessage> reactToMessage(Authentication authentication, @PathVariable String id,
+            @RequestParam String reaction) {
         if (authentication == null || authentication.getName() == null) {
             throw new SecurityException("Unauthorized");
         }
