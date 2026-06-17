@@ -353,3 +353,18 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
 - [ ] **55. Cấu hình Heartbeat cho WebSocket & Reconnect UI**
   - **Vấn đề:** Nginx/Cloudflare tự động ngắt cáp WebSocket sau 60s không hoạt động. User mất mạng không biết là bị rớt.
   - **Giải pháp:** Bật tính năng Heartbeat Ping/Pong trong Spring Boot STOMP và cấu hình `reconnectDelay` bên `stompjs` của Frontend.
+
+- [x] **56. Fix "Cấm Oan" trong ProfanityFilterService**
+  - **Vấn đề:** Dùng `.contains()` khiến từ bình thường bị nhận diện thành từ cấm (Vd: "buổi sáng" thành "buoi").
+  - **Giải pháp:** Áp dụng Regex với Word Boundary `(?i)(^|\\s)(word)($|\\s|[.,!?])` để match chính xác các từ bậy.
+  [ĐÃ HOÀN THÀNH]
+
+- [x] **57. Fix "Nháy Ảnh" (Flickering) trong Optimistic Upload**
+  - **Vấn đề:** Xóa ngay Local Object URL khiến ảnh bị giật/nháy trước khi Websocket kịp nhận tin.
+  - **Giải pháp:** Đặt thời gian `revokeObjectURL` trễ 10 giây trong khối `finally`.
+  [ĐÃ HOÀN THÀNH]
+
+- [x] **58. Fix Zombie Interval/Memory Leak trong nsfwjs**
+  - **Vấn đề:** Component unmount trước khi AI model load xong sinh ra lặp background vô hạn.
+  - **Giải pháp:** Dùng `useRef` lưu trạng thái `isMounted` và xử lý clear interval triệt để.
+  [ĐÃ HOÀN THÀNH]

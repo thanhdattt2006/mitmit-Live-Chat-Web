@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import axiosClient from '../../../api/axiosClient';
 
 export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching, remoteUserId) {
+  const isMounted = useRef(true);
+  const intervalRef = useRef(null);
+
   useEffect(() => {
-    let intervalId;
+    isMounted.current = true;
     let model;
 
     const loadModelAndStartAnalysis = async () => {
@@ -11,7 +14,9 @@ export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching,
         const nsfwjs = await import('nsfwjs');
         model = await nsfwjs.load();
         
-        intervalId = setInterval(async () => {
+        if (!isMounted.current) return;
+
+        intervalRef.current = setInterval(async () => {
           if (callMode === 'video' && ref && ref.current && remoteStream && !isIdle && !isMatching && remoteUserId) {
             try {
               const predictions = await model.classify(ref.current);
@@ -41,7 +46,8 @@ export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching,
     }
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      isMounted.current = false;
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [callMode, isIdle, isMatching, remoteStream, ref, remoteUserId]);
 }

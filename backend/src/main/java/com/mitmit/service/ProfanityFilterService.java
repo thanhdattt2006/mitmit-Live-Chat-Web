@@ -42,10 +42,9 @@ public class ProfanityFilterService {
         }
 
         // Check bad words
-        String lowerText = text.toLowerCase();
         for (String word : BAD_WORDS) {
-            // Very simple substring matching.
-            if (lowerText.contains(word)) {
+            String regex = "(?i)(^|\\s)(" + word + ")($|\\s|[.,!?])";
+            if (Pattern.compile(regex).matcher(text).find()) {
                 return true;
             }
         }

@@ -55,7 +55,9 @@ export default function useOptimisticUpload(friend, replyingTo, setReplyingTo, s
       toast.error(type === 'VOICE' ? t.ERROR_VOICE_SEND : t.ERROR_IMAGE_SEND);
       useStore.getState().removeTemporaryMessage(tempId);
     } finally {
-      URL.revokeObjectURL(localUrl);
+      setTimeout(() => {
+        URL.revokeObjectURL(localUrl);
+      }, 10000);
     }
   };
 
