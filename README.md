@@ -20,6 +20,50 @@ Nền tảng giao tiếp thời gian thực hiện đại, kết hợp cơ chế
 
 ---
 
+## 6. Hướng Dẫn Cài Đặt & Chạy Dự Án (Local Setup)
+
+### 6.1. Yêu Cầu Hệ Thống
+- **JDK 21**
+- **Node.js 20+** & **npm**
+- **MySQL 8+**, **MongoDB 6+**, **Redis 7+** (Khuyên dùng Docker để chạy nhanh các database này)
+
+### 6.2. Cài đặt Backend
+1. Mở MySQL và tạo database mới:
+   ```sql
+   CREATE DATABASE mitmit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+2. Đi vào thư mục `backend/src/main/resources/` và nhân bản file cấu hình:
+   ```bash
+   cp application.yaml.example application.yaml
+   ```
+3. Mở file `application.yaml` vừa tạo và điền các API Key bắt buộc:
+   - **OAuth2:** Truy cập [Google Cloud Console](https://console.cloud.google.com/) và [GitHub Developer Settings](https://github.com/settings/developers) để tạo ứng dụng. Nhập Callback URL là `http://localhost:8080/login/oauth2/code/{google|github}` và copy Client ID/Secret vào file.
+   - **Cloudinary:** Đăng ký tài khoản [Cloudinary](https://cloudinary.com/) miễn phí để lấy Cloud Name, API Key và Secret (dùng để lưu trữ ảnh/âm thanh).
+   - **Email:** Nếu cần test tính năng gửi mail, hãy tạo một Mật khẩu Ứng dụng (App Password) trên tài khoản Google của bạn.
+4. Chạy ứng dụng Spring Boot:
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+
+### 6.3. Cài đặt Frontend
+1. Đi vào thư mục `frontend` và cài đặt thư viện:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Tạo file `.env` bằng cách copy từ file mẫu (nếu có) hoặc tạo mới với nội dung:
+   ```bash
+   echo "VITE_API_URL=http://localhost:8080" > .env
+   ```
+3. Khởi động server Frontend:
+   ```bash
+   npm run dev
+   ```
+4. Mở trình duyệt và truy cập vào giao diện web (thường là `http://localhost:5173` hoặc `http://localhost:3000`).
+
+---
+
 # English
 
 ## 1. Project Overview
@@ -228,35 +272,27 @@ mitmit/
 
 ---
 
-## 6. Local Setup / Hướng Dẫn Cài Đặt & Chạy Dự Án
+## 6. Local Setup
 
-### 6.1. Prerequisites / Yêu Cầu Hệ Thống
+### 6.1. Prerequisites
 - **JDK 21**
 - **Node.js 20+** & **npm**
-- **MySQL Server**
-- **MongoDB Server**
-- **Redis Server**
+- **MySQL 8+**, **MongoDB 6+**, **Redis 7+** (You can use Docker to spin these up quickly)
 
 ### 6.2. Backend Setup
 1. Open the MySQL console and create the database:
    ```sql
    CREATE DATABASE mitmit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-2. Navigate to `backend/src/main/resources/`, copy `application.yaml.example` to `application.yaml`, and update database/OAuth2 credentials:
-   ```yaml
-   spring:
-     security:
-       oauth2:
-         client:
-           registration:
-             google:
-               client-id: YOUR_GOOGLE_CLIENT_ID
-               client-secret: YOUR_GOOGLE_CLIENT_SECRET
-             github:
-               client-id: YOUR_GITHUB_CLIENT_ID
-               client-secret: YOUR_GITHUB_CLIENT_SECRET
+2. Navigate to `backend/src/main/resources/`, and copy the example configuration:
+   ```bash
+   cp application.yaml.example application.yaml
    ```
-3. Run the Spring Boot application:
+3. Open `application.yaml` and fill in the required API keys:
+   - **OAuth2:** Create an OAuth app on [Google Cloud Console](https://console.cloud.google.com/) and [GitHub Developer Settings](https://github.com/settings/developers) with the callback URI `http://localhost:8080/login/oauth2/code/{google|github}`.
+   - **Cloudinary:** Sign up for a free [Cloudinary](https://cloudinary.com/) account to get your cloud name, API key, and secret for media storage.
+   - **Email:** If you want email features, generate an App Password from your Google Account.
+4. Run the Spring Boot application:
    ```bash
    cd backend
    mvn spring-boot:run
@@ -268,15 +304,15 @@ mitmit/
    cd frontend
    npm install
    ```
-2. Check the `.env` file (ensure it targets your backend API url):
-   ```env
-   VITE_API_URL=http://localhost:8080
+2. Create a `.env` file from the example (if available) or create a new one:
+   ```bash
+   echo "VITE_API_URL=http://localhost:8080" > .env
    ```
 3. Launch the development server:
    ```bash
    npm run dev
    ```
-4. Access the web app in your browser (defaults to `http://localhost:5173` or similar).
+4. Access the web app in your browser (defaults to `http://localhost:5173` or `http://localhost:3000`).
 
 ---
 
