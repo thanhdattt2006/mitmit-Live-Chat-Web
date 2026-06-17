@@ -11,16 +11,24 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // Using a hardcoded secret for simplicity in dev, but ideally this should be in application.yaml
-    private final SecretKey key = Keys.hmacShaKeyFor("my-32-character-ultra-secure-and-ultra-long-secret".getBytes());
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
-    private final long EXPIRATION_TIME = 86400000L; // 24 hours
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
+
+    private SecretKey key;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public String generateToken(String userId) {
         return Jwts.builder()
                 .subject(userId)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(key)
                 .compact();
     }

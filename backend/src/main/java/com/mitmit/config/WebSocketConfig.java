@@ -26,7 +26,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
     }
 
-    @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:3000,http://localhost:5173}")
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.url}")
     private String[] allowedOrigins;
 
     @Override

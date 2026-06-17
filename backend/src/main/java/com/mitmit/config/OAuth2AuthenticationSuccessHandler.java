@@ -26,8 +26,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    // Hardcoded frontend URL for now, could be moved to application.yaml
-    @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:3000}")
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.url}")
     private String frontendUrl;
 
     @Override
