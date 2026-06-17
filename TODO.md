@@ -332,9 +332,10 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Giải pháp:** Chuyển API `/upload` sang việc upload trực tiếp lên Cloudinary hoặc S3, trả về URL tĩnh của CDN. Xóa bỏ thư mục `uploads/` trên máy chủ.
   [ĐÃ HOÀN THÀNH]
 
-- [ ] **51. Cấu hình Graceful Shutdown & Log Rotation**
+- [x] **51. Cấu hình Graceful Shutdown & Log Rotation**
   - **Vấn đề:** Deploy/Restart server sẽ chặt đứt ngang các transaction DB. Log để tràn lan sẽ làm đầy ổ cứng sập VPS.
   - **Giải pháp:** Bật `server.shutdown=graceful` trong `application.yml`. Bổ sung file `logback-spring.xml` để tự động cắt log theo ngày.
+  [ĐÃ HOÀN THÀNH]
 
 - [ ] **52. Xóa Dấu Vết JWT trên URL (Oauth2 Security)**
   - **Vấn đề:** OAuth2 đang trả token qua URL `?token=...`. Dù Frontend có xóa đi thì Token vẫn nằm vĩnh viễn trong file Access Log của Nginx.
@@ -350,9 +351,10 @@ Giải pháp: - Backend: Thêm `spring-boot-starter-mail` vào `pom.xml`. Cấu 
   - **Giải pháp:** Cấu hình Vite chunking/lazy-load cho model. Thiết lập WebRTC Video Bandwidth Limit (SD/HD).
   [ĐÃ HOÀN THÀNH - Đã sử dụng Dynamic Import cho nsfwjs và cấu hình RTCRtpSender maxBitrate = 500kbps]
 
-- [ ] **55. Cấu hình Heartbeat cho WebSocket & Reconnect UI**
+- [x] **55. Cấu hình Heartbeat cho WebSocket & Reconnect UI**
   - **Vấn đề:** Nginx/Cloudflare tự động ngắt cáp WebSocket sau 60s không hoạt động. User mất mạng không biết là bị rớt.
   - **Giải pháp:** Bật tính năng Heartbeat Ping/Pong trong Spring Boot STOMP và cấu hình `reconnectDelay` bên `stompjs` của Frontend.
+  [ĐÃ HOÀN THÀNH]
 
 - [x] **56. Fix "Cấm Oan" trong ProfanityFilterService**
   - **Vấn đề:** Dùng `.contains()` khiến từ bình thường bị nhận diện thành từ cấm (Vd: "buổi sáng" thành "buoi").

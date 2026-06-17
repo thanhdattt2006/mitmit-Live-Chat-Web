@@ -24,8 +24,23 @@ class SocketService {
         connectHeaders: {
           Authorization: `Bearer ${token}`
         },
+        heartbeatIncoming: 10000,
+        heartbeatOutgoing: 10000,
         reconnectDelay: 5000,
+        onWebSocketClose: () => {
+          if (this.wasConnected) {
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.error("Mất kết nối, đang thử lại...", { id: 'ws-reconnect' });
+            });
+          }
+        },
         onConnect: () => {
+          if (this.wasConnected) {
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.success("Đã kết nối lại thành công", { id: 'ws-reconnect' });
+            });
+          }
+          this.wasConnected = true;
           this.stompClient.subscribe(`/topic/match/${userId}`, (message) => {
             if (message.body) {
               try {
