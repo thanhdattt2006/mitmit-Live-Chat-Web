@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -116,19 +118,22 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             // 4. Generate JWT Token & Redirect
             String token = jwtUtil.generateToken(user.getId());
             
-            // BẢO MẬT: Đẩy Token vào HttpOnly Cookie thay vì quăng lên URL
-            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwt_token", token);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(30 * 24 * 60 * 60); // 30 ngày
-            response.addCookie(cookie);
+            // BẢO MẬT: Đẩy Token vào HttpOnly Cookie + Thêm SameSite để không bị trình duyệt block khi khác port
+            ResponseCookie cookie = ResponseCookie.from("jwt_token", token)
+                    .httpOnly(true)
+                    .secure(false) // Set to true if using HTTPS
+                    .path("/")
+                    .maxAge(30 * 24 * 60 * 60) // 30 ngày
+                    .sameSite("Lax") // Tránh bị block cookie khi Frontend và Backend khác port ở localhost
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            response.sendRedirect(frontendUrl + "/oauth2/redirect");
+            response.sendRedirect(frontendUrl.split(",")[0] + "/oauth2/redirect");
 
         } catch (Exception e) {
             log.error("Error occurred during OAuth2 authentication success handler", e);
             // Redirect về frontend kèm param báo lỗi để UI có thể hiển thị Toast hoặc Alert
-            response.sendRedirect(frontendUrl + "/?error=oauth2_failure");
+            response.sendRedirect(frontendUrl.split(",")[0] + "/?error=oauth2_failure");
         }
     }
 }
