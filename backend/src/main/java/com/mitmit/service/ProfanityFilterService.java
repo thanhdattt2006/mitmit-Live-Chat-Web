@@ -28,7 +28,7 @@ public class ProfanityFilterService {
 
     // Vietnamese bad words (example list)
     private static final List<String> BAD_WORDS = Arrays.asList(
-            "đụ", "đĩ", "lồn", "cặc", "buồi", "chó đẻ", "địt", "phò", "địt mẹ", "vkl", "vcl", "vl", "đm", "cac", "lon", "buoi"
+            "đụ", "đĩ", "lồn", "cặc", "buồi", "chó đẻ", "địt", "phò", "địt mẹ", "vkl", "vcl", "vl", "đm"
     );
 
     public boolean containsProfanityOrLink(String text) {
