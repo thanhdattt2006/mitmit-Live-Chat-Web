@@ -5,7 +5,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bans")
+@Table(name = "bans", indexes = {
+    @Index(name = "idx_ban_ip", columnList = "ipAddress")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,4 +27,7 @@ public class Ban {
 
     @Column(nullable = false)
     private LocalDateTime bannedAt;
+
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
 }

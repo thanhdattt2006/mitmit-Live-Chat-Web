@@ -44,7 +44,7 @@ export default function usePrivateMessages(friend, isOpen) {
         setMessages(mappedMessages);
       }).catch(err => console.error("Lỗi fetch private messages:", err));
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
       const socketUrl = `${apiUrl}/ws`;
       const token = localStorage.getItem('mitmit_jwt_token');
       const stompClient = new Client({
