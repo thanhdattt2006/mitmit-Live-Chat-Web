@@ -11,62 +11,12 @@
 
 A modern, real-time communication platform combining the random pairing of OmeTV with the matchmaking mechanisms of dating applications.
 
-Nền tảng giao tiếp thời gian thực hiện đại, kết hợp cơ chế ghép cặp ngẫu nhiên của OmeTV và cơ chế Matching của các ứng dụng hẹn hò.
-
-<div align="center">
-  <h3>🌍 Languages / Ngôn ngữ</h3>
-  <a href="#english">🇺🇸 <b>EN</b> (English)</a> | <a href="#tiếng-việt-vietnamese">🇻🇳 <b>VI</b> (Tiếng Việt)</a>
-</div>
+> **Project Status:** 🚀 The project is currently pending production deployment on a dedicated physical server (not a VPS) for optimal performance and WebRTC stability.
 
 ---
-
-## 6. Hướng Dẫn Cài Đặt & Chạy Dự Án (Local Setup)
-
-### 6.1. Yêu Cầu Hệ Thống
-- **JDK 21**
-- **Node.js 20+** & **npm**
-- **MySQL 8+**, **MongoDB 6+**, **Redis 7+** (Khuyên dùng Docker để chạy nhanh các database này)
-
-### 6.2. Cài đặt Backend
-1. Mở MySQL và tạo database mới:
-   ```sql
-   CREATE DATABASE mitmit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-2. Đi vào thư mục `backend/src/main/resources/` và nhân bản file cấu hình:
-   ```bash
-   cp application.yaml.example application.yaml
-   ```
-3. Mở file `application.yaml` vừa tạo và điền các API Key bắt buộc:
-   - **OAuth2:** Truy cập [Google Cloud Console](https://console.cloud.google.com/) và [GitHub Developer Settings](https://github.com/settings/developers) để tạo ứng dụng. Nhập Callback URL là `http://localhost:8080/login/oauth2/code/{google|github}` và copy Client ID/Secret vào file.
-   - **Cloudinary:** Đăng ký tài khoản [Cloudinary](https://cloudinary.com/) miễn phí để lấy Cloud Name, API Key và Secret (dùng để lưu trữ ảnh/âm thanh).
-   - **Email:** Nếu cần test tính năng gửi mail, hãy tạo một Mật khẩu Ứng dụng (App Password) trên tài khoản Google của bạn.
-4. Chạy ứng dụng Spring Boot:
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
-
-### 6.3. Cài đặt Frontend
-1. Đi vào thư mục `frontend` và cài đặt thư viện:
-   ```bash
-   cd frontend
-   npm install
-   ```
-2. Tạo file `.env` bằng cách copy từ file mẫu (nếu có) hoặc tạo mới với nội dung:
-   ```bash
-   echo "VITE_API_URL=http://localhost:8080" > .env
-   ```
-3. Khởi động server Frontend:
-   ```bash
-   npm run dev
-   ```
-4. Mở trình duyệt và truy cập vào giao diện web (thường là `http://localhost:5173` hoặc `http://localhost:3000`).
-
----
-
-# English
 
 ## 1. Project Overview
+
 **mitmit** is a modern real-time communication platform that connects users randomly via Video, Voice, or Text. The platform introduces a unique **"3-Minute Blind Date"** concept:
 - **Anonymity & Limits:** Initial connections are strictly time-limited to 3 minutes (180 seconds) and partially anonymous.
 - **The Match Decision:** Within this time, both users must click the "Heart" button (Match) to express consent.
@@ -152,95 +102,7 @@ flowchart TD
 
 ---
 
-# Tiếng Việt (Vietnamese)
-
-## 1. Tổng Quan Dự Án
-**mitmit** là nền tảng giao tiếp trực tuyến thời gian thực (Real-time Communication) cho phép người dùng kết nối ngẫu nhiên thông qua Video, Voice và Text. Điểm đột phá của hệ thống là cơ chế **"Blind Date 3 Phút"**:
-- **Ẩn danh & Giới hạn:** Các cuộc trò chuyện ban đầu bị giới hạn thời gian (180 giây) và ẩn danh một phần để tạo sự thú vị.
-- **Quyết định (The Match Decision):** Trong 3 phút đếm ngược, cả hai bên phải nhấn vào nút "Trái tim" (Match) để bày tỏ sự đồng thuận.
-- **Mở khóa tình bạn (Friendship Unlocked):** Nếu cả hai cùng Match, giới hạn 3 phút sẽ biến mất, hệ thống tự động kết bạn và mở khóa cuộc trò chuyện riêng tư (Private Inbox) không giới hạn.
-- **Ngắt kết nối tự động:** Nếu hết 3 phút mà không đủ 2 lượt Match, hệ thống tự động đóng phòng và đưa người dùng trở lại hàng chờ.
-- **Yêu cầu định danh:** Ứng dụng yêu cầu bắt buộc đăng nhập (OAuth2 Google/GitHub) để duy trì sự an toàn và văn minh của cộng đồng.
-
----
-
-## 2. Luồng Người Dùng Cốt Lõi (Core Workflow)
-
-```mermaid
-flowchart TD
-    A[Đăng nhập OAuth2 Google/GitHub] --> B[Chọn Chế độ: Video / Voice / Text]
-    B --> C[Vào hàng đợi Queue trong Redis]
-    C --> D{Tìm thấy cặp đấu?}
-    D -- Không --> C
-    D -- Có --> E[Khởi tạo Phòng & Đếm ngược 3 phút]
-    E --> F[Kết nối WebRTC Video/Voice hoặc Text Chat]
-    F --> G{Cả hai cùng ấn MATCH?}
-    G -- Đúng --> H[Kết Bạn Thành Công - Unlocked]
-    G -- Sai hoặc Hết 3 Phút --> I[Đóng phòng & Quay lại hàng đợi]
-    H --> J[Mở khóa Inbox Riêng Tư lâu dài]
-```
-
----
-
-## 3. Các Tính Năng Chi Tiết
-
-### 3.1. Xác Thực & Định Danh (Auth & Identity)
-- **OAuth2 Login:** Đăng nhập an toàn qua tài khoản Google hoặc GitHub.
-- Không hỗ trợ tài khoản Khách (Guest) nhằm ngăn chặn hành vi quấy rối ẩn danh vô trách nhiệm.
-
-### 3.2. Phòng Ghép Ngẫu Nhiên (Random Chat Room)
-- **3 Chế độ giao tiếp độc lập:** Video Chat (WebRTC), Voice Chat (WebRTC Audio Only), và Text Chat.
-- **Live Chat đa nhiệm:** Trong phòng Video/Voice có tích hợp khung chat text song song. Tin nhắn trong phòng tạm thời được lưu trữ siêu tốc trong Redis và tự động hủy khi phòng đóng.
-- **Đồng hồ đếm ngược:** Đếm ngược 3 phút (180s) được đồng bộ hóa thời gian thực giữa hai client qua WebSocket.
-
-### 3.3. Hộp Thư Trò Chuyện Riêng Tư (Private Messaging)
-- **Inbox bạn bè:** Chỉ hiển thị những người dùng đã Match thành công.
-- **Tin nhắn đa phương tiện:** Hỗ trợ văn bản, gửi hình ảnh, và ghi âm tin nhắn thoại (Voice note).
-- **Tương tác nâng cao:** Thả Emoji reaction, thu hồi tin nhắn (Unsend) từ cả hai phía, hủy kết bạn (Unfriend) hoặc chặn (Block) đối phương.
-
-### 3.4. Hệ Thống Khảo Sát Trải Nghiệm (User Feedback Loop)
-- **Đo lường mức độ hài lòng:** Tự động kích hoạt biểu mẫu đánh giá ngay sau khi người dùng đạt số lượng Match thành công nhất định.
-- **Chu kỳ hiển thị:** Lần đầu tiên sau **3 lượt Match**, và lặp lại định kỳ sau mỗi **10 lượt Match** tiếp theo (lượt thứ 13, 23, 33...).
-- Thu thập dữ liệu khảo sát (1-5 sao), tag lỗi (lag, delay, người dùng xấu) và ý kiến tự do để cải thiện thuật toán.
-
-### 3.5. Kiểm Duyệt Nội Dung & Chống Spam
-- **Bộ lọc từ cấm tự động:** Lọc tin nhắn thô tục và link spam/phishing thông qua Regex và Blacklist từ vựng. Tin nhắn vi phạm sẽ bị che khuất thành `***` hoặc từ chối gửi.
-- **Hệ thống Cảnh cáo (Strike):** Nếu vi phạm gửi từ cấm/link quá 3 lần, tài khoản sẽ bị gắn cờ cảnh báo (Flag) lên Admin Dashboard để xử lý thủ công.
-- **Auto-Mute:** Khi bị đối phương report với lý do quấy rối/spam, hệ thống sẽ kích hoạt trạng thái `isMuted` ngay lập tức, tước quyền gửi tin nhắn tạm thời của người vi phạm.
-
-### 3.6. Chính Sách Không Khoan Nhượng (Zero-Tolerance Policy)
-- Nghiêm cấm tuyệt đối các nội dung khỏa thân, hành vi tình dục (NSFW) hoặc bạo lực qua luồng Video/Image.
-- **AI Kiểm duyệt:** Tích hợp mô hình ML quét khung hình Video thời gian thực ở phía Frontend.
-- **Trừng phạt lập tức:** Nếu phát hiện vi phạm hoặc bị report hợp lệ, Backend sẽ lập tức ngắt WebRTC, sút người dùng khỏi phòng, cấm vĩnh viễn tài khoản (Account Ban) & dải IP thiết bị (IP Ban), đồng thời gửi email thông báo kỷ luật.
-
----
-
-## 4. Kiến Trúc Công Nghệ & Độ Bền Bỉ
-
-### ⚡ Backend (Spring Boot)
-- **Java 21** & **Spring Boot 4.0.6**.
-- **Spring Security & OAuth2 Client:** Quản lý phiên đăng nhập và định danh.
-- **Xác thực JWT Tàng hình:** Token được lưu tuyệt đối an toàn trong `HttpOnly` Cookie, chống XSS và rò rỉ qua URL.
-- **Spring Web / WebSocket:** Xử lý REST API và WebSocket/STOMP (cấu hình Heartbeat giữ nhịp liên tục).
-- **Graceful Shutdown:** Độ trễ 30s được thiết lập để server tắt an toàn, bảo vệ Database khi deploy.
-- **Log Rotation:** Tích hợp SLF4J với `logback-spring.xml` (Cắt file log tự động 10MB/file, giữ 30 ngày) giúp dọn dẹp log rác trên Production.
-- **Lombok:** Tự động tạo mã boilerplate. Tránh dùng `@Data` trên các thực thể JPA để ngăn lỗi đệ quy vô hạn.
-
-### 🎨 Frontend (React + Vite)
-- **Vite 8.0** & **React 19.2**.
-- **Tailwind CSS 4.2:** Thiết kế giao diện thuần Dark Mode hiện đại, trực quan và linh hoạt.
-- **Zustand 5.0:** Quản lý state toàn cục nhẹ nhàng, hiệu quả thông qua các slice chuyên biệt.
-- **SockJS & @stomp/stompjs:** Giao tiếp WebSocket thời gian thực (không dùng Socket.io).
-- **WebRTC Native APIs:** Truyền phát hình ảnh và âm thanh P2P trực tiếp giữa hai trình duyệt.
-
-### 🗄️ Cơ Sở Dữ Liệu & Cache
-- **MySQL:** Lưu trữ dữ liệu quan hệ có cấu trúc bền vững (Users, Friendships, Reports, Blocks). Sử dụng UUID (`VARCHAR(36)`) cho Identity Tables.
-- **MongoDB:** Lưu trữ dữ liệu tài liệu (Chat Session, Chat History, Private Messages, Feedback).
-- **Redis (Chống DDoS & Queue):** Làm hàng chờ kết nối. Trước khi chạy các Scheduled Tasks nặng, hệ thống có chốt chặn kiểm tra hàng chờ (`size < 2`) để chống vắt kiệt CPU. Quản lý danh sách đen tạm thời.
-
----
-
-## 5. Directory Structure / Cấu Trúc Thư Mục
+## 5. Directory Structure
 
 ```text
 mitmit/
@@ -316,7 +178,7 @@ mitmit/
 
 ---
 
-## 7. Development Rules / Quy Định Phát Triển (AGENTS.md)
+## 7. Development Rules (AGENTS.md)
 *For AI and Developers collaborating on this codebase:*
 
 - **Read Before Write:** Analyze existing codebase architecture (`frontend/src` or `backend/src`) before adding files.
