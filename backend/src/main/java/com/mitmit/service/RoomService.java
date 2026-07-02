@@ -26,6 +26,7 @@ public class RoomService {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
 
     public void handleMatchDecision(String userId, String sessionId) {
         String key = "room_match:" + sessionId;
@@ -56,7 +57,7 @@ public class RoomService {
                     user2.setMatchCount(user2.getMatchCount() + 1);
                     userRepository.saveAll(java.util.Arrays.asList(user1, user2));
 
-                    if (!friendshipRepository.existsByUserIdAndFriendId(user1, user2)) {
+                    if (!friendshipRepository.existsByUserIdAndFriendId(user1Id, user2Id)) {
                         Friendship f1 = Friendship.builder()
                                 .user1(user1)
                                 .user2(user2)
@@ -123,8 +124,13 @@ public class RoomService {
         List<ChatSession> activeSessions = chatSessionRepository.findByStartedAtBeforeAndEndedAtIsNullAndIsMatchedFalse(cutoff);
 
         for (ChatSession session : activeSessions) {
-            session.setEndedAt(LocalDateTime.now());
-            chatSessionRepository.save(session);
+            // Fix: Sử dụng MongoTemplate update 1 field duy nhất, không dùng .save() đè toàn bộ Document (chống Lost Update)
+            org.springframework.data.mongodb.core.query.Query query = new org.springframework.data.mongodb.core.query.Query(
+                org.springframework.data.mongodb.core.query.Criteria.where("_id").is(session.getId())
+            );
+            org.springframework.data.mongodb.core.query.Update update = new org.springframework.data.mongodb.core.query.Update()
+                .set("endedAt", LocalDateTime.now());
+            mongoTemplate.updateFirst(query, update, ChatSession.class);
 
             // Gói vào Map để ép Java hiểu đây là một Object (JSON), hết bị lú!
             Map<String, String> payload = new HashMap<>();
