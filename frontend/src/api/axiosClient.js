@@ -8,6 +8,20 @@ const axiosClient = axios.create({
   withCredentials: true,
 });
 
+// Add a request interceptor
+axiosClient.interceptors.request.use(
+  function (config) {
+    const token = localStorage.getItem('mitmit_jwt_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  function (error) {
+    return Promise.reject(error);
+  }
+);
+
 // Add a response interceptor
 axiosClient.interceptors.response.use(
   function (response) {

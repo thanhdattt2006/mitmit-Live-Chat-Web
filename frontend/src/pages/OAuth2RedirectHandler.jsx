@@ -13,11 +13,15 @@ export default function OAuth2RedirectHandler() {
 
   useEffect(() => {
     const error = searchParams.get('error');
+    const token = searchParams.get('token');
 
     if (error) {
       alert(t.LOGIN_FAILED + error);
       navigate('/', { replace: true });
     } else {
+      if (token) {
+        localStorage.setItem('mitmit_jwt_token', token);
+      }
       navigate(location.pathname, { replace: true });
       loginWithToken();
       navigate('/', { replace: true });

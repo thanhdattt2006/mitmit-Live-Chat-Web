@@ -128,7 +128,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            response.sendRedirect(frontendUrl.split(",")[0] + "/oauth2/redirect");
+            response.sendRedirect(frontendUrl.split(",")[0] + "/oauth2/redirect?token=" + token);
 
         } catch (Exception e) {
             log.error("Error occurred during OAuth2 authentication success handler", e);
