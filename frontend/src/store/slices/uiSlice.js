@@ -10,7 +10,8 @@ export const createUiSlice = (set) => ({
     try {
       const axiosClient = (await import('../../api/axiosClient')).default;
       const res = await axiosClient.get('/api/v1/stats/online-count');
-      set({ onlineCount: res.data || 0 });
+      const count = typeof res === 'number' ? res : (res?.data || 0);
+      set({ onlineCount: count });
     } catch (error) {
       console.error("Lỗi lấy online count:", error);
     }
