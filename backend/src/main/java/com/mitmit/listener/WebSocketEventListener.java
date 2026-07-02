@@ -25,7 +25,14 @@ public class WebSocketEventListener {
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String userId = headerAccessor.getFirstNativeHeader("userId");
+        String userId = null;
+        if (headerAccessor.getUser() != null) {
+            userId = headerAccessor.getUser().getName();
+        }
+        // Fallback for older clients
+        if (userId == null) {
+            userId = headerAccessor.getFirstNativeHeader("userId");
+        }
         if (userId != null) {
             Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
             if (sessionAttributes != null) {
