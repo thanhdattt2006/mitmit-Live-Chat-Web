@@ -11,9 +11,21 @@ import { Toaster } from 'react-hot-toast';
 import bgPattern from './assets/bg-pattern.png';
 
 function AppContent() {
-  const { updateOnlineCount } = useStore();
+  const { updateOnlineCount, isLoggedIn, userInfo } = useStore();
   const location = useLocation();
   const showHeader = location.pathname === '/';
+
+  useEffect(() => {
+    if (isLoggedIn && userInfo?.id) {
+      import('./api/socketClient').then(({ default: socketService }) => {
+        socketService.connect(userInfo.id, null, null).catch(err => console.error("Global STOMP connect error:", err));
+      });
+    } else {
+      import('./api/socketClient').then(({ default: socketService }) => {
+        socketService.disconnect();
+      });
+    }
+  }, [isLoggedIn, userInfo?.id]);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
