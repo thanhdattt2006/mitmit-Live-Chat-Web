@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 public class StompChannelInterceptor implements ChannelInterceptor {
 
     private final JwtUtil jwtUtil;
+    private final com.mitmit.service.RedisService redisService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -49,6 +50,10 @@ public class StompChannelInterceptor implements ChannelInterceptor {
                     java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
                     if (sessionAttributes != null) {
                         sessionAttributes.put("userId", userId);
+                        
+                        // ĐẾM ONLINE NGAY TẠI ĐÂY!
+                        // Vì các EventListener có thể gặp lỗi mất SessionAttributes ở bước CONNECTED
+                        redisService.addToSet("online_users", userId);
                     }
                 } else {
                     throw new IllegalArgumentException("Invalid or missing JWT token");
