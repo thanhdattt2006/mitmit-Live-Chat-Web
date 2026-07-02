@@ -11,8 +11,23 @@ class SocketService {
       this.onMatchSuccess = onMatchSuccess;
       this.onSignalReceived = onSignalReceived;
 
-      if (this.stompClient && this.stompClient.active) {
-        resolve();
+      if (this.stompClient) {
+        if (this.stompClient.active) {
+          resolve();
+        } else {
+          // It's currently connecting, just wait for the existing connect process
+          const checkInterval = setInterval(() => {
+            if (this.stompClient && this.stompClient.active) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+          
+          // Timeout after 10s
+          setTimeout(() => {
+            clearInterval(checkInterval);
+          }, 10000);
+        }
         return;
       }
 

@@ -23,20 +23,12 @@ public class WebSocketEventListener {
     private static final String ONLINE_USERS_KEY = "online_users";
 
     @EventListener
-    public void handleWebSocketConnectListener(SessionConnectEvent event) {
+    public void handleWebSocketConnectedListener(org.springframework.web.socket.messaging.SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String userId = null;
-        if (headerAccessor.getUser() != null) {
-            userId = headerAccessor.getUser().getName();
-        }
-        // Fallback for older clients
-        if (userId == null) {
-            userId = headerAccessor.getFirstNativeHeader("userId");
-        }
-        if (userId != null) {
-            Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
-            if (sessionAttributes != null) {
-                sessionAttributes.put("userId", userId);
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes != null) {
+            String userId = (String) sessionAttributes.get("userId");
+            if (userId != null) {
                 log.info("User connected via STOMP: {}", userId);
                 redisService.addToSet(ONLINE_USERS_KEY, userId);
             }

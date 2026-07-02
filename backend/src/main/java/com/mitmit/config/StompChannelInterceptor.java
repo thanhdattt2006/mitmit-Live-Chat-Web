@@ -44,6 +44,12 @@ public class StompChannelInterceptor implements ChannelInterceptor {
                     String userId = jwtUtil.extractUserId(token);
                     Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, null);
                     accessor.setUser(auth);
+                    
+                    // Lưu userId vào SessionAttributes để các EventListener và Interceptor khác dùng lại
+                    java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+                    if (sessionAttributes != null) {
+                        sessionAttributes.put("userId", userId);
+                    }
                 } else {
                     throw new IllegalArgumentException("Invalid or missing JWT token");
                 }
