@@ -38,9 +38,8 @@ public class MatchmakingService {
 
     public void joinQueue(String userId, String callType) {
         String queueKey = QUEUE_PREFIX + callType;
-        // 1. Xử lý Lỗi Duplicate Queue: Xóa user khỏi hàng đợi (nếu có) trước khi đẩy xuống cuối hàng
-        redisService.removeFromQueue(queueKey, userId);
-        redisService.pushToQueue(queueKey, userId);
+        // 1. Xử lý Lỗi Duplicate Queue: Xóa user khỏi hàng đợi (nếu có) trước khi đẩy xuống cuối hàng (Đã fix Race Condition)
+        redisService.joinQueueAtomic(queueKey, userId);
     }
 
     @Scheduled(fixedDelay = 2000)
@@ -79,10 +78,8 @@ public class MatchmakingService {
                     continue;
                 }
 
-                // Chặn ghép cặp lại với Bạn Bè
-                User user1 = userRepository.findById(user1Id).orElse(null);
-                User user2 = userRepository.findById(user2Id).orElse(null);
-                if (user1 != null && user2 != null && friendshipRepository.existsByUserIdAndFriendId(user1, user2)) {
+                // Chặn ghép cặp lại với Bạn Bè (Fix Performance: Tối ưu query DB)
+                if (friendshipRepository.existsByUserIdAndFriendId(user1Id, user2Id)) {
                     requeueUsers.add(user1Id);
                     requeueUsers.add(user2Id);
                     continue;

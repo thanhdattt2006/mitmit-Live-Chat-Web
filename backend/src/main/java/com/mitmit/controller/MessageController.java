@@ -39,7 +39,7 @@ public class MessageController {
     }
 
     @MessageMapping("/chat.private")
-    public void handlePrivateMessage(Authentication authentication, @Payload ChatMessage messageRequest) {
+    public void handlePrivateMessage(Authentication authentication, @jakarta.validation.Valid @Payload ChatMessage messageRequest) {
         if (authentication == null || authentication.getName() == null) {
             throw new SecurityException("Unauthorized STOMP connection");
         }
@@ -83,7 +83,7 @@ public class MessageController {
     @PostMapping
     public ResponseEntity<ChatMessage> sendMessage(
             Authentication authentication,
-            @RequestBody ChatMessage messageRequest) {
+            @jakarta.validation.Valid @RequestBody ChatMessage messageRequest) {
         if (authentication == null || authentication.getName() == null) {
             throw new SecurityException("Unauthorized HTTP request");
         }

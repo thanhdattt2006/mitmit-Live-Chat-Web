@@ -182,6 +182,12 @@ export const createMatchSlice = (set, get) => ({
       const { roomSubscriptions } = get();
       roomSubscriptions?.forEach(sub => sub.unsubscribe());
       set({ roomSubscriptions: [] });
+      
+      const currentState = get();
+      if (currentState.localStream) {
+        currentState.localStream.getTracks().forEach(track => track.stop());
+        currentState.setLocalStream?.(null);
+      }
     } finally {
       set({ isConnected: false, isMatching: false });
       try {
@@ -209,6 +215,12 @@ export const createMatchSlice = (set, get) => ({
       const { roomSubscriptions } = get();
       roomSubscriptions?.forEach(sub => sub.unsubscribe());
       set({ roomSubscriptions: [] });
+      
+      const currentState = get();
+      if (currentState.localStream) {
+        currentState.localStream.getTracks().forEach(track => track.stop());
+        currentState.setLocalStream?.(null);
+      }
     } finally {
       set({ isConnected: false, isMatching: false });
       try {

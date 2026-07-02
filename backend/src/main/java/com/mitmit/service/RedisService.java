@@ -15,6 +15,15 @@ public class RedisService {
         redisTemplate.opsForList().rightPush(queueName, value);
     }
 
+    public void joinQueueAtomic(String queueName, String value) {
+        String luaScript = "redis.call('LREM', KEYS[1], 0, ARGV[1]); " +
+                           "redis.call('RPUSH', KEYS[1], ARGV[1]); " +
+                           "return 1;";
+        org.springframework.data.redis.core.script.RedisScript<Long> script = 
+            new org.springframework.data.redis.core.script.DefaultRedisScript<>(luaScript, Long.class);
+        redisTemplate.execute(script, java.util.Collections.singletonList(queueName), value);
+    }
+
     public String popFromQueue(String queueName) {
         Object value = redisTemplate.opsForList().leftPop(queueName);
         return value != null ? value.toString() : null;

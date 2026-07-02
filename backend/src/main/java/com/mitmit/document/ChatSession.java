@@ -28,4 +28,7 @@ public class ChatSession {
     private LocalDateTime endedAt;
     
     private boolean isMatched;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 }

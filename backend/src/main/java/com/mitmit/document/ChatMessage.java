@@ -26,6 +26,7 @@ public class ChatMessage {
 
     private String senderId;
     private String type; // TEXT hoặc VOICE hoặc IMAGE
+    @jakarta.validation.constraints.Size(max = 2000, message = "Nội dung tin nhắn không được vượt quá 2000 ký tự")
     private String content;
     private String replyToId;
     @Builder.Default

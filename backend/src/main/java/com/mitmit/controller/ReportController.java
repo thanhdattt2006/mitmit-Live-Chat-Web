@@ -22,7 +22,7 @@ public class ReportController {
     @PostMapping("/reports")
     public ResponseEntity<Report> createReport(
             Authentication authentication,
-            @RequestBody ReportRequest request) {
+            @jakarta.validation.Valid @RequestBody ReportRequest request) {
         String reporterId = (String) authentication.getPrincipal();
         Report report = reportService.createReport(
                 reporterId,
@@ -37,7 +37,7 @@ public class ReportController {
     @PostMapping("/reports/nsfw")
     public ResponseEntity<Void> reportNsfw(
             Authentication authentication,
-            @RequestBody ReportRequest request,
+            @jakarta.validation.Valid @RequestBody ReportRequest request,
             jakarta.servlet.http.HttpServletRequest httpRequest) {
         String ipAddress = httpRequest.getRemoteAddr();
         reportService.banUserNsfw(request.getReportedId(), ipAddress);
@@ -86,9 +86,16 @@ public class ReportController {
 
     @Data
     public static class ReportRequest {
+        @jakarta.validation.constraints.NotBlank(message = "ID người bị tố cáo không được để trống")
         private String reportedId;
+        
+        @jakarta.validation.constraints.NotBlank(message = "Lý do không được để trống")
+        @jakarta.validation.constraints.Size(max = 255, message = "Lý do quá dài")
         private String reason;
+        
+        @jakarta.validation.constraints.Size(max = 1000, message = "Chi tiết không vượt quá 1000 ký tự")
         private String details;
+        
         private Boolean isFromInbox;
     }
 
