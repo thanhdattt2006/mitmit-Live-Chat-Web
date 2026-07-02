@@ -48,7 +48,7 @@ public class StompChannelInterceptor implements ChannelInterceptor {
 
                     // 1. Tạo bản sao Mutable (có thể chỉnh sửa) từ Message ban đầu
                     StompHeaderAccessor mutableAccessor = StompHeaderAccessor.wrap(message);
-                    
+
                     // 2. Gắn User hợp lệ vào
                     mutableAccessor.setUser(auth);
 
@@ -60,9 +60,10 @@ public class StompChannelInterceptor implements ChannelInterceptor {
                         // ĐẾM ONLINE NGAY TẠI ĐÂY!
                         redisService.addToSet("online_users", userId);
                     }
-                    
+
                     // 4. Trả về Message MỚI đã được gắn User (Cực kỳ quan trọng để không bị Crash)
-                    return org.springframework.messaging.support.MessageBuilder.createMessage(message.getPayload(), mutableAccessor.getMessageHeaders());
+                    return org.springframework.messaging.support.MessageBuilder.createMessage(message.getPayload(),
+                            mutableAccessor.getMessageHeaders());
                 } else {
                     throw new IllegalArgumentException("Invalid or missing JWT token");
                 }

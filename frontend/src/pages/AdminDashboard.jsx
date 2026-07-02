@@ -28,7 +28,8 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       const res = await axiosClient.get('/api/v1/reports');
-      setReports(res.data?.content || []);
+      const data = res?.data || res;
+      setReports(data?.content || []);
     } catch (err) {
       console.error("Lỗi lấy danh sách report", err);
     } finally {
@@ -40,7 +41,8 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       const res = await axiosClient.get('/api/v1/feedbacks');
-      setFeedbacks(res.data || []);
+      const data = res?.data || res;
+      setFeedbacks(data || []);
     } catch (err) {
       console.error("Lỗi lấy danh sách feedback", err);
     } finally {
@@ -52,7 +54,8 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       const res = await axiosClient.get('/api/v1/users');
-      setUsers(res.data || []);
+      const data = res?.data || res;
+      setUsers(data || []);
     } catch (err) {
       console.error("Lỗi lấy danh sách người dùng", err);
     } finally {

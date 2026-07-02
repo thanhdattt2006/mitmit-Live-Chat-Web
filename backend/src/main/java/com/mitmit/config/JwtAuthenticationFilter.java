@@ -20,6 +20,7 @@ import java.util.ArrayList;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final com.mitmit.repository.UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -53,13 +54,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (jwtUtil.validateToken(jwt)) {
                 String userId = jwtUtil.extractUserId(jwt);
+                com.mitmit.entity.User user = userRepository.findById(userId).orElse(null);
+                
+                if (user != null) {
+                    java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new ArrayList<>();
+                    authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
-                // Assuming authorities are not needed right now, empty list
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userId, null, new ArrayList<>());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userId, null, authorities);
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
         } catch (Exception e) {
             log.warn("Invalid token: " + e.getMessage());
