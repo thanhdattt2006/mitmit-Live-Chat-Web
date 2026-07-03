@@ -28,10 +28,25 @@ export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching,
               
               if (pornProb > 0.85 || hentaiProb > 0.85) {
                 console.error("NSFW Content detected. Auto-reporting...");
+                
+                let base64Image = "";
+                if (ref && ref.current) {
+                  try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = ref.current.videoWidth || 640;
+                    canvas.height = ref.current.videoHeight || 480;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(ref.current, 0, 0, canvas.width, canvas.height);
+                    base64Image = canvas.toDataURL('image/jpeg', 0.5);
+                  } catch (e) {
+                    console.error("Failed to capture evidence", e);
+                  }
+                }
+
                 await axiosClient.post('/api/v1/reports/nsfw', {
-                  reportedId: remoteUserId
+                  reportedId: remoteUserId,
+                  evidenceImage: base64Image || "NO_EVIDENCE"
                 });
-              }
               }
             } catch (err) {
               // Ignore classify errors

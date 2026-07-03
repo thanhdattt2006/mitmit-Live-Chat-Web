@@ -28,6 +28,7 @@ public class ReportService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatSessionRepository chatSessionRepository;
     private final EmailService emailService;
+    private final com.mitmit.repository.NsfwEvidenceRepository nsfwEvidenceRepository;
 
     @Transactional
     public Report createReport(String reporterId, String reportedId, String reason, String details, Boolean isFromInbox) {
@@ -93,11 +94,29 @@ public class ReportService {
     }
 
     @Transactional
-    public void banUserNsfw(String reportedId, String ipAddress) {
+    public void banUserNsfw(String reportedId, String evidenceImage, String ipAddress) {
+        // Lưu bằng chứng xuống MongoDB
+        com.mitmit.document.NsfwEvidence evidence = com.mitmit.document.NsfwEvidence.builder()
+                .reportedId(reportedId)
+                .evidenceData(evidenceImage)
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
+        nsfwEvidenceRepository.save(evidence);
+
         User reported = userRepository.findById(reportedId)
                 .orElseThrow(() -> new RuntimeException("Reported user not found"));
         reported.setStatus(UserStatus.BANNED);
         userRepository.save(reported);
+
+        // Tạo Report trong MySQL để lưu dấu vết (Hệ thống tự động cảnh báo)
+        Report systemReport = Report.builder()
+                .reporter(null) // null có nghĩa là System
+                .reported(reported)
+                .reason("NSFW")
+                .description("Hệ thống AI tự động phát hiện hành vi trình chiếu nội dung nhạy cảm, đồi trụy (NSFW). ID bằng chứng MongoDB: " + evidence.getId())
+                .status(ReportStatus.RESOLVED)
+                .build();
+        reportRepository.save(systemReport);
 
         if (ipAddress != null && !ipAddress.isEmpty()) {
             redisService.addToSetWithExpire("blacklist:ip", ipAddress, 5256000);

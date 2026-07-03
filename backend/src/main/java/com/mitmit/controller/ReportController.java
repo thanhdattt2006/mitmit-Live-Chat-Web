@@ -37,10 +37,10 @@ public class ReportController {
     @PostMapping("/reports/nsfw")
     public ResponseEntity<Void> reportNsfw(
             Authentication authentication,
-            @jakarta.validation.Valid @RequestBody ReportRequest request,
+            @jakarta.validation.Valid @RequestBody com.mitmit.dto.NsfwReportRequest request,
             jakarta.servlet.http.HttpServletRequest httpRequest) {
         String ipAddress = httpRequest.getRemoteAddr();
-        reportService.banUserNsfw(request.getReportedId(), ipAddress);
+        reportService.banUserNsfw(request.getReportedId(), request.getEvidenceImage(), ipAddress);
         return ResponseEntity.ok().build();
     }
 
