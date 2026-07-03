@@ -169,6 +169,11 @@ export const translations = {
     NO_DETAIL: 'No detail',
     VIEW: 'View',
     USER_DETAILS: 'User Details',
+    PROFANITY_WARNING_TITLE: 'Warning: Policy Violation',
+    PROFANITY_WARNING_DESC: 'Your message contains inappropriate language or prohibited links. This is strike {strike}/5.',
+    PROFANITY_MUTED_TITLE: 'Account Muted',
+    PROFANITY_MUTED_DESC: 'You have been muted for repeated violations (5/5 strikes). You can no longer send messages.',
+    I_UNDERSTAND: 'I Understand',
   },
   vi: {
     LOGO_TITLE: 'mit',
@@ -342,5 +347,10 @@ export const translations = {
     NO_DETAIL: 'Không có chi tiết',
     VIEW: 'Xem',
     USER_DETAILS: 'Chi tiết Người Dùng',
+    PROFANITY_WARNING_TITLE: 'Cảnh Cáo: Vi Phạm Tiêu Chuẩn',
+    PROFANITY_WARNING_DESC: 'Tin nhắn của bạn chứa ngôn từ không phù hợp hoặc liên kết bị cấm. Đây là cảnh cáo lần {strike}/5.',
+    PROFANITY_MUTED_TITLE: 'Tài Khoản Bị Cấm Chat',
+    PROFANITY_MUTED_DESC: 'Bạn đã bị cấm chat do vi phạm nhiều lần (5/5). Bạn không thể gửi tin nhắn nữa.',
+    I_UNDERSTAND: 'Tôi đã hiểu',
   },
 };

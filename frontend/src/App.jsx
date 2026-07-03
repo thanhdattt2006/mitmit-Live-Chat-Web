@@ -6,6 +6,7 @@ import RoomPage from './pages/RoomPage';
 import AdminDashboard from './pages/AdminDashboard';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import FeedbackModal from './components/common/FeedbackModal';
+import ProfanityWarningModal from './components/common/ProfanityWarningModal';
 import NotFoundPage from './pages/NotFoundPage';
 import { Toaster } from 'react-hot-toast';
 import bgPattern from './assets/bg-pattern.png';
@@ -57,6 +58,7 @@ function AppContent() {
         </Routes>
       </main>
       <FeedbackModal />
+      <ProfanityWarningModal />
       <Toaster position="top-center" toastOptions={{ style: { background: '#333', color: '#fff' } }} />
     </div>
   );

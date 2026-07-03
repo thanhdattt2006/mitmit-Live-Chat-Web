@@ -5,6 +5,9 @@ export const createUiSlice = (set) => ({
   isInboxOpen: false,
   setInboxOpen: (open) => set({ isInboxOpen: open }),
 
+  profanityWarning: null,
+  setProfanityWarning: (strikes) => set({ profanityWarning: strikes }),
+
   onlineCount: 0,
   updateOnlineCount: async () => {
     try {

@@ -60,7 +60,7 @@ public class ProfanityFilterService {
             redisTemplate.expire(key, 24, TimeUnit.HOURS);
         }
 
-        if (currentStrikes != null && currentStrikes >= 3) {
+        if (currentStrikes != null && currentStrikes >= 5) {
             // Mute user
             User user = userRepository.findById(userId).orElse(null);
             if (user != null && !user.isMuted()) {
@@ -68,8 +68,11 @@ public class ProfanityFilterService {
                 userRepository.save(user);
                 
                 // Send STOMP signal to user to log them out or show message
-                messagingTemplate.convertAndSend("/queue/chat-" + userId, "{\"type\": \"SYSTEM_MUTE\", \"content\": \"Bạn đã bị cấm chat do vi phạm tiêu chuẩn cộng đồng.\"}");
+                messagingTemplate.convertAndSend("/topic/system/" + userId, "{\"type\": \"SYSTEM_MUTE\", \"content\": \"Bạn đã bị cấm chat do vi phạm tiêu chuẩn cộng đồng.\"}");
             }
+        } else if (currentStrikes != null && currentStrikes < 5) {
+            // Send warning
+            messagingTemplate.convertAndSend("/topic/system/" + userId, "{\"type\": \"PROFANITY_WARNING\", \"strikes\": " + currentStrikes + "}");
         }
     }
 }

@@ -55,7 +55,7 @@ class SocketService {
           }
           this.wasConnected = true;
 
-          // Real-time Kill Switch
+          // Real-time Kill Switch & System Warnings
           this.systemSubscription = this.stompClient.subscribe(`/topic/system/${userId}`, (message) => {
             if (message.body) {
               try {
@@ -69,6 +69,14 @@ class SocketService {
                   this.disconnect();
                   localStorage.removeItem('mitmit_jwt_token');
                   window.location.href = '/?error=account_banned';
+                } else if (data.type === 'PROFANITY_WARNING') {
+                  import('../store/useStore').then((store) => {
+                    store.default.getState().setProfanityWarning(data.strikes);
+                  });
+                } else if (data.type === 'SYSTEM_MUTE') {
+                  import('../store/useStore').then((store) => {
+                    store.default.getState().setProfanityWarning(5);
+                  });
                 }
               } catch (err) {
                 console.error('Failed to parse system message:', err);
