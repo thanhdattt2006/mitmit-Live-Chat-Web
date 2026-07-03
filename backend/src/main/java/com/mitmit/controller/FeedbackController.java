@@ -18,6 +18,8 @@ public class FeedbackController {
 
     private final FeedbackRepository feedbackRepository;
 
+    private final com.mitmit.repository.UserRepository userRepository;
+
     @PostMapping
     public ResponseEntity<?> submitFeedback(Authentication authentication, @RequestBody Map<String, Object> payload) {
         String userId = authentication.getName();
@@ -40,7 +42,32 @@ public class FeedbackController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Feedback>> getAllFeedbacks() {
-        return ResponseEntity.ok(feedbackRepository.findAllByOrderByCreatedAtDesc());
+    public ResponseEntity<List<FeedbackResponse>> getAllFeedbacks() {
+        List<Feedback> feedbacks = feedbackRepository.findAllByOrderByCreatedAtDesc();
+        List<FeedbackResponse> responses = feedbacks.stream().map(f -> {
+            com.mitmit.entity.User user = userRepository.findById(f.getUserId()).orElse(null);
+            return FeedbackResponse.builder()
+                    .id(f.getId())
+                    .userId(f.getUserId())
+                    .userName(user != null ? (user.getAnonymousName() != null ? user.getAnonymousName() : user.getEmail()) : "Unknown")
+                    .avatarUrl(user != null ? user.getAvatarUrl() : null)
+                    .rating(f.getRating())
+                    .comment(f.getComment())
+                    .createdAt(f.getCreatedAt())
+                    .build();
+        }).collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @lombok.Data
+    @lombok.Builder
+    public static class FeedbackResponse {
+        private Long id;
+        private String userId;
+        private String userName;
+        private String avatarUrl;
+        private int rating;
+        private String comment;
+        private java.time.LocalDateTime createdAt;
     }
 }

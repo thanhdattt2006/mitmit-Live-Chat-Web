@@ -60,8 +60,15 @@ public class ReportService {
         return report;
     }
 
-    public Page<Report> getPendingReports(Pageable pageable) {
-        return reportRepository.findByStatus(ReportStatus.PENDING, pageable);
+    public Page<Report> getReports(String status, Pageable pageable) {
+        if (status == null || status.isEmpty() || status.equalsIgnoreCase("ALL")) {
+            return reportRepository.findAll(pageable);
+        }
+        try {
+            return reportRepository.findByStatus(ReportStatus.valueOf(status.toUpperCase()), pageable);
+        } catch (IllegalArgumentException e) {
+            return reportRepository.findAll(pageable);
+        }
     }
 
     @Transactional

@@ -47,18 +47,30 @@ public class ReportController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports")
     public ResponseEntity<Page<ReportResponse>> getReports(
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<Report> reports = reportService.getPendingReports(PageRequest.of(page, size));
+        Page<Report> reports = reportService.getReports(status, PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending()));
         Page<ReportResponse> response = reports.map(r -> ReportResponse.builder()
                 .id(r.getId())
                 .reportedId(r.getReported().getId())
                 .reportedUser(r.getReported().getAnonymousName() != null ? r.getReported().getAnonymousName() : r.getReported().getEmail())
                 .avatarUrl(r.getReported().getAvatarUrl())
-                .reporter(r.getReporter().getAnonymousName() != null ? r.getReporter().getAnonymousName() : r.getReporter().getEmail())
+                .reporter(r.getReporter() != null ? (r.getReporter().getAnonymousName() != null ? r.getReporter().getAnonymousName() : r.getReporter().getEmail()) : "System AI")
                 .reason(r.getReason())
+                .description(r.getDescription())
+                .status(r.getStatus().name())
+                .createdAt(r.getCreatedAt())
                 .build());
         return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/evidence/{evidenceId}")
+    public ResponseEntity<java.util.Map<String, String>> getEvidence(@PathVariable String evidenceId, @org.springframework.beans.factory.annotation.Autowired com.mitmit.repository.NsfwEvidenceRepository nsfwEvidenceRepository) {
+        return nsfwEvidenceRepository.findById(evidenceId)
+                .map(evidence -> ResponseEntity.ok(java.util.Map.of("evidenceData", evidence.getEvidenceData())))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -108,5 +120,8 @@ public class ReportController {
         private String avatarUrl;
         private String reporter;
         private String reason;
+        private String description;
+        private String status;
+        private java.time.LocalDateTime createdAt;
     }
 }

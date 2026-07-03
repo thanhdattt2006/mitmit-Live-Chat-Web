@@ -12,4 +12,5 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByGoogleId(String googleId);
     Optional<User> findByGithubId(String githubId);
     boolean existsByEmail(String email);
+    java.util.List<User> findByRole(com.mitmit.entity.Role role);
 }

@@ -41,6 +41,6 @@ public class UserController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<java.util.List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return ResponseEntity.ok(userRepository.findByRole(com.mitmit.entity.Role.USER));
     }
 }
