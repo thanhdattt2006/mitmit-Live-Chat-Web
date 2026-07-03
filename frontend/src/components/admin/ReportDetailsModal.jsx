@@ -44,7 +44,7 @@ export default function ReportDetailsModal({ isOpen, onClose, report, handleActi
 
         <div className="p-6 border-b border-white/10 bg-white/5 flex items-center gap-3">
           <ShieldAlert className="w-6 h-6 text-rose-500" />
-          <h2 className="text-xl font-bold">Chi Tiết Báo Cáo #{report.id}</h2>
+          <h2 className="text-xl font-bold">{t.REPORT_DETAILS}{report.id}</h2>
         </div>
 
         <div className="p-6 overflow-y-auto space-y-6 flex-1">
@@ -76,22 +76,22 @@ export default function ReportDetailsModal({ isOpen, onClose, report, handleActi
           </div>
 
           <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-            <p className="text-sm text-gray-400 mb-2">Mô tả chi tiết</p>
-            <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{report.description || 'Không có mô tả'}</p>
+            <p className="text-sm text-gray-400 mb-2">{t.DESCRIPTION}</p>
+            <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{report.description || t.NO_DESCRIPTION}</p>
           </div>
 
           {report.reason === 'NSFW' && (
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-              <p className="text-sm text-gray-400 mb-3 flex items-center gap-2"><EyeOff className="w-4 h-4" /> Bằng chứng (AI Chụp)</p>
+              <p className="text-sm text-gray-400 mb-3 flex items-center gap-2"><EyeOff className="w-4 h-4" /> {t.EVIDENCE_IMAGE}</p>
               {isLoadingEvidence ? (
                 <div className="h-48 flex items-center justify-center bg-black/50 rounded-xl border border-dashed border-white/20">
-                  <span className="text-gray-500 animate-pulse">Đang tải ảnh bằng chứng...</span>
+                  <span className="text-gray-500 animate-pulse">{t.LOADING_EVIDENCE}</span>
                 </div>
               ) : evidenceData ? (
                 <img src={evidenceData} className="w-full max-h-[500px] object-contain rounded-xl border border-white/10 bg-black" alt="NSFW Evidence" />
               ) : (
                 <div className="h-48 flex items-center justify-center bg-black/50 rounded-xl border border-dashed border-white/20">
-                  <span className="text-gray-500">Không có ảnh bằng chứng</span>
+                  <span className="text-gray-500">{t.NO_EVIDENCE}</span>
                 </div>
               )}
             </div>
@@ -104,13 +104,13 @@ export default function ReportDetailsModal({ isOpen, onClose, report, handleActi
               onClick={() => handleAction('ignore', report.id)}
               className="px-6 py-2.5 rounded-xl font-semibold bg-neutral-800 hover:bg-neutral-700 transition-colors"
             >
-              Bỏ Qua
+              {t.IGNORE}
             </button>
             <button 
               onClick={() => handleAction('ban', { reportId: report.id, reportedId: report.reportedId })}
               className="px-6 py-2.5 rounded-xl font-bold bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2"
             >
-              <Ban className="w-4 h-4" /> Tử Hình (Ban)
+              <Ban className="w-4 h-4" /> {t.BAN_USER}
             </button>
           </div>
         )}

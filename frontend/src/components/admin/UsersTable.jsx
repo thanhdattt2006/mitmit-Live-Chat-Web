@@ -1,7 +1,7 @@
 import React from 'react';
-import { Users, Unlock, Ban } from 'lucide-react';
+import { Users, Unlock, Eye } from 'lucide-react';
 
-export default function UsersTable({ t, users, isLoading, handleUnban, handleBan }) {
+export default function UsersTable({ t, users, isLoading, handleUnban, handleView }) {
   return (
     <div className='overflow-x-auto'>
       <table className='w-full text-left min-w-[700px]'>
@@ -62,21 +62,20 @@ export default function UsersTable({ t, users, isLoading, handleUnban, handleBan
                   {u.matchCount}
                 </td>
                 <td className='px-6 py-5 text-right space-x-3'>
-                  {u.status === 'BANNED' ? (
+                  {u.status === 'BANNED' && (
                     <button
                       onClick={() => handleUnban(u.id)}
                       className='inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5'
                     >
                       <Unlock className='w-4 h-4' /> {t.UNBAN}
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => handleBan(u)}
-                      className='inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5'
-                    >
-                      <Ban className='w-4 h-4' /> {t.BAN_USER}
-                    </button>
                   )}
+                  <button
+                    onClick={() => handleView(u)}
+                    className='inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5'
+                  >
+                    <Eye className='w-4 h-4' /> {t.VIEW}
+                  </button>
                 </td>
               </tr>
             ))

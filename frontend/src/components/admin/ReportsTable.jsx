@@ -9,7 +9,7 @@ export default function ReportsTable({ t, reports, isLoading, onView }) {
           <tr>
             <th className='px-6 py-5 font-semibold'>{t.REPORTED_USER}</th>
             <th className='px-6 py-5 font-semibold'>{t.REPORTER}</th>
-            <th className='px-6 py-5 font-semibold'>Chi tiết</th>
+            <th className='px-6 py-5 font-semibold'>{t.DETAIL}</th>
             <th className='px-6 py-5 font-semibold'>{t.STATUS}</th>
             <th className='px-6 py-5 font-semibold text-right'>{t.ACTION}</th>
           </tr>
@@ -50,7 +50,7 @@ export default function ReportsTable({ t, reports, isLoading, onView }) {
                       {r.reason}
                     </span>
                     <span className='text-sm text-gray-400 truncate max-w-[200px] block'>
-                      {r.description || 'Không có chi tiết'}
+                      {r.description || t.NO_DETAIL}
                     </span>
                   </div>
                 </td>
@@ -64,7 +64,7 @@ export default function ReportsTable({ t, reports, isLoading, onView }) {
                     onClick={() => onView(r)}
                     className='inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5'
                   >
-                    <Eye className='w-4 h-4' /> View
+                    <Eye className='w-4 h-4' /> {t.VIEW}
                   </button>
                 </td>
               </tr>

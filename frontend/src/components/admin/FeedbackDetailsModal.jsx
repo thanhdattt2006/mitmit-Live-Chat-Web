@@ -15,7 +15,7 @@ export default function FeedbackDetailsModal({ isOpen, onClose, feedback, t }) {
 
         <div className="p-6 border-b border-white/10 bg-white/5 flex items-center gap-3">
           <MessageSquare className="w-6 h-6 text-blue-500" />
-          <h2 className="text-xl font-bold">Chi Tiết Góp Ý #{feedback.id}</h2>
+          <h2 className="text-xl font-bold">{t.FEEDBACK_DETAILS}{feedback.id}</h2>
         </div>
 
         <div className="p-6 overflow-y-auto space-y-6">
@@ -37,9 +37,9 @@ export default function FeedbackDetailsModal({ isOpen, onClose, feedback, t }) {
           </div>
 
           <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-            <p className="text-sm text-gray-400 mb-2">Nội dung chi tiết</p>
+            <p className="text-sm text-gray-400 mb-2">{t.DETAIL_CONTENT}</p>
             <p className="text-gray-300 whitespace-pre-wrap leading-relaxed text-lg">
-              {feedback.comment || <span className="text-gray-500 italic">Không có nội dung chữ.</span>}
+              {feedback.comment || <span className="text-gray-500 italic">{t.NO_TEXT_CONTENT}</span>}
             </p>
           </div>
         </div>

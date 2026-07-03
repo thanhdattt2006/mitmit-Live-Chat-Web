@@ -65,7 +65,7 @@ export default function FeedbacksTable({ t, feedbacks, isLoading, onView }) {
                     onClick={() => onView(f)}
                     className='inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5'
                   >
-                    <Eye className='w-4 h-4' /> View
+                    <Eye className='w-4 h-4' /> {t.VIEW}
                   </button>
                 </td>
               </tr>

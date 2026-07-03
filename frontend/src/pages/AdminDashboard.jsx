@@ -14,6 +14,7 @@ import UsersTable from '../components/admin/UsersTable';
 import ConfirmModal from '../components/common/ConfirmModal';
 import ReportDetailsModal from '../components/admin/ReportDetailsModal';
 import FeedbackDetailsModal from '../components/admin/FeedbackDetailsModal';
+import UserDetailsModal from '../components/admin/UserDetailsModal';
 
 export default function AdminDashboard() {
   const { userInfo, onlineCount, lang } = useStore();
@@ -29,6 +30,7 @@ export default function AdminDashboard() {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', payload: null, title: '', message: '', isDanger: false });
   const [reportDetails, setReportDetails] = useState(null);
   const [feedbackDetails, setFeedbackDetails] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
 
   const fetchReports = useCallback(async () => {
     try {
@@ -84,14 +86,14 @@ export default function AdminDashboard() {
 
   const handleAction = (type, payload) => {
     if (type === 'ignore') {
-      setConfirmModal({ isOpen: true, type, payload, title: t.IGNORE, message: 'Bạn có chắc chắn muốn bỏ qua báo cáo này?', isDanger: false });
+      setConfirmModal({ isOpen: true, type, payload, title: t.IGNORE, message: t.IGNORE_CONFIRM_MSG, isDanger: false });
     } else if (type === 'ban') {
-      setConfirmModal({ isOpen: true, type, payload, title: t.BAN_USER, message: 'Bạn có chắc chắn muốn CẤM tài khoản này vĩnh viễn?', isDanger: true });
+      setConfirmModal({ isOpen: true, type, payload, title: t.BAN_USER, message: t.BAN_CONFIRM_MSG, isDanger: true });
     }
   };
 
   const handleUnban = (userId) => {
-    setConfirmModal({ isOpen: true, type: 'unban', payload: userId, title: t.UNBAN, message: 'Bạn có chắc chắn muốn Ân xá cho tài khoản này?', isDanger: false });
+    setConfirmModal({ isOpen: true, type: 'unban', payload: userId, title: t.UNBAN, message: t.UNBAN_CONFIRM_MSG, isDanger: false });
   };
 
   const executeConfirmAction = async () => {
@@ -101,22 +103,23 @@ export default function AdminDashboard() {
     try {
       if (type === 'ignore') {
         await axiosClient.post(`/api/v1/reports/${payload}/ignore`);
-        toast.success('Đã bỏ qua báo cáo!');
+        toast.success(t.IGNORE_SUCCESS);
         fetchReports();
       } else if (type === 'ban') {
-        await axiosClient.post(`/api/v1/admin/ban/${payload.reportedId}?reportId=${payload.reportId}`);
-        toast.success(t.BAN_SUCCESS || 'Đã khóa tài khoản thành công!');
+        const queryParams = payload.reportId ? `?reportId=${payload.reportId}` : '';
+        await axiosClient.post(`/api/v1/admin/ban/${payload.reportedId}${queryParams}`);
+        toast.success(t.BAN_SUCCESS);
         fetchReports();
         fetchUsers();
         if (reportDetails) setReportDetails(null);
       } else if (type === 'unban') {
         await axiosClient.post(`/api/v1/admin/unban/${payload}`);
-        toast.success('Đã ân xá tài khoản!');
+        toast.success(t.UNBAN_SUCCESS);
         fetchUsers();
       }
     } catch (err) {
       console.error(err);
-      toast.error(t.ERROR_OCCURRED || 'Có lỗi xảy ra');
+      toast.error(t.ERROR_OCCURRED);
     }
   };
 
@@ -163,10 +166,10 @@ export default function AdminDashboard() {
                   onChange={(e) => setReportStatus(e.target.value)}
                   className="bg-neutral-800 border border-neutral-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
                 >
-                  <option value="ALL">ALL</option>
-                  <option value="PENDING">PENDING</option>
-                  <option value="RESOLVED">RESOLVED</option>
-                  <option value="DISMISSED">DISMISSED</option>
+                  <option value="ALL">{t.ALL}</option>
+                  <option value="PENDING">{t.PENDING}</option>
+                  <option value="RESOLVED">{t.RESOLVED}</option>
+                  <option value="DISMISSED">{t.DISMISSED}</option>
                 </select>
               )}
             </div>
@@ -178,7 +181,7 @@ export default function AdminDashboard() {
               <FeedbacksTable t={t} feedbacks={feedbacks} isLoading={isLoading} onView={(f) => setFeedbackDetails(f)} />
             )}
             {activeTab === 'users' && (
-              <UsersTable t={t} users={users} isLoading={isLoading} handleUnban={handleUnban} handleBan={(u) => handleAction('ban', { reportId: null, reportedId: u.id })} />
+              <UsersTable t={t} users={users} isLoading={isLoading} handleUnban={handleUnban} handleView={(u) => setUserDetails(u)} />
             )}
           </div>
           
@@ -209,6 +212,17 @@ export default function AdminDashboard() {
           isOpen={!!feedbackDetails} 
           onClose={() => setFeedbackDetails(null)} 
           feedback={feedbackDetails} 
+          t={t} 
+        />
+      )}
+
+      {userDetails && (
+        <UserDetailsModal 
+          isOpen={!!userDetails} 
+          onClose={() => setUserDetails(null)} 
+          user={userDetails} 
+          handleAction={handleAction}
+          handleUnban={handleUnban}
           t={t} 
         />
       )}
