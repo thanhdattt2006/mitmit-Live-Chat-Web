@@ -62,6 +62,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             // 3. Kiểm tra xem user đã tồn tại chưa
             User user = userRepository.findByEmail(email).orElse(null);
 
+            if (user != null && user.getStatus() == UserStatus.BANNED) {
+                log.warn("Blocked login attempt for banned user: {}", email);
+                response.sendRedirect(frontendUrl.split(",")[0] + "/?error=account_banned");
+                return;
+            }
+
             if (user == null) {
                 // 3a. User mới: Mặc định luôn luôn là USER. Phân quyền ADMIN phải làm thủ công trong DB.
                 user = User.builder()

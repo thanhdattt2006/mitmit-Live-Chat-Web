@@ -1,24 +1,62 @@
-import React, { useState } from 'react';
-import { X, Video, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Video, Loader2, AlertTriangle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { translations } from '../../utils/translation';
 
 export default function LoginModal({ isOpen, onClose }) {
-  const { lang, login } = useStore();
+  const { lang, logout, setLoginModalOpen } = useStore();
   const t = translations[lang];
 
   const [isLoading, setIsLoading] = useState('');
+  const [bannedError, setBannedError] = useState(() => {
+    return new URLSearchParams(window.location.search).get('error') === 'account_banned';
+  });
+
+  useEffect(() => {
+    if (bannedError) {
+      localStorage.removeItem('mitmit_jwt_token');
+      logout();
+      setLoginModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [bannedError, logout, setLoginModalOpen]);
 
   if (!isOpen) return null;
 
-  const handleLogin = () => {
-    try {
-      login();
-      onClose();
-    } catch (error) {
-      console.error('Error during login:', error);
-    }
-  };
+  if (bannedError) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative w-full max-w-sm bg-neutral-900 rounded-3xl shadow-2xl border border-red-900/50 flex flex-col overflow-hidden animate-slide-up text-white p-8 items-center text-center">
+          <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-red-500 mb-2">{t.ACCOUNT_BANNED_TITLE}</h2>
+          <p className="text-gray-300 text-sm mb-8">
+            {t.ACCOUNT_BANNED_DESC}
+          </p>
+          <div className="space-y-3 w-full">
+            <a 
+              href="mailto:thanhdattt2006@gmail.com?subject=Kêu%20oan%20-%20Mở%20khóa%20tài%20khoản&body=Chào%20Admin,%20tôi%20cho%20rằng%20tài%20khoản%20của%20tôi%20bị%20khóa%20nhầm.%20Vui%20lòng%20kiểm%20tra%20lại."
+              className="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-semibold transition-colors active:scale-95 shadow-lg"
+            >
+              {t.APPEAL_BUTTON}
+            </a>
+            <button 
+              onClick={() => {
+                setBannedError(false);
+              }}
+              className="w-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 text-white py-3.5 rounded-2xl font-semibold transition-colors active:scale-95"
+            >
+              {t.CLOSE_AND_LOGIN_OTHER}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

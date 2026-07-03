@@ -48,9 +48,10 @@ export function useNSFWAnalyzer(ref, remoteStream, callMode, isIdle, isMatching,
                   evidenceImage: base64Image || "NO_EVIDENCE"
                 });
               }
-            } catch (err) {
-              // Ignore classify errors
             }
+          } catch (err) {
+            console.error("Classify error", err);
+          }
           }
         }, 5000);
       } catch (err) {
