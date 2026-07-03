@@ -71,6 +71,12 @@ public class ReportService {
         reported.setStatus(UserStatus.BANNED);
         userRepository.save(reported);
 
+        // Real-time Kill Switch
+        java.util.Map<String, String> killPayload = new java.util.HashMap<>();
+        killPayload.put("type", "FORCE_LOGOUT");
+        killPayload.put("reason", "BANNED");
+        messagingTemplate.convertAndSend("/topic/system/" + reportedId, killPayload);
+
         if (reportId != null) {
             Report report = reportRepository.findById(reportId).orElse(null);
             if (report != null) {
@@ -107,6 +113,12 @@ public class ReportService {
                 .orElseThrow(() -> new RuntimeException("Reported user not found"));
         reported.setStatus(UserStatus.BANNED);
         userRepository.save(reported);
+
+        // Real-time Kill Switch
+        java.util.Map<String, String> killPayload = new java.util.HashMap<>();
+        killPayload.put("type", "FORCE_LOGOUT");
+        killPayload.put("reason", "BANNED");
+        messagingTemplate.convertAndSend("/topic/system/" + reportedId, killPayload);
 
         // Tạo Report trong MySQL để lưu dấu vết (Hệ thống tự động cảnh báo)
         Report systemReport = Report.builder()

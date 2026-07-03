@@ -54,6 +54,28 @@ class SocketService {
             });
           }
           this.wasConnected = true;
+
+          // Real-time Kill Switch
+          this.systemSubscription = this.stompClient.subscribe(`/topic/system/${userId}`, (message) => {
+            if (message.body) {
+              try {
+                const data = JSON.parse(message.body);
+                if (data.type === 'FORCE_LOGOUT') {
+                  import('../store/useStore').then((store) => {
+                    const state = store.default.getState();
+                    if (state.stopCall) state.stopCall();
+                    if (state.logout) state.logout();
+                  });
+                  this.disconnect();
+                  localStorage.removeItem('mitmit_jwt_token');
+                  window.location.href = '/?error=account_banned';
+                }
+              } catch (err) {
+                console.error('Failed to parse system message:', err);
+              }
+            }
+          });
+
           this.stompClient.subscribe(`/topic/match/${userId}`, (message) => {
             if (message.body) {
               try {
@@ -91,6 +113,10 @@ class SocketService {
   }
 
   disconnect() {
+    if (this.systemSubscription) {
+      this.systemSubscription.unsubscribe();
+      this.systemSubscription = null;
+    }
     if (this.stompClient) {
       this.stompClient.deactivate();
       this.stompClient = null;
